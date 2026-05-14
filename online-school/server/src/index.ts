@@ -1,17 +1,25 @@
 import http from 'http';
+import path from 'path';
+import express from 'express';
 import { Server } from 'socket.io';
 import app from './app';
 import { connectDB } from './config/db';
-import { env } from './config/env';
-import { Message } from './models/Message';
+import { corsAllowedOrigins, env } from './config/env';
 import jwt from 'jsonwebtoken';
+import { prisma } from './lib/prisma';
+
+/** Локальные uploads только если файлы не на Cloudinary */
+const uploadsPath = path.join(__dirname, '../uploads');
+app.use('/uploads', express.static(uploadsPath));
 
 const server = http.createServer(app);
+
+const socketCorsOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: env.CLIENT_URL,
+    origin: process.env.NODE_ENV === 'production' ? socketCorsOrigin : corsAllowedOrigins,
     credentials: true,
   },
 });
@@ -44,13 +52,14 @@ io.of('/support').on('connection', (socket) => {
   // Handle incoming messages
   socket.on('message', async (data: { text: string }, callback: (response: any) => void) => {
     try {
-      const message = new Message({
-        userId,
-        text: data.text,
-        isFromAdmin: false,
+      const message = await prisma.message.create({
+        data: {
+          userId,
+          content: data.text,
+          isAdmin: false,
+          isRead: false,
+        },
       });
-      await message.save();
-
       // Emit to admin room (you can implement admin rooms separately)
       io.of('/support').emit('newMessage', { userId, message });
 
@@ -64,13 +73,15 @@ io.of('/support').on('connection', (socket) => {
   socket.on('admin:message', async (data: { userId: string; text: string }, callback: (response: any) => void) => {
     try {
       const targetUserId = data.userId;
-      
-      const message = new Message({
-        userId: targetUserId,
-        text: data.text,
-        isFromAdmin: true,
+
+      const message = await prisma.message.create({
+        data: {
+          userId: targetUserId,
+          content: data.text,
+          isAdmin: true,
+          isRead: true,
+        },
       });
-      await message.save();
 
       // Send to specific user
       io.of('/support').to(targetUserId).emit('message', message);
@@ -86,8 +97,8 @@ io.of('/support').on('connection', (socket) => {
   });
 });
 
-// Start server
-const PORT = env.PORT || 5000;
+// Start server (Render задаёт PORT через окружение)
+const PORT = parseInt(process.env.PORT || String(env.PORT || 5000), 10);
 
 connectDB().then(() => {
   server.listen(PORT, () => {

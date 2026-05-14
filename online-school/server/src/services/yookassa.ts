@@ -27,17 +27,17 @@ export const createPayment = async (amount: number, orderId: string): Promise<{ 
       },
       confirmation: {
         type: 'redirect',
-        return_url: `${env.CLIENT_URL}/dashboard`,
+        return_url: `${env.FRONTEND_URL}/dashboard`,
       },
     }),
   });
 
   if (!response.ok) {
-    const error = await response.json();
+    const error = (await response.json()) as { description?: string };
     throw new Error(error.description || 'Failed to create payment');
   }
 
-  const data: YooKassaPayment = await response.json();
+  const data = (await response.json()) as YooKassaPayment;
   return {
     paymentId: data.id,
     confirmationUrl: data.confirmation.confirmation_url,
@@ -55,6 +55,6 @@ export const getPaymentStatus = async (paymentId: string): Promise<string> => {
     throw new Error('Failed to get payment status');
   }
 
-  const data: YooKassaPayment = await response.json();
+  const data = (await response.json()) as YooKassaPayment;
   return data.status;
 };

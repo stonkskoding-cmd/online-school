@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String     @id @default(uuid()) @db.Uuid
+  email     String     @unique
+  password  String
+  role      String     @default("user")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  purchases Purchase[]
+  messages  Message[]
+
+  @@map("users")
+}
+
+model Package {
+  id          String     @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String     @unique
+  description String
+  price       Int
+  category    String
+  coverUrl    String?    @map("cover_url")
+  materials   Json?
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  purchases   Purchase[]
+
+  @@map("packages")
+}
+
+model Purchase {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  packageId String   @map("package_id") @db.Uuid
+  status    String   @default("pending")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package   Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([packageId])
+  @@map("purchases")
+}
+
+/// Чат поддержки: тред по userId; isAdmin — автор; isRead — прочитано админом (для сообщений пользователя).
+model Message {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id") @db.Uuid
+  content   String
+  isAdmin   Boolean  @default(false) @map("is_admin")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  isRead    Boolean  @default(false) @map("is_read")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("messages")
+}

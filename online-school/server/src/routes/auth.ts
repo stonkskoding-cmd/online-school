@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { User } from '../models/User';
 import { validate } from '../middleware/validation';
 import { auth, AuthRequest } from '../middleware/auth';
 import { env } from '../config/env';
+import { prisma } from '../lib/prisma';
 
 const router = Router();
 
@@ -13,55 +13,70 @@ const registerSchema = z.object({
   body: z.object({
     email: z.string().email(),
     password: z.string().min(6),
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
   }),
 });
 
 const loginSchema = z.object({
+  body: z
+    .object({
+      password: z.string().min(6, 'Пароль не менее 6 символов'),
+      email: z.string().optional(),
+      username: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      const email = data.email?.trim() ?? '';
+      const username = data.username?.trim() ?? '';
+      const hasEmail = email.length > 0;
+      const hasUsername = username.length > 0;
+      if (hasEmail === hasUsername) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Укажите email или логин (одно из полей)',
+          path: ['body'],
+        });
+        return;
+      }
+      if (hasEmail && !z.string().email().safeParse(email).success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Некорректный email',
+          path: ['email'],
+        });
+      }
+    }),
+});
+
+const adminLoginSchema = z.object({
   body: z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
+    username: z.string().min(1),
+    password: z.string().min(1),
   }),
 });
 
 router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       res.status(400).json({ message: 'User already exists' });
       return;
     }
 
-    const user = new User({ email, password, firstName, lastName });
-    await user.save();
-
-    const accessToken = jwt.sign({ userId: user._id }, env.JWT_SECRET, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ userId: user._id }, env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
-
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: { email, password: hashedPassword },
     });
 
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    const token = jwt.sign({ userId: user.id, role: user.role }, env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
       message: 'User registered successfully',
+      token,
+      role: user.role === 'admin' ? 'admin' : 'user',
       user: {
-        id: user._id,
+        id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
         role: user.role,
       },
     });
@@ -72,44 +87,54 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
 
 router.post('/login', validate(loginSchema), async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const body = req.body as { email?: string; username?: string; password: string };
+    const password = body.password;
+    const username = typeof body.username === 'string' ? body.username.trim() : '';
+    const email = typeof body.email === 'string' ? body.email.trim() : '';
 
-    const user = await User.findOne({ email });
+    // Сначала вход администратора по логину из .env — без обращения к БД
+    if (username.length > 0) {
+      if (!env.ADMIN_USERNAME || !env.ADMIN_PASSWORD) {
+        res.status(503).json({ message: 'Admin login is not configured' });
+        return;
+      }
+
+      if (username !== env.ADMIN_USERNAME || password !== env.ADMIN_PASSWORD) {
+        res.status(401).json({ message: 'Invalid credentials' });
+        return;
+      }
+
+      const token = jwt.sign({ role: 'admin' }, env.JWT_SECRET, { expiresIn: '8h' });
+      res.json({
+        message: 'Admin login successful',
+        token,
+        role: 'admin',
+      });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       res.status(401).json({ message: 'Invalid credentials' });
       return;
     }
 
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       res.status(401).json({ message: 'Invalid credentials' });
       return;
     }
 
-    const accessToken = jwt.sign({ userId: user._id }, env.JWT_SECRET, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ userId: user._id }, env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
-
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    const role = user.role === 'admin' ? 'admin' : 'user';
+    const token = jwt.sign({ userId: user.id, role: user.role }, env.JWT_SECRET, { expiresIn: '7d' });
 
     res.json({
       message: 'Login successful',
+      token,
+      role,
       user: {
-        id: user._id,
+        id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
         role: user.role,
       },
     });
@@ -118,52 +143,35 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
   }
 });
 
-router.post('/refresh', async (req, res, next) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-
-    if (!refreshToken) {
-      res.status(401).json({ message: 'No refresh token provided' });
-      return;
-    }
-
-    const decoded = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as { userId: string };
-    const user = await User.findById(decoded.userId);
-
-    if (!user) {
-      res.status(401).json({ message: 'Invalid refresh token' });
-      return;
-    }
-
-    const accessToken = jwt.sign({ userId: user._id }, env.JWT_SECRET, { expiresIn: '15m' });
-
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.json({ message: 'Token refreshed successfully' });
-  } catch (error) {
-    res.status(401).json({ message: 'Invalid refresh token' });
-  }
+router.post('/logout', (_req, res) => {
+  res.json({ message: 'Logout successful' });
 });
 
-router.post('/logout', (req, res) => {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
-  res.json({ message: 'Logout successful' });
+router.post('/admin-login', validate(adminLoginSchema), (req, res) => {
+  const raw = req.body as { username: string; password: string };
+  const username = typeof raw.username === 'string' ? raw.username.trim() : '';
+  const { password } = raw;
+
+  if (!env.ADMIN_USERNAME || !env.ADMIN_PASSWORD) {
+    res.status(503).json({ message: 'Admin login is not configured' });
+    return;
+  }
+
+  if (username !== env.ADMIN_USERNAME || password !== env.ADMIN_PASSWORD) {
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
+  }
+
+  const token = jwt.sign({ role: 'admin' }, env.JWT_SECRET, { expiresIn: '8h' });
+  res.json({ message: 'Admin login successful', token, role: 'admin' });
 });
 
 router.get('/me', auth, (req: AuthRequest, res) => {
   const user = req.user!;
   res.json({
     user: {
-      id: user._id,
+      id: user.id,
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
       role: user.role,
     },
   });
