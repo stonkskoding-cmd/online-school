@@ -37,8 +37,8 @@ __pycache__/
 Thumbs.db
 
 # Local uploads (обложки и файлы админки)
-online-school/server/uploads/*
-!online-school/server/uploads/.gitkeep
+server/uploads/*
+!server/uploads/.gitkeep
 
 # Logs
 *.log
