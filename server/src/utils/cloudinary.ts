@@ -33,12 +33,13 @@ const localDiskStorage = multer.diskStorage({
   },
 });
 
+/** Папка в Cloudinary; params — функция, чтобы обойти узкий тип Params в multer-storage-cloudinary */
 const cloudStorage = cloudinaryConfigured
   ? new CloudinaryStorage({
       cloudinary,
-      params: {
+      params: async () => ({
         folder: 'dinastia-uploads',
-      },
+      }),
     })
   : localDiskStorage;
 

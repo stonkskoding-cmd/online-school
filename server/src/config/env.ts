@@ -32,7 +32,10 @@ export const corsAllowedOrigins = [
   'http://127.0.0.1:3000',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-].filter((origin, index, self) => Boolean(origin) && self.indexOf(origin) === index);
+].filter(
+  (origin, index, self): origin is string =>
+    Boolean(origin) && self.indexOf(origin) === index,
+);
 
 if (!env.DATABASE_URL) {
   throw new Error('DATABASE_URL is not defined in environment variables');

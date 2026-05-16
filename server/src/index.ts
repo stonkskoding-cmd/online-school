@@ -14,12 +14,16 @@ app.use('/uploads', express.static(uploadsPath));
 
 const server = http.createServer(app);
 
-const socketCorsOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+/** Socket.IO принимает string | string[]; единый массив — без union string | string[] */
+const socketCorsOrigins: string[] =
+  process.env.NODE_ENV === 'production'
+    ? [process.env.FRONTEND_URL || 'http://localhost:3000']
+    : corsAllowedOrigins;
 
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' ? socketCorsOrigin : corsAllowedOrigins,
+    origin: socketCorsOrigins,
     credentials: true,
   },
 });
