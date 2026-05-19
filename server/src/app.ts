@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
@@ -11,14 +10,21 @@ import { errorHandler } from './middleware/error';
 
 const app = express();
 
-// 1) CORS — первый middleware (до helmet, парсеров и /api)
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-  }),
-);
-console.log('CORS ALLOWED ORIGIN:', process.env.FRONTEND_URL);
+// CORS middleware - должен быть ПЕРВЫМ
+app.use((req, res, next) => {
+  const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+  res.header('Access-Control-Allow-Origin', allowedOrigin);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  next();
+});
+console.log('CORS ENABLED FOR:', process.env.FRONTEND_URL);
 
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.path}`);
