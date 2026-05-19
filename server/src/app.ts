@@ -4,16 +4,9 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
-import { env, corsAllowedOrigins } from './config/env';
+import { env } from './config/env';
 
-import authRoutes from './routes/auth';
-import packageRoutes from './routes/packages';
-import purchaseRoutes from './routes/purchases';
-import paymentRoutes from './routes/payments';
-import chatRoutes from './routes/chat';
-import adminRoutes from './routes/admin';
-import { adminUploadMulter, adminUploadRespond } from './utils/cloudinary';
-import { verifyAdmin } from './middleware/authMiddleware';
+import apiRouter from './routes';
 import { errorHandler } from './middleware/error';
 
 const app = express();
@@ -22,13 +15,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || corsAllowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(null, false);
-    },
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
   }),
 );
@@ -50,16 +37,10 @@ if (env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/packages', packageRoutes);
-app.use('/api/purchases', purchaseRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/chat', chatRoutes);
-app.post('/api/upload', verifyAdmin, adminUploadMulter.single('file'), adminUploadRespond);
-app.use('/api/admin', verifyAdmin, adminRoutes);
+// Все API под префиксом /api (см. routes/index.ts)
+app.use('/api', apiRouter);
 
-// Health check
+// Health check (вне /api)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
