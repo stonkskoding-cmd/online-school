@@ -10,21 +10,27 @@ import { errorHandler } from './middleware/error';
 
 const app = express();
 
-// CORS middleware - должен быть ПЕРВЫМ
+// CORS middleware - ОБЯЗАТЕЛЬНО ПЕРВЫМ!
 app.use((req, res, next) => {
   const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+  // Разрешаем запросы с фронтенда
   res.header('Access-Control-Allow-Origin', allowedOrigin);
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token',
+  );
 
+  // Обработка preflight запросов (OPTIONS)
   if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-    return;
+    return res.sendStatus(200);
   }
+
   next();
 });
-console.log('CORS ENABLED FOR:', process.env.FRONTEND_URL);
+console.log('✅ CORS ENABLED FOR:', process.env.FRONTEND_URL);
 
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.path}`);
