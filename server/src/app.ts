@@ -1,37 +1,47 @@
 import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 // import helmet from 'helmet';
 // import rateLimit from 'express-rate-limit';
 
 import apiRouter from './routes';
-import {
-  CORS_BUILD_ID,
-  applyCorsHeaders,
-  corsMiddleware,
-  getAllowedOrigins,
-  handlePreflight,
-} from './lib/cors';
+import { CORS_BUILD_ID, getAllowedOrigins } from './lib/cors';
 
 console.log('🚀 APP LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 console.log('🧪 ALLOWED ORIGINS:', getAllowedOrigins());
 
+const corsOptions: cors.CorsOptions = {
+  origin: [
+    'https://online-school-1-zj77.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    ...(process.env.FRONTEND_URL
+      ? [process.env.FRONTEND_URL.trim().replace(/\r/g, '')]
+      : []),
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200,
+  preflightContinue: false,
+};
+
 const app = express();
 
-// =========================================================
-// 🛡️ CORS — САМЫМ ПЕРВЫМ (до парсинга и роутов)
-// =========================================================
-
-// Явный перехват OPTIONS для любого пути (до apiRouter)
-app.options(/.*/, (req, res) => {
-  console.log('🔥 app.options handler for', req.method, req.originalUrl);
-  handlePreflight(req, res);
+// Лог каждого запроса (видно OPTIONS в Render)
+app.use((req, _res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.originalUrl}`);
+  next();
 });
 
-app.use(corsMiddleware);
+// Официальный cors — ПЕРВЫМ
+app.use(cors(corsOptions));
 
-// =========================================================
-// Парсинг и роуты
-// =========================================================
+// Явная обработка OPTIONS (.* — все пути, включая /api/auth/login)
+app.options(/.*/, cors(corsOptions), (req, res) => {
+  console.log('✅ OPTIONS handled for', req.path);
+  res.sendStatus(200);
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -51,9 +61,10 @@ app.use((_req, res) => {
 });
 
 app.use((err: Error & { status?: number }, req: Request, res: Response, _next: NextFunction) => {
-  applyCorsHeaders(req, res);
-  console.error('❌ Error:', err.message);
-  res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
+  cors(corsOptions)(req, res, () => {
+    console.error('❌ Error:', err.message);
+    res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
+  });
 });
 
 export default app;
