@@ -1,16 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { prisma } from '../lib/prisma';
-export interface AuthUser {
-  id: string;
-  email: string;
-  role: 'user' | 'admin';
-}
+import { AuthRequest } from '../types/auth.types';
 
-export interface AuthRequest extends Request {
-  user?: AuthUser;
-}
+export type { AuthRequest, AuthUser } from '../types/auth.types';
 
 export const auth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
