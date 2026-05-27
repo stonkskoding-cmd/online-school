@@ -34,20 +34,20 @@ export default function ChatButton() {
         onClick={toggle}
         aria-label={isOpen ? 'Закрыть чат' : 'Открыть чат поддержки'}
         aria-expanded={isOpen}
-        className="group fixed bottom-6 right-6 z-[1000] flex h-[60px] w-[60px] items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition duration-300 hover:scale-110 hover:shadow-[0_8px_24px_rgba(37,99,235,0.45)] focus:outline-none focus:ring-4 focus:ring-blue-500/40 animate-pulse hover:animate-none"
+        className="group fixed bottom-6 right-6 z-[1000] flex h-20 w-20 items-center justify-center rounded-full bg-white text-blue-600 shadow-xl ring-1 ring-gray-200/80 transition duration-300 hover:scale-110 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/30"
       >
         {!isOpen && unreadCount > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white shadow-md">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         ) : null}
 
         {isOpen ? (
-          <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="h-9 w-9 text-[#2563eb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         ) : (
-          <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="h-9 w-9 text-[#2563eb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
