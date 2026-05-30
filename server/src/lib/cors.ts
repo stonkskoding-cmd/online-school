@@ -1,6 +1,16 @@
 import { IncomingMessage, ServerResponse } from 'http';
 
-const PRODUCTION_FRONTEND = 'https://online-school-1-zj77.onrender.com';
+const EXPLICIT_ORIGINS = [
+  'https://online-school-frontend-ryc0.onrender.com',
+  'https://online-school-1-zj77.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+];
+
+/** Любой Render static site / web service на *.onrender.com */
+const ONRENDER_ORIGIN = /^https:\/\/[\w-]+\.onrender\.com$/i;
 
 export const CORS_BUILD_ID = `cors-pkg-${Date.now()}`;
 
@@ -12,12 +22,7 @@ export function getAllowedOrigins(): string[] {
   const fromEnv = [
     process.env.FRONTEND_URL,
     process.env.CLIENT_URL,
-    PRODUCTION_FRONTEND,
-    'https://online-school-1-zj77.onrender.com',
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173',
+    ...EXPLICIT_ORIGINS,
   ]
     .filter((v): v is string => Boolean(v))
     .map(normalizeOrigin);
@@ -25,13 +30,17 @@ export function getAllowedOrigins(): string[] {
   return [...new Set(fromEnv)];
 }
 
-const allowedSet = () => new Set(getAllowedOrigins());
+export function isOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true;
+  const normalized = normalizeOrigin(origin);
+  if (getAllowedOrigins().includes(normalized)) return true;
+  return ONRENDER_ORIGIN.test(normalized);
+}
 
-function pickAllowOrigin(origin: string | undefined): string {
-  if (origin && allowedSet().has(normalizeOrigin(origin))) {
-    return origin;
-  }
-  return getAllowedOrigins()[0] || PRODUCTION_FRONTEND;
+export function resolveCorsOrigin(origin: string | undefined): string | boolean {
+  if (!origin) return true;
+  if (isOriginAllowed(origin)) return origin;
+  return false;
 }
 
 /** OPTIONS на уровне http.Server — до Express */
@@ -43,7 +52,13 @@ export function handleHttpPreflight(
     return false;
   }
 
-  const allowOrigin = pickAllowOrigin(req.headers.origin);
+  const requestOrigin = req.headers.origin;
+  const resolved = resolveCorsOrigin(requestOrigin);
+  const allowOrigin =
+    typeof resolved === 'string'
+      ? resolved
+      : getAllowedOrigins()[0] || EXPLICIT_ORIGINS[0];
+
   res.setHeader('Access-Control-Allow-Origin', allowOrigin);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader(

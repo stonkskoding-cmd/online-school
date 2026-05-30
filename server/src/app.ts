@@ -5,20 +5,21 @@ import cookieParser from 'cookie-parser';
 // import rateLimit from 'express-rate-limit';
 
 import apiRouter from './routes';
-import { CORS_BUILD_ID, getAllowedOrigins } from './lib/cors';
+import { CORS_BUILD_ID, getAllowedOrigins, isOriginAllowed, resolveCorsOrigin } from './lib/cors';
 
 console.log('🚀 APP LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 console.log('🧪 ALLOWED ORIGINS:', getAllowedOrigins());
 
 const corsOptions: cors.CorsOptions = {
-  origin: [
-    'https://online-school-1-zj77.onrender.com',
-    'http://localhost:3000',
-    'http://localhost:5173',
-    ...(process.env.FRONTEND_URL
-      ? [process.env.FRONTEND_URL.trim().replace(/\r/g, '')]
-      : []),
-  ],
+  origin(origin, callback) {
+    const resolved = resolveCorsOrigin(origin);
+    if (resolved === false) {
+      console.warn(`[CORS] blocked origin: ${origin}`);
+      callback(new Error(`CORS blocked: ${origin}`));
+      return;
+    }
+    callback(null, resolved);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

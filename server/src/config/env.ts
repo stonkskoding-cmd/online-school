@@ -25,11 +25,13 @@ export const env = {
   ADMIN_PASSWORD: (process.env.ADMIN_PASSWORD || '').trim().replace(/\r/g, ''),
 };
 
-/** Разрешённые Origin для CORS (FRONTEND_URL + локальные порты для dev) */
+/** Разрешённые Origin для CORS (FRONTEND_URL + Render + локальные порты для dev) */
 export const corsAllowedOrigins = [
   env.FRONTEND_URL,
   env.CLIENT_URL,
   process.env.CLIENT_URL,
+  'https://online-school-frontend-ryc0.onrender.com',
+  'https://online-school-1-zj77.onrender.com',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:5173',

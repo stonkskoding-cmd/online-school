@@ -5,7 +5,7 @@ import { Server } from 'socket.io';
 import app from './app';
 import { connectDB } from './config/db';
 import { env } from './config/env';
-import { CORS_BUILD_ID, getAllowedOrigins, handleHttpPreflight } from './lib/cors';
+import { CORS_BUILD_ID, getAllowedOrigins, handleHttpPreflight, isOriginAllowed } from './lib/cors';
 import jwt from 'jsonwebtoken';
 import { prisma } from './lib/prisma';
 
@@ -28,7 +28,16 @@ const server = http.createServer((req, res) => {
 
 console.log('🚀 INDEX LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 
-const socketCorsOrigins: string[] = getAllowedOrigins();
+const socketCorsOrigins = (
+  origin: string | undefined,
+  callback: (err: Error | null, allow?: boolean) => void,
+) => {
+  if (isOriginAllowed(origin)) {
+    callback(null, true);
+  } else {
+    callback(new Error(`CORS blocked: ${origin}`));
+  }
+};
 
 // Socket.IO setup
 const io = new Server(server, {
