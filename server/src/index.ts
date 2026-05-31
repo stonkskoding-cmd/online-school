@@ -142,8 +142,8 @@ io.of('/support').on('connection', (socket) => {
   });
 });
 
-// Render передаёт PORT динамически — слушаем сразу, БД подключаем параллельно
-const PORT = parseInt(process.env.PORT || '3000', 10);
+// Render: слушаем PORT сразу (Socket.IO на http.Server, не app.listen)
+const PORT = Number(process.env.PORT) || 3000;
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
