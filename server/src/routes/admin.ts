@@ -1,8 +1,11 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validation';
 import { prisma } from '../lib/prisma';
 import { emitNewMessage } from '../socket';
+import upload from '../middleware/upload';
+import { env } from '../config/env';
+import { handleMulterError } from '../middleware/uploadRespond';
 
 export { adminUploadMulter, adminUploadRespond } from '../utils/cloudinary';
 
@@ -39,8 +42,8 @@ const materialSchema = z
 
 const adminCreatePackageSchema = z.object({
   body: z.object({
-    title: z.string().min(3),
-    description: z.string().min(3),
+    title: z.string().min(1),
+    description: z.string().min(1),
     price: z.coerce.number().int().positive(),
     category: z.enum(['OGE-IST', 'EGE-IST', 'EGE-SOC']),
     coverUrl: z.string().optional().nullable(),
@@ -150,9 +153,38 @@ router.get('/packages', async (_req, res) => {
   }
 });
 
-router.post('/packages', validate(adminCreatePackageSchema), async (req, res) => {
+function normalizePackageBody(req: Request): void {
+  const body = req.body as Record<string, unknown>;
+  if (typeof body.materials === 'string') {
+    try {
+      body.materials = JSON.parse(body.materials);
+    } catch {
+      body.materials = [];
+    }
+  }
+  if (req.file && !body.coverUrl) {
+    const base = (env.BACKEND_URL || `http://localhost:${env.PORT}`).replace(/\/$/, '');
+    body.coverUrl = `${base}/uploads/${(req.file as Express.Multer.File).filename}`;
+  }
+}
+
+router.post(
+  '/packages',
+  (req: Request, res: Response, next: NextFunction) => {
+    upload.single('cover')(req, res, (err) => {
+      if (err) {
+        handleMulterError(err, req, res, next);
+        return;
+      }
+      normalizePackageBody(req);
+      next();
+    });
+  },
+  validate(adminCreatePackageSchema),
+  async (req, res) => {
   try {
     console.log('[admin] Creating package:', req.body);
+    console.log('[admin] Cover file:', req.file?.filename ?? 'none');
     const { title, description, price, category, coverUrl } = req.body as {
       title: string;
       description: string;
@@ -190,7 +222,7 @@ router.post('/packages', validate(adminCreatePackageSchema), async (req, res) =>
   } catch (error) {
     console.error('[admin] POST /packages', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
-    res.status(500).json({ message });
+    res.status(500).json({ error: message, message, details: String(error) });
   }
 });
 

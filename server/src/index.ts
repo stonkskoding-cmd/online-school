@@ -1,20 +1,18 @@
 import http from 'http';
+import fs from 'fs';
 import path from 'path';
 import express from 'express';
 import app from './app';
-import { connectDB } from './config/db';
+import { connectDBWithRetry } from './config/dbRetry';
 import { CORS_BUILD_ID } from './lib/cors';
 import { initSocket, shutdownSocket } from './socket';
+import { uploadsDir } from './middleware/upload';
 
-/** Локальные uploads только если файлы не на Cloudinary */
-const uploadsPath = path.join(__dirname, '../uploads');
-app.use('/uploads', express.static(uploadsPath));
+fs.mkdirSync(uploadsDir, { recursive: true });
 
-/**
- * Важно: передаём Express app напрямую в createServer.
- * Обёртка (req, res) => app(req, res) ломала Socket.io — запросы /socket.io
- * уходили в Express и возвращали 404/503 вместо upgrade.
- */
+/** Статика uploads — обложки и материалы */
+app.use('/uploads', express.static(uploadsDir));
+
 const server = http.createServer(app);
 
 console.log('🚀 INDEX LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
@@ -24,10 +22,8 @@ initSocket(server);
 const PORT = Number(process.env.PORT) || 3000;
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-  void connectDB().catch((err) => {
-    console.error('Failed to connect to database:', err);
-  });
+  console.log(`Server and Socket.io running on port ${PORT}`);
+  void connectDBWithRetry();
 });
 
 function gracefulShutdown(signal: string) {
@@ -39,3 +35,5 @@ function gracefulShutdown(signal: string) {
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+export { server };

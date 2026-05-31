@@ -9,7 +9,14 @@ export const env = {
   DIRECT_URL: process.env.DIRECT_URL || '',
   JWT_SECRET: process.env.JWT_SECRET || '',
   FRONTEND_URL: (process.env.FRONTEND_URL || 'http://localhost:3000').trim().replace(/\r/g, ''),
-  BACKEND_URL: (process.env.BACKEND_URL || '').trim().replace(/\r/g, ''),
+  BACKEND_URL: (
+    process.env.BACKEND_URL ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://online-school-backend-mqn9.onrender.com'
+      : '')
+  )
+    .trim()
+    .replace(/\r/g, ''),
   CLIENT_URL: (process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:3000')
     .trim()
     .replace(/\r/g, ''),

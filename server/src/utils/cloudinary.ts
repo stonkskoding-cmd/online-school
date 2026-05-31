@@ -60,8 +60,13 @@ export function adminUploadRespond(req: Request, res: Response): void {
     res.status(201).json({ url: file.path });
     return;
   }
-  if (file.filename) {
-    const base = (env.BACKEND_URL || `http://localhost:${env.PORT}`).replace(/\/$/, '');
+    if (file.filename) {
+    const base = (
+      env.BACKEND_URL ||
+      (process.env.NODE_ENV === 'production'
+        ? 'https://online-school-backend-mqn9.onrender.com'
+        : `http://localhost:${env.PORT}`)
+    ).replace(/\/$/, '');
     res.status(201).json({ url: `${base}/uploads/${file.filename}` });
     return;
   }

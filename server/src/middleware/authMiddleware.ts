@@ -23,6 +23,12 @@ function extractBearerToken(req: Request): string | undefined {
 }
 
 export const verifyAdmin = (req: Request, res: Response, next: NextFunction): void => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   const authHeader = req.headers.authorization ?? req.headers.Authorization;
   console.log('[verifyAdmin] Token received:', authHeader ? `${String(authHeader).slice(0, 20)}…` : 'none');
 

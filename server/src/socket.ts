@@ -2,7 +2,6 @@ import http from 'http';
 import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { env } from './config/env';
-import { isOriginAllowed } from './lib/cors';
 import { prisma } from './lib/prisma';
 
 export type SocketUser = {
@@ -53,23 +52,16 @@ export function getIo(): Server | null {
 export function initSocket(httpServer: http.Server): Server {
   const io = new Server(httpServer, {
     cors: {
-      origin: (origin, callback) => {
-        if (!origin || isOriginAllowed(origin)) {
-          callback(null, origin ?? true);
-        } else {
-          console.warn('[socket] CORS blocked origin:', origin);
-          callback(null, false);
-        }
-      },
+      origin: true,
       credentials: true,
-      allowedHeaders: ['Content-Type', 'Authorization'],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     },
     transports: ['websocket', 'polling'],
     allowUpgrades: true,
     pingTimeout: 60000,
     pingInterval: 25000,
-    connectTimeout: 45000,
+    connectTimeout: 10000,
     path: '/socket.io',
   });
 

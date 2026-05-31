@@ -291,8 +291,14 @@ export default function AdminDashboard() {
       const { data } = await adminApiClient.uploadFileWithProgress(fd, (p) => setCoverUploadProgress(p));
       if (data?.url) setCoverUrl(data.url);
       setCoverUploadProgress(100);
-    } catch {
-      setError('Не удалось загрузить файл. Проверьте авторизацию и размер файла.');
+    } catch (err) {
+      console.error('[admin-ui] cover upload failed', err);
+      const isNetwork = err?.code === 'ERR_NETWORK' || err?.message === 'Network Error';
+      setError(
+        isNetwork
+          ? 'Сервер недоступен. Подождите и повторите загрузку.'
+          : err?.response?.data?.message || err?.response?.data?.error || 'Не удалось загрузить файл.',
+      );
     } finally {
       setCoverUploading(false);
       setTimeout(() => setCoverUploadProgress(0), 400);
@@ -455,7 +461,13 @@ export default function AdminDashboard() {
       const d = err.response?.data;
       const status = err.response?.status;
       const joined = Array.isArray(d?.errors) ? d.errors.map((x) => x.message).join(' · ') : '';
-      const msg = d?.message || joined || 'Ошибка сохранения';
+      const msg =
+        d?.message ||
+        d?.error ||
+        joined ||
+        (err.code === 'ERR_NETWORK' || err.message === 'Network Error'
+          ? 'Сервер недоступен. Подождите 30 сек (Render просыпается) и повторите.'
+          : 'Ошибка сохранения');
       setPackageFormError(msg);
       if (status === 400 && Array.isArray(d?.errors)) {
         const fe = {};
