@@ -21,6 +21,23 @@ function normalizeMessage(raw: Record<string, unknown>): ChatMessageItem {
 const SOCKET_BASE =
   import.meta.env.VITE_SOCKET_URL || 'https://online-school-backend-mqn9.onrender.com';
 
+const SOCKET_EMIT_TIMEOUT_MS = 8000;
+
+function emitWithAck<T>(
+  socket: Socket,
+  event: string,
+  payload: unknown,
+  timeoutMs = SOCKET_EMIT_TIMEOUT_MS,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error('Socket timeout')), timeoutMs);
+    socket.emit(event, payload, (response: T) => {
+      window.clearTimeout(timer);
+      resolve(response);
+    });
+  });
+}
+
 export function useChat(isOpen: boolean) {
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,10 +80,12 @@ export function useChat(isOpen: boolean) {
       setMessages(list);
     } catch (err: unknown) {
       console.error('[chat-ui] loadMessages failed', err);
+      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string; code?: string };
       const msg =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
+        axiosErr.response?.data?.message ||
+        (axiosErr.code === 'ERR_NETWORK' || axiosErr.message === 'Network Error'
+          ? 'Сервер недоступен. Подождите несколько секунд и попробуйте снова.'
+          : null);
       setError(msg || 'Не удалось загрузить сообщения');
     } finally {
       setLoading(false);
@@ -87,10 +106,12 @@ export function useChat(isOpen: boolean) {
     const socket = io(`${SOCKET_BASE}/support`, {
       path: '/socket.io',
       auth: { token },
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
+      withCredentials: false,
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: Infinity,
+      timeout: 20000,
     });
 
     socketRef.current = socket;
@@ -103,6 +124,11 @@ export function useChat(isOpen: boolean) {
 
     socket.io.on('reconnect_attempt', () => {
       setIsReconnecting(true);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.warn('[chat-ui] socket connect_error', err.message);
+      setIsConnected(false);
     });
 
     socket.on('disconnect', () => {
@@ -142,28 +168,40 @@ export function useChat(isOpen: boolean) {
       const socket = socketRef.current;
 
       try {
-        if (socket?.connected) {
-          await new Promise<void>((resolve, reject) => {
-            socket.emit('send_message', { content: trimmed, text: trimmed }, (response: {
-              success: boolean;
-              message?: Record<string, unknown>;
-              error?: string;
-            }) => {
-              if (response?.success && response.message) {
-                appendMessage(response.message);
-                resolve();
-              } else {
-                reject(new Error(response?.error || 'Ошибка отправки'));
-              }
-            });
-          });
-        } else {
+        // REST — надёжный fallback на Render (cold start / 503 на WebSocket)
+        if (!socket?.connected) {
+          const { data } = await chatApi.sendMessage(trimmed);
+          appendMessage((data.message ?? {}) as unknown as Record<string, unknown>);
+          return;
+        }
+
+        try {
+          const response = await emitWithAck<{
+            success: boolean;
+            message?: Record<string, unknown>;
+            error?: string;
+          }>(socket, 'send_message', { content: trimmed, text: trimmed });
+
+          if (response?.success && response.message) {
+            appendMessage(response.message);
+          } else {
+            throw new Error(response?.error || 'Ошибка отправки');
+          }
+        } catch (socketErr) {
+          console.warn('[chat-ui] socket send failed, fallback to REST', socketErr);
           const { data } = await chatApi.sendMessage(trimmed);
           appendMessage((data.message ?? {}) as unknown as Record<string, unknown>);
         }
       } catch (err: unknown) {
         console.error('[chat-ui] send failed', err);
-        setError(err instanceof Error ? err.message : 'Не удалось отправить сообщение');
+        const axiosErr = err as { message?: string; code?: string };
+        const msg =
+          axiosErr.code === 'ERR_NETWORK' || axiosErr.message === 'Network Error'
+            ? 'Сервер недоступен. Сообщение не отправлено — попробуйте через несколько секунд.'
+            : err instanceof Error
+              ? err.message
+              : 'Не удалось отправить сообщение';
+        setError(msg);
       } finally {
         setSending(false);
       }

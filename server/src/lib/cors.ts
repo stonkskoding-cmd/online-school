@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 
-const EXPLICIT_ORIGINS = [
+export const CORS_ORIGINS = [
   'https://online-school-frontend-ryc0.onrender.com',
   'https://online-school-1-zj77.onrender.com',
   'http://localhost:3000',
@@ -8,6 +8,8 @@ const EXPLICIT_ORIGINS = [
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
 ];
+
+const EXPLICIT_ORIGINS = CORS_ORIGINS;
 
 /** Любой Render static site / web service на *.onrender.com */
 const ONRENDER_ORIGIN = /^https:\/\/[\w-]+\.onrender\.com$/i;
@@ -22,7 +24,7 @@ export function getAllowedOrigins(): string[] {
   const fromEnv = [
     process.env.FRONTEND_URL,
     process.env.CLIENT_URL,
-    ...EXPLICIT_ORIGINS,
+    ...CORS_ORIGINS,
   ]
     .filter((v): v is string => Boolean(v))
     .map(normalizeOrigin);
@@ -57,7 +59,7 @@ export function handleHttpPreflight(
   const allowOrigin =
     typeof resolved === 'string'
       ? resolved
-      : getAllowedOrigins()[0] || EXPLICIT_ORIGINS[0];
+      : getAllowedOrigins()[0] || CORS_ORIGINS[0];
 
   res.setHeader('Access-Control-Allow-Origin', allowOrigin);
   res.setHeader('Access-Control-Allow-Credentials', 'true');

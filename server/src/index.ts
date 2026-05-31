@@ -3,24 +3,19 @@ import path from 'path';
 import express from 'express';
 import app from './app';
 import { connectDB } from './config/db';
-import { CORS_BUILD_ID, handleHttpPreflight } from './lib/cors';
+import { CORS_BUILD_ID } from './lib/cors';
 import { initSocket, shutdownSocket } from './socket';
 
 /** Локальные uploads только если файлы не на Cloudinary */
 const uploadsPath = path.join(__dirname, '../uploads');
 app.use('/uploads', express.static(uploadsPath));
 
-const server = http.createServer((req, res) => {
-  console.log(
-    `[RAW] ${req.method} ${req.url} | Origin: ${req.headers.origin ?? 'none'}`,
-  );
-
-  if (handleHttpPreflight(req, res)) {
-    return;
-  }
-
-  app(req, res);
-});
+/**
+ * Важно: передаём Express app напрямую в createServer.
+ * Обёртка (req, res) => app(req, res) ломала Socket.io — запросы /socket.io
+ * уходили в Express и возвращали 404/503 вместо upgrade.
+ */
+const server = http.createServer(app);
 
 console.log('🚀 INDEX LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 

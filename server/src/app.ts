@@ -1,58 +1,53 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-// import helmet from 'helmet';
-// import rateLimit from 'express-rate-limit';
 
 import apiRouter from './routes';
-import { CORS_BUILD_ID, getAllowedOrigins, isOriginAllowed, resolveCorsOrigin } from './lib/cors';
+import { CORS_BUILD_ID, CORS_ORIGINS, getAllowedOrigins, isOriginAllowed } from './lib/cors';
 
 console.log('🚀 APP LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 console.log('🧪 ALLOWED ORIGINS:', getAllowedOrigins());
 
+const app = express();
+
+app.set('trust proxy', 1);
+
+/** CORS: явный whitelist + любой *.onrender.com */
 const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
-    const resolved = resolveCorsOrigin(origin);
-    if (resolved === false) {
-      console.warn(`[CORS] blocked origin: ${origin}`);
-      callback(new Error(`CORS blocked: ${origin}`));
+    if (!origin || isOriginAllowed(origin)) {
+      callback(null, origin ?? true);
       return;
     }
-    callback(null, resolved);
+    console.warn(`[CORS] blocked origin: ${origin}`);
+    callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200,
+  optionsSuccessStatus: 204,
   preflightContinue: false,
 };
 
-const app = express();
-
-// Лог каждого запроса (видно OPTIONS в Render)
 app.use((req, _res, next) => {
   console.log(`[REQUEST] ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// Официальный cors — ПЕРВЫМ
 app.use(cors(corsOptions));
 
-// Явная обработка OPTIONS (.* — все пути, включая /api/auth/login)
-app.options(/.*/, cors(corsOptions), (req, res) => {
-  console.log('✅ OPTIONS handled for', req.path);
-  res.sendStatus(200);
-});
+/** Дублируем whitelist для preflight (Render иногда шлёт OPTIONS до Express router) */
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.get('/health', (_req, res) => {
-  res.json({ ok: true, build: CORS_BUILD_ID, ts: Date.now() });
+  res.json({ ok: true, build: CORS_BUILD_ID, origins: CORS_ORIGINS, ts: Date.now() });
 });
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, build: CORS_BUILD_ID, ts: Date.now() });
+  res.json({ ok: true, build: CORS_BUILD_ID, origins: CORS_ORIGINS, ts: Date.now() });
 });
 
 app.use('/api', apiRouter);
@@ -62,10 +57,17 @@ app.use((_req, res) => {
 });
 
 app.use((err: Error & { status?: number }, req: Request, res: Response, _next: NextFunction) => {
-  cors(corsOptions)(req, res, () => {
-    console.error('❌ Error:', err.message);
+  const origin = req.headers.origin;
+  if (origin && isOriginAllowed(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  }
+  console.error('❌ Error:', err.message);
+  if (!res.headersSent) {
     res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
-  });
+  }
 });
 
 export default app;
+

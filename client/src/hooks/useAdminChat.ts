@@ -16,6 +16,23 @@ function normalizeMessage(raw: Record<string, unknown>): ChatMessageItem {
 const SOCKET_BASE =
   import.meta.env.VITE_SOCKET_URL || 'https://online-school-backend-mqn9.onrender.com';
 
+const SOCKET_EMIT_TIMEOUT_MS = 8000;
+
+function emitWithAck<T>(
+  socket: Socket,
+  event: string,
+  payload: unknown,
+  timeoutMs = SOCKET_EMIT_TIMEOUT_MS,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error('Socket timeout')), timeoutMs);
+    socket.emit(event, payload, (response: T) => {
+      window.clearTimeout(timer);
+      resolve(response);
+    });
+  });
+}
+
 export interface AdminChatThread {
   userId: string;
   email: string;
@@ -95,9 +112,11 @@ export function useAdminChat(selectedUserId: string | null) {
     const socket = io(`${SOCKET_BASE}/support`, {
       path: '/socket.io',
       auth: { token },
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
+      withCredentials: false,
       reconnection: true,
       reconnectionDelay: 1000,
+      timeout: 20000,
     });
 
     socketRef.current = socket;
@@ -110,6 +129,11 @@ export function useAdminChat(selectedUserId: string | null) {
     });
 
     socket.io.on('reconnect_attempt', () => setIsReconnecting(true));
+
+    socket.on('connect_error', (err) => {
+      console.warn('[admin-chat] socket connect_error', err.message);
+      setIsConnected(false);
+    });
 
     socket.on('disconnect', () => setIsConnected(false));
 
@@ -154,23 +178,30 @@ export function useAdminChat(selectedUserId: string | null) {
 
       try {
         if (socket?.connected) {
-          await new Promise<void>((resolve, reject) => {
-            socket.emit(
-              'admin:message',
-              { userId: selectedUserId, content: trimmed, text: trimmed },
-              (response: { success: boolean; message?: Record<string, unknown>; error?: string }) => {
-                if (response?.success && response.message) {
-                  const item = normalizeMessage(response.message);
-                  setMessages((prev) =>
-                    prev.some((m) => m.id === item.id) ? prev : [...prev, item],
-                  );
-                  resolve();
-                } else {
-                  reject(new Error(response?.error || 'Ошибка отправки'));
-                }
-              },
-            );
-          });
+          try {
+            const response = await emitWithAck<{
+              success: boolean;
+              message?: Record<string, unknown>;
+              error?: string;
+            }>(socket, 'admin:message', {
+              userId: selectedUserId,
+              content: trimmed,
+              text: trimmed,
+            });
+
+            if (response?.success && response.message) {
+              const item = normalizeMessage(response.message);
+              setMessages((prev) =>
+                prev.some((m) => m.id === item.id) ? prev : [...prev, item],
+              );
+            } else {
+              throw new Error(response?.error || 'Ошибка отправки');
+            }
+          } catch (socketErr) {
+            console.warn('[admin-chat] socket send failed, fallback to REST', socketErr);
+            await adminApiClient.postAdminChatMessage({ userId: selectedUserId, content: trimmed });
+            await loadHistory(selectedUserId);
+          }
         } else {
           await adminApiClient.postAdminChatMessage({ userId: selectedUserId, content: trimmed });
           await loadHistory(selectedUserId);

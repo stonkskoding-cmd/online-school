@@ -94,7 +94,7 @@ export const chatApi = {
   getHistory: (userId) => api.get(`/chat/history/${userId}`),
   getUnreadCount: () => api.get('/chat/unread-count'),
   markRead: (userId) => api.post(`/chat/mark-read/${userId}`),
-  sendMessage: (text) => api.post('/chat/messages', { text }),
+  sendMessage: (text) => api.post('/chat/messages', { text, content: text }),
 };
 
 export default api;

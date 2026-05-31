@@ -54,14 +54,22 @@ export function initSocket(httpServer: http.Server): Server {
   const io = new Server(httpServer, {
     cors: {
       origin: (origin, callback) => {
-        if (isOriginAllowed(origin)) callback(null, true);
-        else callback(new Error(`CORS blocked: ${origin}`));
+        if (!origin || isOriginAllowed(origin)) {
+          callback(null, origin ?? true);
+        } else {
+          console.warn('[socket] CORS blocked origin:', origin);
+          callback(null, false);
+        }
       },
       credentials: true,
+      methods: ['GET', 'POST', 'OPTIONS'],
     },
     transports: ['websocket', 'polling'],
-    pingTimeout: 20000,
+    allowUpgrades: true,
+    pingTimeout: 60000,
     pingInterval: 25000,
+    connectTimeout: 45000,
+    path: '/socket.io',
   });
 
   io.use(async (socket, next) => {
