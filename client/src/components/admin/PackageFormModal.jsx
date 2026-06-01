@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import FileUploadZone from './FileUploadZone';
 import PackageMaterialsEditor from './PackageMaterialsEditor';
+import CoverUploadField from './CoverUploadField';
 
 const CATEGORY_OPTIONS = [
   { value: 'OGE-IST', label: 'ОГЭ История' },
@@ -266,41 +266,15 @@ export default function PackageFormModal({
                   </div>
 
                   <div>
-                    <FileUploadZone
+                    <CoverUploadField
                       id="package-cover-upload"
-                      label="Обложка"
-                      hint="По желанию. Изображение для карточки в каталоге."
-                      accept="image/*,.pdf,.doc,.docx,.zip"
-                      disabled={saving || coverUploading}
+                      coverUrl={coverUrl}
+                      setCoverUrl={setCoverUrl}
+                      onFile={onCoverFile}
+                      disabled={saving}
                       uploading={coverUploading}
                       progress={coverUploadProgress}
-                      onFile={onCoverFile}
                     />
-                    {coverUrl ? (
-                      <div className="mt-3 flex flex-wrap items-start gap-3 rounded-xl border border-gray-200 bg-white p-3">
-                        <img
-                          src={coverUrl}
-                          alt=""
-                          className="h-24 max-w-[35%] rounded-lg border border-gray-200 object-contain"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <a href={coverUrl} target="_blank" rel="noreferrer" className="break-all text-xs text-[#244E77] underline">
-                            Открыть файл
-                          </a>
-                          <button
-                            type="button"
-                            disabled={saving}
-                            onClick={() => setCoverUrl('')}
-                            className="mt-2 block text-xs font-semibold text-red-600 hover:underline disabled:opacity-50"
-                          >
-                            Убрать обложку
-                          </button>
-                        </div>
-                      </div>
-                    ) : null}
                   </div>
                 </div>
               </section>
