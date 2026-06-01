@@ -1,5 +1,7 @@
 import { Router, Response } from 'express';
-import { auth, admin, AuthRequest } from '../middleware/auth';
+import { verifyToken, admin, AuthRequest } from '../middleware/auth';
+
+const auth = verifyToken;
 import { prisma } from '../lib/prisma';
 import { emitNewMessage } from '../socket';
 import { chatIdFromUserId, serializeMessage } from '../lib/chatHelpers';
@@ -48,12 +50,24 @@ function safeEmit(userId: string, message: ReturnType<typeof serializeMessage>) 
   }
 }
 
+/** Проверка req.user после verifyToken */
+function assertChatUser(req: AuthRequest, res: Response): boolean {
+  console.log('[CHAT] req.user:', req.user);
+  if (!req.user?.id) {
+    console.error('[CHAT] No user id in token!');
+    res.status(401).json({ error: 'User not authenticated', message: 'User not authenticated' });
+    return false;
+  }
+  return true;
+}
+
 // ——— Статические маршруты (до /:chatId/...) ———
 
 router.get('/my', auth, async (req: AuthRequest, res) => {
   try {
+    if (!assertChatUser(req, res)) return;
     const userId = req.user!.id;
-    console.log('Getting chat for user:', userId);
+    console.log('[CHAT] Getting chat for user:', userId);
     const count = await prisma.message.count({ where: { userId } });
     res.json({
       chatId: chatIdFromUserId(userId),
@@ -92,8 +106,9 @@ function requireClientUser(req: AuthRequest, res: Response): string | null {
 
 router.get('/messages', auth, async (req: AuthRequest, res) => {
   try {
+    if (!assertChatUser(req, res)) return;
     const queryUserId = req.query.userId as string | undefined;
-    console.log('Getting messages for user:', req.user!.id, 'queryUserId:', queryUserId ?? 'none');
+    console.log('[CHAT] Getting messages for user:', req.user!.id, 'queryUserId:', queryUserId ?? 'none');
 
     if (queryUserId && req.user?.role !== 'admin') {
       res.status(403).json({ message: 'Access denied' });
@@ -115,10 +130,11 @@ router.get('/messages', auth, async (req: AuthRequest, res) => {
 
 router.post('/messages', auth, async (req: AuthRequest, res) => {
   try {
+    if (!assertChatUser(req, res)) return;
     const userId = requireClientUser(req, res);
     if (!userId) return;
     const text = String(req.body.text ?? req.body.content ?? '').trim();
-    console.log('POST /messages from user:', userId, 'len:', text.length);
+    console.log('[CHAT] POST /messages from user:', userId, 'len:', text.length);
 
     if (!text) {
       res.status(400).json({ message: 'Message text is required' });

@@ -5,6 +5,8 @@ import { env } from '../config/env';
 export interface AdminJwtPayload {
   role?: string;
   userId?: string;
+  id?: string;
+  sub?: string;
 }
 
 function extractBearerToken(req: Request): string | undefined {

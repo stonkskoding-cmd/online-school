@@ -53,14 +53,22 @@ export function initSocket(httpServer: http.Server): Server {
       const token = socket.handshake.auth.token as string | undefined;
       if (!token) return next(new Error('Authentication error'));
 
-      const decoded = jwt.verify(token, env.JWT_SECRET) as { userId?: string; role?: string };
+      const decoded = jwt.verify(token, env.JWT_SECRET) as {
+        userId?: string;
+        id?: string;
+        sub?: string;
+        role?: string;
+      };
       if (decoded.role === 'admin') {
         socket.data.user = { userId: 'admin', isAdmin: true } satisfies SocketUser;
         console.log('[socket] admin auth ok');
         return next();
       }
-      if (!decoded.userId) return next(new Error('Authentication error'));
-      socket.data.user = { userId: decoded.userId, isAdmin: false } satisfies SocketUser;
+      const socketUserId = decoded.userId ?? decoded.id ?? decoded.sub;
+      if (!socketUserId || !String(socketUserId).trim()) {
+        return next(new Error('Authentication error'));
+      }
+      socket.data.user = { userId: String(socketUserId).trim(), isAdmin: false } satisfies SocketUser;
       next();
     } catch (error) {
       console.error('[socket] auth failed', error);

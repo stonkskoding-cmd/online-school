@@ -68,7 +68,11 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
       data: { email, password: hashedPassword },
     });
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(
+      { userId: user.id, id: user.id, email: user.email, role: user.role },
+      env.JWT_SECRET,
+      { expiresIn: '7d' },
+    );
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -130,7 +134,11 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
     }
 
     const role = user.role === 'admin' ? 'admin' : 'user';
-    const token = jwt.sign({ userId: user.id, role: user.role }, env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(
+      { userId: user.id, id: user.id, email: user.email, role: user.role },
+      env.JWT_SECRET,
+      { expiresIn: '7d' },
+    );
 
     res.json({
       message: 'Login successful',
