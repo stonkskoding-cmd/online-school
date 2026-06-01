@@ -58,7 +58,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-router.get('/id/:id', auth, async (req: AuthRequest, res) => {
+router.get('/id/:id', async (req, res) => {
   try {
     const { id } = req.params;
     console.log('[packages] GET /id/:id', id);

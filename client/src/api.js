@@ -47,8 +47,15 @@ adminApi.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       console.error('[admin-api] Auth failed:', error.response?.status, error.response?.data?.message);
       clearAdminSession();
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/admin-login')) {
-        window.location.href = '/admin-login';
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        const onAdminArea =
+          path.startsWith('/admin') &&
+          !path.startsWith('/admin/login') &&
+          path !== '/admin-login';
+        if (onAdminArea) {
+          window.location.href = '/admin/login';
+        }
       }
     }
     return Promise.reject(error);

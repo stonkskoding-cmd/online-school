@@ -5,7 +5,7 @@ export default function PrivateAdminRoute({ children }) {
   const location = useLocation();
 
   if (!canAccessAdminRoute()) {
-    return <Navigate to="/admin-login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />;
   }
 
   return children;
