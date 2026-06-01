@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma';
 import { emitNewMessage } from '../socket';
 import { chatIdFromUserId, serializeMessage } from '../lib/chatHelpers';
 import { isUuid, respondChatError } from '../lib/chatRouteUtils';
+import { checkMessagesTable } from '../lib/chatDb';
 
 const router = Router();
 
@@ -13,16 +14,21 @@ router.use((req, _res, next) => {
 });
 
 async function fetchMessagesForUser(targetUserId: string, take = 100) {
+  console.log('[CHAT] fetchMessagesForUser userId:', targetUserId, 'take:', take);
+
   if (!isUuid(targetUserId)) {
-    console.warn('[chat] invalid userId for fetch:', targetUserId);
+    console.warn('[CHAT] invalid userId for fetch:', targetUserId);
     return [];
   }
+
   const rows = await prisma.message.findMany({
     where: { userId: targetUserId },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: 'asc' },
     take,
   });
-  return rows.reverse().map(serializeMessage);
+
+  console.log('[CHAT] Messages count:', rows.length);
+  return rows.map(serializeMessage);
 }
 
 async function createUserMessage(userId: string, text: string) {
@@ -60,6 +66,15 @@ function assertChatUser(req: AuthRequest, res: Response): boolean {
 }
 
 // ——— Статические маршруты (до /:chatId/...) ———
+
+router.get('/health', async (_req, res) => {
+  const table = await checkMessagesTable();
+  res.status(table.ok ? 200 : 503).json({
+    ok: table.ok,
+    table: 'messages',
+    error: table.error,
+  });
+});
 
 router.get('/my', attachUser, async (req: AuthRequest, res) => {
   try {
@@ -119,8 +134,17 @@ function resolveClientChatUserId(req: AuthRequest, res: Response): string | null
 
 router.get('/messages', attachUser, async (req: AuthRequest, res) => {
   try {
+    console.log('[CHAT] GET /messages — User:', req.user);
+
+    const userId = req.user?.id;
+    if (!userId) {
+      console.error('[CHAT] No user ID');
+      res.status(401).json({ error: 'No user ID', message: 'Войдите в аккаунт' });
+      return;
+    }
+
     const queryUserId = req.query.userId as string | undefined;
-    console.log('[CHAT] GET /messages queryUserId:', queryUserId ?? 'none');
+    console.log('[CHAT] queryUserId:', queryUserId ?? 'none');
 
     if (queryUserId && req.user?.role !== 'admin') {
       res.status(403).json({ message: 'Access denied' });
@@ -133,7 +157,18 @@ router.get('/messages', attachUser, async (req: AuthRequest, res) => {
       if (!clientId) return;
       targetUserId = clientId;
     }
-    const messages = await fetchMessagesForUser(targetUserId, 100);
+
+    const table = await checkMessagesTable();
+    if (!table.ok) {
+      res.status(503).json({
+        message: 'Таблица messages не создана. Выполните prisma migrate deploy.',
+        error: table.error,
+      });
+      return;
+    }
+
+    const messages = await fetchMessagesForUser(targetUserId, 50);
+    console.log('[CHAT] Returning', messages.length, 'messages for', targetUserId);
     res.json({ chatId: chatIdFromUserId(targetUserId), messages });
   } catch (error) {
     respondChatError(res, 'GET /messages failed', error);
@@ -142,6 +177,7 @@ router.get('/messages', attachUser, async (req: AuthRequest, res) => {
 
 router.post('/messages', attachUser, async (req: AuthRequest, res) => {
   try {
+    console.log('[CHAT] POST /messages — User:', req.user);
     const userId = resolveClientChatUserId(req, res);
     if (!userId) return;
     const text = String(req.body.text ?? req.body.content ?? '').trim();
@@ -149,6 +185,15 @@ router.post('/messages', attachUser, async (req: AuthRequest, res) => {
 
     if (!text) {
       res.status(400).json({ message: 'Message text is required' });
+      return;
+    }
+
+    const table = await checkMessagesTable();
+    if (!table.ok) {
+      res.status(503).json({
+        message: 'Таблица messages не создана. Выполните prisma migrate deploy.',
+        error: table.error,
+      });
       return;
     }
 
