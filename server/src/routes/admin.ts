@@ -360,8 +360,13 @@ router.get('/chats', async (_req, res) => {
     res.json({ chats, totalUnread });
   } catch (error) {
     console.error('[admin] GET /chats failed', error);
+    const err = error as { code?: string; message?: string };
+    if (err.code === 'P2021') {
+      res.status(503).json({ message: 'Таблица messages не найдена. Запустите prisma migrate deploy.' });
+      return;
+    }
     const message = error instanceof Error ? error.message : 'Internal server error';
-    res.status(500).json({ message });
+    res.status(500).json({ message, error: err.message });
   }
 });
 

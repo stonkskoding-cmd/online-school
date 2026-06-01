@@ -16,7 +16,27 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction):
       return;
     }
 
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as {
+      userId?: string;
+      role?: string;
+    };
+
+    // JWT админа (dinastia_admin) без userId в БД
+    if (decoded.role === 'admin' && !decoded.userId) {
+      req.user = {
+        id: 'admin',
+        email: 'admin',
+        role: 'admin',
+      };
+      next();
+      return;
+    }
+
+    if (!decoded.userId || !decoded.userId.trim()) {
+      res.status(401).json({ message: 'Invalid token.' });
+      return;
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
@@ -38,6 +58,7 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction):
     };
     next();
   } catch (error) {
+    console.error('[auth] token verification failed', error);
     res.status(401).json({ message: 'Invalid token.' });
   }
 };

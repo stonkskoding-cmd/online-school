@@ -62,9 +62,16 @@ export function useChat(isOpen: boolean) {
     } catch (err: unknown) {
       console.error('[chat-ui] poll failed', err);
       if (isOpenRef.current) {
-        const axiosErr = err as { code?: string; message?: string };
+        const axiosErr = err as {
+          code?: string;
+          response?: { status?: number; data?: { message?: string } };
+        };
         if (axiosErr.code === 'ERR_NETWORK') {
           setError('Сервер недоступен. Повтор через несколько секунд…');
+        } else if (axiosErr.response?.status === 403) {
+          setError(axiosErr.response.data?.message ?? 'Войдите как пользователь');
+        } else if (axiosErr.response?.status === 503) {
+          setError('Чат временно недоступен. Обновите страницу позже.');
         }
       }
     }
@@ -100,7 +107,8 @@ export function useChat(isOpen: boolean) {
         setMessages((prev) => mergeMessages(prev, [item]));
       } catch (err: unknown) {
         console.error('[chat-ui] send failed', err);
-        setError('Не удалось отправить сообщение');
+        const axiosErr = err as { response?: { data?: { message?: string } } };
+        setError(axiosErr.response?.data?.message ?? 'Не удалось отправить сообщение');
       } finally {
         setSending(false);
       }
