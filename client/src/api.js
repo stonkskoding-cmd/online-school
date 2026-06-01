@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getAdminBearerToken, clearAdminSession } from './utils/adminAuth';
+import { getBearerToken } from './utils/authToken';
 
 const apiBaseURL =
   import.meta.env.VITE_API_URL || 'https://online-school-backend-mqn9.onrender.com/api';
@@ -9,35 +10,11 @@ const api = axios.create({
   withCredentials: false,
 });
 
-/** Токен обычного пользователя (не dinastia_admin) — для чата и покупок */
-function getStoredUser() {
-  try {
-    const raw = localStorage.getItem('user');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function getUserBearerToken() {
-  const token = localStorage.getItem('token')?.trim();
-  if (!token) return null;
-  const user = getStoredUser();
-  if (user?.role === 'admin' && !user?.id) {
-    return null;
-  }
-  return token;
-}
-
 api.interceptors.request.use((config) => {
-  const url = String(config.url || '');
-  const isChat = url.includes('/chat');
-  const token = isChat ? getUserBearerToken() : localStorage.getItem('token')?.trim();
+  const token = getBearerToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log('[api] Authorization Bearer set:', config.method?.toUpperCase(), url);
-  } else if (isChat) {
-    console.warn('[api] Chat request without user token — login required');
+    console.log('[api] Authorization Bearer set:', config.method?.toUpperCase(), config.url ?? '');
   }
   return config;
 });

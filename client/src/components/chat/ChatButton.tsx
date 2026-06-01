@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useChat } from '../../hooks/useChat';
+import { getBearerToken } from '../../utils/authToken';
 import ChatWindow from './ChatWindow';
 
 export default function ChatButton() {
@@ -12,6 +13,11 @@ export default function ChatButton() {
     window.addEventListener('open-support-chat', openChat);
     return () => window.removeEventListener('open-support-chat', openChat);
   }, []);
+
+  useEffect(() => {
+    const token = getBearerToken();
+    console.log('[CHAT] ChatButton token:', token ? 'Present' : 'Missing');
+  }, [isOpen]);
 
   const {
     messages,

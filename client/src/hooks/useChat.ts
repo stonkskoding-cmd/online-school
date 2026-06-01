@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { chatApi, type ApiChatMessage } from '../api';
+import { canUseSupportChat, getBearerToken } from '../utils/authToken';
 
 export interface ChatMessageItem {
   id: string;
@@ -41,11 +42,17 @@ export function useChat(isOpen: boolean) {
     isOpenRef.current = isOpen;
   }, [isOpen]);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token')?.trim() : null;
-  const isAuthenticated = Boolean(token);
+  const token = typeof window !== 'undefined' ? getBearerToken() : null;
+  const chatReady = typeof window !== 'undefined' ? canUseSupportChat() : false;
+  const isAuthenticated = chatReady;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    console.log('[CHAT] Token:', token ? 'Present' : 'Missing', '| chatReady:', chatReady);
+  }, [token, chatReady]);
 
   const loadMessages = useCallback(async () => {
-    if (!token) return;
+    if (!chatReady) return;
     try {
       const { data } = await chatApi.getMessages();
       const list = (data.messages ?? []).map((m: ApiChatMessage) =>
@@ -68,6 +75,8 @@ export function useChat(isOpen: boolean) {
         };
         if (axiosErr.code === 'ERR_NETWORK') {
           setError('Сервер недоступен. Повтор через несколько секунд…');
+        } else if (axiosErr.response?.status === 401) {
+          setError(axiosErr.response.data?.message ?? 'Войдите в аккаунт для чата');
         } else if (axiosErr.response?.status === 403) {
           setError(axiosErr.response.data?.message ?? 'Войдите как пользователь');
         } else if (axiosErr.response?.status === 503) {
@@ -75,10 +84,10 @@ export function useChat(isOpen: boolean) {
         }
       }
     }
-  }, [token]);
+  }, [chatReady]);
 
   useEffect(() => {
-    if (!token) return undefined;
+    if (!chatReady) return undefined;
 
     if (isOpen) {
       setLoading(true);
@@ -92,12 +101,12 @@ export function useChat(isOpen: boolean) {
     }, POLL_MS);
 
     return () => clearInterval(interval);
-  }, [token, isOpen, loadMessages]);
+  }, [chatReady, isOpen, loadMessages]);
 
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
-      if (!trimmed || !token) return;
+      if (!trimmed || !chatReady) return;
 
       setSending(true);
       setError(null);
@@ -113,7 +122,7 @@ export function useChat(isOpen: boolean) {
         setSending(false);
       }
     },
-    [token],
+    [chatReady],
   );
 
   return {

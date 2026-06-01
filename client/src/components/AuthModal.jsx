@@ -27,9 +27,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
 
   const finishUserSession = (data) => {
     localStorage.removeItem('adminToken');
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    onSuccess(data.user);
+    const token = data.token;
+    const user = data.user ?? { email: data.email, role: data.role ?? 'user', id: data.id };
+    if (token) {
+      localStorage.setItem('token', token);
+      console.log('[auth] token saved, len:', token.length);
+    }
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+    onSuccess(user);
     onClose();
   };
 
