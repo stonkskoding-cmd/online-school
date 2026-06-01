@@ -7,21 +7,33 @@ import { CORS_BUILD_ID } from './lib/cors';
 import { initSocket, shutdownSocket } from './socket';
 import { uploadsDir } from './middleware/upload';
 
-fs.mkdirSync(uploadsDir, { recursive: true });
+const PORT = Number(process.env.PORT) || 3000;
 
-app.use('/uploads', express.static(uploadsDir));
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason, promise);
+});
 
-const server = http.createServer(app);
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
 
 console.log('🚀 INDEX LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 
+const server = http.createServer(app);
 initSocket(server);
 
-const PORT = Number(process.env.PORT) || 3000;
-
-/** Сначала порт — Render перестаёт отдавать 503; БД подключаем асинхронно */
+/** Сразу открываем порт для Render; тяжёлое — после listen */
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server and Socket.io running on port ${PORT}`);
+  console.log('Server started on port', PORT);
+
+  try {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    app.use('/uploads', express.static(uploadsDir));
+  } catch (err) {
+    console.error('[server] uploads setup failed:', err);
+  }
+
   void connectDBWithRetry();
 });
 
@@ -34,13 +46,5 @@ function gracefulShutdown(signal: string) {
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-process.on('uncaughtException', (err) => {
-  console.error('[server] uncaughtException:', err);
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error('[server] unhandledRejection:', reason);
-});
 
 export { server };
