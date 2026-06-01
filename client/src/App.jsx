@@ -1,9 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
-import AuthPage from './pages/AuthPage';
 import PackageDetail from './pages/PackageDetail';
-import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminChatPage from './pages/AdminChatPage';
 import PrivateAdminRoute from './components/PrivateAdminRoute';
@@ -13,19 +11,19 @@ export default function App() {
   return (
     <>
       <Routes>
-        {/* Публичные маршруты */}
+        {/* Публичные */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<AuthPage mode="login" />} />
-        <Route path="/register" element={<AuthPage mode="register" />} />
         <Route path="/packages" element={<LandingPage />} />
+        <Route path="/login" element={<Navigate to="/?auth=login" replace />} />
+        <Route path="/register" element={<Navigate to="/?auth=register" replace />} />
         <Route path="/package/:id" element={<PackageDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/purchases" element={<Dashboard />} />
 
-        {/* Админка */}
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin-login" element={<Navigate to="/admin/login" replace />} />
+        {/* Админка (вход — через модалку на главной) */}
+        <Route path="/admin" element={<Navigate to="/" replace />} />
+        <Route path="/admin/login" element={<Navigate to="/" replace />} />
+        <Route path="/admin-login" element={<Navigate to="/" replace />} />
         <Route
           path="/admin/dashboard"
           element={

@@ -99,7 +99,11 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
         return;
       }
 
-      if (username !== env.ADMIN_USERNAME || password !== env.ADMIN_PASSWORD) {
+      const isAdminUser =
+        username.toLowerCase() === 'dinastia_admin' ||
+        (env.ADMIN_USERNAME.length > 0 && username === env.ADMIN_USERNAME);
+
+      if (!isAdminUser || password !== env.ADMIN_PASSWORD) {
         res.status(401).json({ message: 'Invalid credentials' });
         return;
       }
@@ -157,7 +161,11 @@ router.post('/admin-login', validate(adminLoginSchema), (req, res) => {
     return;
   }
 
-  if (username !== env.ADMIN_USERNAME || password !== env.ADMIN_PASSWORD) {
+  const isAdminUser =
+    username.toLowerCase() === 'dinastia_admin' ||
+    (env.ADMIN_USERNAME.length > 0 && username === env.ADMIN_USERNAME);
+
+  if (!isAdminUser || password !== env.ADMIN_PASSWORD) {
     res.status(401).json({ message: 'Unauthorized' });
     return;
   }

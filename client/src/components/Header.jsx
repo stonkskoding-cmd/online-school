@@ -109,7 +109,7 @@ function MobileProfileMenuItems({ isAdmin, onClose, onLogout }) {
   );
 }
 
-export default function Header({ user, onAuthSuccess, forceOpenAuth = 0 }) {
+export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'login' }) {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -236,6 +236,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0 }) {
                 type="button"
                 onClick={openAuth}
                 className="hover:scale-105 transition-transform duration-200 focus:outline-none"
+                aria-label="Профиль — войти"
               >
                 <img src="/btn-profile.png" alt="Профиль" className="h-24 w-auto md:h-28" />
               </button>
@@ -291,6 +292,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0 }) {
 
       <AuthModal
         isOpen={isAuthOpen}
+        initialMode={authInitialMode}
         onClose={() => setIsAuthOpen(false)}
         onSuccess={onAuthSuccess}
       />

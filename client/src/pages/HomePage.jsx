@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { packagesApi } from '../api';
 import Header from '../components/Header';
 import PackageCard from '../components/PackageCard';
+import { resolveCurrentUser } from '../utils/session';
 
 const categories = [
   { label: 'Все', value: '' },
@@ -32,11 +33,20 @@ export default function HomePage() {
   };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem('user');
-    return raw ? JSON.parse(raw) : null;
-  });
+  const [user, setUser] = useState(() => resolveCurrentUser());
   const [authModalTrigger, setAuthModalTrigger] = useState(0);
+  const [authModalMode, setAuthModalMode] = useState('login');
+
+  useEffect(() => {
+    const auth = searchParams.get('auth');
+    if (auth === 'login' || auth === 'register') {
+      setAuthModalMode(auth);
+      setAuthModalTrigger((n) => n + 1);
+      const next = new URLSearchParams(searchParams);
+      next.delete('auth');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     const raw = searchParams.get('category') ?? '';
@@ -75,7 +85,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header user={user} onAuthSuccess={setUser} forceOpenAuth={authModalTrigger} />
+      <Header
+        user={user}
+        onAuthSuccess={setUser}
+        forceOpenAuth={authModalTrigger}
+        authInitialMode={authModalMode}
+      />
 
       <section className="relative w-screen min-h-screen overflow-hidden">
         <img

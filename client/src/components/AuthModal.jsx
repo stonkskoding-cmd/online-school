@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
+import { ADMIN_LOGIN_USERNAME, isAdminUsername } from '../utils/session';
+
+const ADMIN_USER = { role: 'admin', email: ADMIN_LOGIN_USERNAME };
 
 export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }) {
-  const navigate = useNavigate();
   const [mode, setMode] = useState(initialMode);
   const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
@@ -17,6 +18,21 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
 
   if (!isOpen) return null;
 
+  const finishAdminSession = () => {
+    localStorage.setItem('adminToken', localStorage.getItem('token') || '');
+    localStorage.setItem('user', JSON.stringify(ADMIN_USER));
+    onSuccess(ADMIN_USER);
+    onClose();
+  };
+
+  const finishUserSession = (data) => {
+    localStorage.removeItem('adminToken');
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    onSuccess(data.user);
+    onClose();
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     setError('');
@@ -25,46 +41,41 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     try {
       if (mode === 'register') {
         const response = await authApi.register({ email, password });
-        localStorage.removeItem('adminToken');
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        onSuccess(response.data.user);
-        onClose();
-        navigate('/', { replace: true });
+        finishUserSession(response.data);
         return;
       }
 
       const trimmed = identifier.trim();
-      const payload =
-        trimmed.includes('@')
-          ? { email: trimmed, password }
-          : { username: trimmed, password };
+      const loginAsAdmin = isAdminUsername(trimmed);
 
-      const response = await authApi.login(payload);
-      const { data } = response;
-      const role = data.role ?? data.user?.role;
+      if (loginAsAdmin) {
+        const { data } = await authApi.login({
+          username: ADMIN_LOGIN_USERNAME,
+          password,
+        });
 
-      if (role === 'admin') {
-        localStorage.setItem('adminToken', data.token);
-        localStorage.setItem('token', data.token);
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-          onSuccess(data.user);
-        } else {
-          localStorage.removeItem('user');
-          onSuccess(null);
+        if (data.role !== 'admin' && data.user?.role !== 'admin') {
+          setError('Неверный логин или пароль администратора');
+          return;
         }
-        onClose();
-        navigate('/admin/dashboard', { replace: true });
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('adminToken', data.token);
+        finishAdminSession();
         return;
       }
 
-      localStorage.removeItem('adminToken');
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      onSuccess(data.user);
-      onClose();
-      navigate('/', { replace: true });
+      const { data } = await authApi.login({ email: trimmed, password });
+      const role = data.role ?? data.user?.role;
+
+      if (role === 'admin') {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('adminToken', data.token);
+        finishAdminSession();
+        return;
+      }
+
+      finishUserSession(data);
     } catch (requestError) {
       setError(requestError?.response?.data?.message || 'Ошибка авторизации');
     } finally {
@@ -119,20 +130,20 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
           {mode === 'login' ? (
             <div>
               <label htmlFor="auth-identifier" className="mb-1 block text-sm font-medium text-gray-700">
-                Email или Логин
+                Email или логин
               </label>
               <input
                 id="auth-identifier"
                 type="text"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="Например: test@mail.ru или dinastia_admin"
+                placeholder="email@mail.ru или dinastia_admin"
                 required
                 autoComplete="username"
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-primary"
               />
               <p className="mt-1.5 text-xs text-gray-500">
-                Для входа в админ-панель используйте специальный логин
+                Логин <strong>{ADMIN_LOGIN_USERNAME}</strong> — вход в панель управления
               </p>
             </div>
           ) : (
