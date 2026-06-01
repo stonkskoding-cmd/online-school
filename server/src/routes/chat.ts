@@ -1,7 +1,5 @@
 import { Router, Response } from 'express';
-import { verifyToken, admin, AuthRequest } from '../middleware/auth';
-
-const auth = verifyToken;
+import { attachUser, auth, admin, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 import { emitNewMessage } from '../socket';
 import { chatIdFromUserId, serializeMessage } from '../lib/chatHelpers';
@@ -63,7 +61,7 @@ function assertChatUser(req: AuthRequest, res: Response): boolean {
 
 // ——— Статические маршруты (до /:chatId/...) ———
 
-router.get('/my', auth, async (req: AuthRequest, res) => {
+router.get('/my', attachUser, async (req: AuthRequest, res) => {
   try {
     if (!assertChatUser(req, res)) return;
     const userId = req.user!.id;
@@ -90,25 +88,39 @@ router.get('/unread-count', auth, admin, async (_req, res) => {
   }
 });
 
-function requireClientUser(req: AuthRequest, res: Response): string | null {
-  if (req.user!.role === 'admin' && req.user!.id === 'admin') {
-    res.status(403).json({
-      message: 'Войдите как пользователь (не админ), чтобы открыть чат поддержки',
+/** UUID клиента для чата поддержки (не системный admin) */
+function resolveClientChatUserId(req: AuthRequest, res: Response): string | null {
+  console.log('[CHAT] Request user:', req.user);
+  console.log('[CHAT] Authorization header:', req.headers.authorization ? 'present' : 'missing');
+
+  if (!req.user?.id) {
+    res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Войдите в аккаунт, чтобы использовать чат поддержки',
     });
     return null;
   }
-  if (!isUuid(req.user!.id)) {
-    res.status(403).json({ message: 'Invalid user session' });
+
+  if (req.user.id === 'admin') {
+    res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Войдите как пользователь (email), не как администратор',
+    });
     return null;
   }
-  return req.user!.id;
+
+  if (!isUuid(req.user.id)) {
+    res.status(401).json({ error: 'Unauthorized', message: 'Invalid user session' });
+    return null;
+  }
+
+  return req.user.id;
 }
 
-router.get('/messages', auth, async (req: AuthRequest, res) => {
+router.get('/messages', attachUser, async (req: AuthRequest, res) => {
   try {
-    if (!assertChatUser(req, res)) return;
     const queryUserId = req.query.userId as string | undefined;
-    console.log('[CHAT] Getting messages for user:', req.user!.id, 'queryUserId:', queryUserId ?? 'none');
+    console.log('[CHAT] GET /messages queryUserId:', queryUserId ?? 'none');
 
     if (queryUserId && req.user?.role !== 'admin') {
       res.status(403).json({ message: 'Access denied' });
@@ -117,7 +129,7 @@ router.get('/messages', auth, async (req: AuthRequest, res) => {
 
     let targetUserId = queryUserId;
     if (!targetUserId) {
-      const clientId = requireClientUser(req, res);
+      const clientId = resolveClientChatUserId(req, res);
       if (!clientId) return;
       targetUserId = clientId;
     }
@@ -128,10 +140,9 @@ router.get('/messages', auth, async (req: AuthRequest, res) => {
   }
 });
 
-router.post('/messages', auth, async (req: AuthRequest, res) => {
+router.post('/messages', attachUser, async (req: AuthRequest, res) => {
   try {
-    if (!assertChatUser(req, res)) return;
-    const userId = requireClientUser(req, res);
+    const userId = resolveClientChatUserId(req, res);
     if (!userId) return;
     const text = String(req.body.text ?? req.body.content ?? '').trim();
     console.log('[CHAT] POST /messages from user:', userId, 'len:', text.length);

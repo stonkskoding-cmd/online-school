@@ -9,11 +9,35 @@ const api = axios.create({
   withCredentials: false,
 });
 
-api.interceptors.request.use((config) => {
+/** Токен обычного пользователя (не dinastia_admin) — для чата и покупок */
+function getStoredUser() {
+  try {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getUserBearerToken() {
   const token = localStorage.getItem('token')?.trim();
+  if (!token) return null;
+  const user = getStoredUser();
+  if (user?.role === 'admin' && !user?.id) {
+    return null;
+  }
+  return token;
+}
+
+api.interceptors.request.use((config) => {
+  const url = String(config.url || '');
+  const isChat = url.includes('/chat');
+  const token = isChat ? getUserBearerToken() : localStorage.getItem('token')?.trim();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log('[api] request with user token:', config.method?.toUpperCase(), config.url);
+    console.log('[api] Authorization Bearer set:', config.method?.toUpperCase(), url);
+  } else if (isChat) {
+    console.warn('[api] Chat request without user token — login required');
   }
   return config;
 });
