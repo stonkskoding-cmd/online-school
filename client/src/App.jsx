@@ -5,7 +5,7 @@ import PackageDetail from './pages/PackageDetail';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminChatPage from './pages/AdminChatPage';
 import PrivateAdminRoute from './components/PrivateAdminRoute';
-import ChatButton from './components/chat/ChatButton';
+import UserChat from './components/chat/UserChat';
 
 export default function App() {
   return (
@@ -51,7 +51,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <ChatButton />
+      <UserChat />
     </>
   );
 }

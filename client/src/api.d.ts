@@ -22,17 +22,23 @@ export interface AdminChatSummary {
 }
 
 export declare const chatApi: {
+  getMy: () => Promise<{ data: { chatId: string; userId: string } }>;
   getMessages: () => Promise<{ data: { messages: ApiChatMessage[] } }>;
+  getChatMessages: (chatId: string) => Promise<{ data: { messages: ApiChatMessage[] } }>;
   getHistory: (userId: string) => Promise<{ data: { messages: ApiChatMessage[] } }>;
   getUnreadCount: () => Promise<{ data: { count: number } }>;
-  markRead: (userId: string) => Promise<{ data: { ok: boolean } }>;
+  markRead: (chatId: string) => Promise<{ data: { ok: boolean } }>;
   sendMessage: (text: string) => Promise<{ data: { message: ApiChatMessage } }>;
+  sendToChat: (chatId: string, content: string) => Promise<{ data: { message: ApiChatMessage } }>;
+  clearChat: (chatId: string) => Promise<{ data: { ok: boolean } }>;
+  deleteChat: (chatId: string) => Promise<{ data: { ok: boolean } }>;
 };
 
 export declare const adminApiClient: {
   adminChats: () => Promise<{ data: { chats: AdminChatSummary[]; totalUnread: number } }>;
   adminChatThread: (userId: string) => Promise<{ data: { messages: ApiChatMessage[] } }>;
   postAdminChatMessage: (payload: { userId: string; content: string }) => Promise<{ data: { message: ApiChatMessage } }>;
+  deleteAdminChat: (userId: string) => Promise<{ data: { message: string } }>;
 };
 
 export declare const authApi: Record<string, unknown>;

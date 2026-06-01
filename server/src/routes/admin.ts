@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validation';
 import { prisma } from '../lib/prisma';
+import { chatIdFromUserId, serializeMessage } from '../lib/chatHelpers';
 import { emitNewMessage } from '../socket';
 import upload from '../middleware/upload';
 import { env } from '../config/env';
@@ -425,14 +426,7 @@ router.post('/message', validate(adminPostChatMessageSchema), async (req, res) =
       },
     });
 
-    emitNewMessage(userId, {
-      id: message.id,
-      userId: message.userId,
-      content: message.content,
-      isAdmin: message.isAdmin,
-      isRead: message.isRead,
-      createdAt: message.createdAt,
-    });
+    emitNewMessage(userId, serializeMessage(message));
 
     console.log('[admin] POST /message ok, id:', message.id);
     res.status(201).json({ message });
@@ -440,6 +434,17 @@ router.post('/message', validate(adminPostChatMessageSchema), async (req, res) =
     console.error('[admin] POST /message failed', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
     res.status(500).json({ message });
+  }
+});
+
+router.delete('/chats/:userId/clear', validate(adminChatUserIdSchema), async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const result = await prisma.message.deleteMany({ where: { userId } });
+    console.log('[admin] DELETE /chats/:userId/clear', userId, result.count);
+    res.json({ message: 'History cleared', deletedCount: result.count });
+  } catch (error) {
+    next(error);
   }
 });
 

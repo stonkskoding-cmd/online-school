@@ -65,9 +65,9 @@ export default function ChatWindow({
   return (
     <div
       ref={panelRef}
-      className="fixed z-[1001] flex max-h-[min(92dvh,92vh)] w-full max-w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-2xl
-        inset-3 max-sm:max-h-[min(90dvh,90vh)]
-        sm:inset-auto sm:bottom-[120px] sm:right-6 sm:h-[600px] sm:w-[450px] sm:max-w-[min(450px,calc(100vw-3rem))]"
+      className="fixed z-[1001] flex h-[min(500px,85dvh)] w-full max-w-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-2xl
+        inset-3
+        sm:inset-auto sm:bottom-4 sm:right-4 sm:h-[500px] sm:w-96 sm:max-w-[calc(100vw-2rem)]"
       role="dialog"
       aria-label="Чат поддержки"
     >

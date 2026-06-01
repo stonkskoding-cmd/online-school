@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { adminApiClient, type AdminChatSummary } from '../api';
+import { adminApiClient, chatApi, type AdminChatSummary } from '../api';
 import { getAdminBearerToken } from '../utils/adminAuth';
 import type { ChatMessageItem } from './useChat';
+
+const POLL_MS = 4000;
 
 function normalizeMessage(raw: Record<string, unknown>): ChatMessageItem {
   return {
@@ -11,26 +12,6 @@ function normalizeMessage(raw: Record<string, unknown>): ChatMessageItem {
     isFromAdmin: Boolean(raw.isAdmin ?? raw.isFromAdmin),
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
   };
-}
-
-const SOCKET_BASE =
-  import.meta.env.VITE_SOCKET_URL || 'https://online-school-backend-mqn9.onrender.com';
-
-const SOCKET_EMIT_TIMEOUT_MS = 8000;
-
-function emitWithAck<T>(
-  socket: Socket,
-  event: string,
-  payload: unknown,
-  timeoutMs = SOCKET_EMIT_TIMEOUT_MS,
-): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timer = window.setTimeout(() => reject(new Error('Socket timeout')), timeoutMs);
-    socket.emit(event, payload, (response: T) => {
-      window.clearTimeout(timer);
-      resolve(response);
-    });
-  });
 }
 
 export interface AdminChatThread {
@@ -49,20 +30,16 @@ export function useAdminChat(selectedUserId: string | null) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalUnread, setTotalUnread] = useState(0);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
-  const selectedUserIdRef = useRef(selectedUserId);
+  const selectedRef = useRef(selectedUserId);
 
   useEffect(() => {
-    selectedUserIdRef.current = selectedUserId;
+    selectedRef.current = selectedUserId;
   }, [selectedUserId]);
 
   const token = getAdminBearerToken();
 
   const loadThreads = useCallback(async () => {
     if (!token) return;
-    setLoadingThreads(true);
     try {
       const { data } = await adminApiClient.adminChats();
       const list = (data.chats ?? []).map((c: AdminChatSummary) => ({
@@ -77,28 +54,24 @@ export function useAdminChat(selectedUserId: string | null) {
     } catch (err) {
       console.error('[admin-chat] load threads failed', err);
       setError('Не удалось загрузить диалоги');
-    } finally {
-      setLoadingThreads(false);
     }
   }, [token]);
 
   const loadHistory = useCallback(
-    async (userId: string) => {
+    async (userId: string, silent = false) => {
       if (!token) return;
-      setLoadingMessages(true);
-      setError(null);
+      if (!silent) setLoadingMessages(true);
       try {
         const { data } = await adminApiClient.adminChatThread(userId);
         const list = (data.messages ?? []).map((m) =>
           normalizeMessage(m as unknown as Record<string, unknown>),
         );
-        setMessages(list);
-        socketRef.current?.emit('mark_read', { userId });
+        if (selectedRef.current === userId) setMessages(list);
       } catch (err) {
         console.error('[admin-chat] load history failed', err);
-        setError('Не удалось загрузить сообщения');
+        if (!silent) setError('Не удалось загрузить сообщения');
       } finally {
-        setLoadingMessages(false);
+        if (!silent) setLoadingMessages(false);
       }
     },
     [token],
@@ -106,62 +79,23 @@ export function useAdminChat(selectedUserId: string | null) {
 
   useEffect(() => {
     if (!token) return undefined;
+    setLoadingThreads(true);
+    void loadThreads().finally(() => setLoadingThreads(false));
 
-    loadThreads();
-
-    const socket = io(`${SOCKET_BASE}/support`, {
-      path: '/socket.io',
-      auth: { token },
-      transports: ['polling', 'websocket'],
-      withCredentials: false,
-      reconnection: true,
-      reconnectionDelay: 1000,
-      timeout: 20000,
-    });
-
-    socketRef.current = socket;
-    socket.emit('join_admin');
-
-    socket.on('connect', () => {
-      setIsConnected(true);
-      setIsReconnecting(false);
-      socket.emit('join_admin');
-    });
-
-    socket.io.on('reconnect_attempt', () => setIsReconnecting(true));
-
-    socket.on('connect_error', (err) => {
-      console.warn('[admin-chat] socket connect_error', err.message);
-      setIsConnected(false);
-    });
-
-    socket.on('disconnect', () => setIsConnected(false));
-
-    const onNew = (payload: { userId?: string; message?: Record<string, unknown> }) => {
-      if (payload?.message && payload.userId) {
-        if (payload.userId === selectedUserIdRef.current) {
-          setMessages((prev) => {
-            const item = normalizeMessage(payload.message!);
-            if (prev.some((m) => m.id === item.id)) return prev;
-            return [...prev, item];
-          });
-        }
-        void loadThreads();
+    const interval = setInterval(() => {
+      void loadThreads();
+      if (selectedRef.current) {
+        void loadHistory(selectedRef.current, true);
       }
-    };
+    }, POLL_MS);
 
-    socket.on('new_message', onNew);
-    socket.on('newMessage', onNew);
-
-    return () => {
-      socket.disconnect();
-      socketRef.current = null;
-    };
-  }, [token, loadThreads]);
+    return () => clearInterval(interval);
+  }, [token, loadThreads, loadHistory]);
 
   useEffect(() => {
     if (selectedUserId) {
-      loadHistory(selectedUserId);
+      setError(null);
+      void loadHistory(selectedUserId);
     } else {
       setMessages([]);
     }
@@ -174,38 +108,9 @@ export function useAdminChat(selectedUserId: string | null) {
 
       setSending(true);
       setError(null);
-      const socket = socketRef.current;
-
       try {
-        if (socket?.connected) {
-          try {
-            const response = await emitWithAck<{
-              success: boolean;
-              message?: Record<string, unknown>;
-              error?: string;
-            }>(socket, 'admin:message', {
-              userId: selectedUserId,
-              content: trimmed,
-              text: trimmed,
-            });
-
-            if (response?.success && response.message) {
-              const item = normalizeMessage(response.message);
-              setMessages((prev) =>
-                prev.some((m) => m.id === item.id) ? prev : [...prev, item],
-              );
-            } else {
-              throw new Error(response?.error || 'Ошибка отправки');
-            }
-          } catch (socketErr) {
-            console.warn('[admin-chat] socket send failed, fallback to REST', socketErr);
-            await adminApiClient.postAdminChatMessage({ userId: selectedUserId, content: trimmed });
-            await loadHistory(selectedUserId);
-          }
-        } else {
-          await adminApiClient.postAdminChatMessage({ userId: selectedUserId, content: trimmed });
-          await loadHistory(selectedUserId);
-        }
+        await adminApiClient.postAdminChatMessage({ userId: selectedUserId, content: trimmed });
+        await loadHistory(selectedUserId, true);
         await loadThreads();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Не удалось отправить');
@@ -216,6 +121,34 @@ export function useAdminChat(selectedUserId: string | null) {
     [selectedUserId, token, loadHistory, loadThreads],
   );
 
+  const clearHistory = useCallback(async () => {
+    if (!selectedUserId || !token) return;
+    if (!window.confirm('Очистить всю историю сообщений в этом чате?')) return;
+    try {
+      await chatApi.clearChat(selectedUserId);
+      setMessages([]);
+      await loadThreads();
+    } catch (err) {
+      setError('Не удалось очистить историю');
+      console.error(err);
+    }
+  }, [selectedUserId, token, loadThreads]);
+
+  const deleteChat = useCallback(async () => {
+    if (!selectedUserId || !token) return;
+    if (!window.confirm('Удалить чат полностью? Диалог исчезнет из списка.')) return;
+    try {
+      await adminApiClient.deleteAdminChat(selectedUserId);
+      setMessages([]);
+      await loadThreads();
+      return true;
+    } catch (err) {
+      setError('Не удалось удалить чат');
+      console.error(err);
+      return false;
+    }
+  }, [selectedUserId, token, loadThreads]);
+
   return {
     threads,
     messages,
@@ -224,9 +157,11 @@ export function useAdminChat(selectedUserId: string | null) {
     sending,
     error,
     totalUnread,
-    isConnected,
-    isReconnecting,
+    isConnected: true,
+    isReconnecting: false,
     sendMessage,
     loadThreads,
+    clearHistory,
+    deleteChat,
   };
 }

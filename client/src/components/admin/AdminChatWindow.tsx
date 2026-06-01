@@ -8,9 +8,9 @@ interface AdminChatWindowProps {
   loading: boolean;
   sending: boolean;
   error: string | null;
-  isConnected: boolean;
-  isReconnecting: boolean;
   onSend: (text: string) => Promise<void>;
+  onClearHistory: () => Promise<void>;
+  onDeleteChat: () => Promise<boolean | void>;
 }
 
 export default function AdminChatWindow({
@@ -19,9 +19,9 @@ export default function AdminChatWindow({
   loading,
   sending,
   error,
-  isConnected,
-  isReconnecting,
   onSend,
+  onClearHistory,
+  onDeleteChat,
 }: AdminChatWindowProps) {
   const [input, setInput] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
@@ -41,18 +41,38 @@ export default function AdminChatWindow({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-gray-200 bg-gradient-to-r from-[#244E77] to-[#163754] px-4 py-3 text-white">
-        <h2 className="font-semibold">{userEmail || 'Выберите диалог'}</h2>
-        <p className="text-xs text-white/80">
-          {isReconnecting ? 'Переподключение…' : isConnected ? 'Онлайн' : 'Подключение…'}
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <h2 className="font-semibold">{userEmail || 'Выберите диалог'}</h2>
+            <p className="text-xs text-white/80">Обновление каждые 4 сек</p>
+          </div>
+          {userEmail ? (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => void onClearHistory()}
+                className="rounded-lg bg-white/15 px-2.5 py-1 text-xs font-medium hover:bg-white/25"
+              >
+                Очистить историю
+              </button>
+              <button
+                type="button"
+                onClick={() => void onDeleteChat()}
+                className="rounded-lg bg-red-500/90 px-2.5 py-1 text-xs font-medium hover:bg-red-600"
+              >
+                Удалить чат
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-gray-50 p-4">
         {loading ? <p className="text-sm text-gray-500">Загрузка…</p> : null}
         {!loading && messages.length === 0 ? (
-          <p className="text-center text-sm text-gray-500">Нет сообщений в этом диалоге.</p>
+          <p className="text-center text-sm text-gray-500">Нет сообщений. Напишите первым.</p>
         ) : (
-          messages.map((m) => <ChatMessage key={m.id} message={m} />)
+          messages.map((m) => <ChatMessage key={m.id} message={m} viewAsAdmin />)
         )}
         <div ref={endRef} />
       </div>

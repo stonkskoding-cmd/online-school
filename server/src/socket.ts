@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { env } from './config/env';
 import { prisma } from './lib/prisma';
+import { serializeMessage } from './lib/chatHelpers';
 
 export type SocketUser = {
   userId: string;
@@ -13,24 +14,6 @@ let ioInstance: Server | null = null;
 
 function userRoom(userId: string) {
   return `chat_${userId}`;
-}
-
-function serializeMessage(msg: {
-  id: number;
-  userId: string;
-  content: string;
-  isAdmin: boolean;
-  isRead: boolean;
-  createdAt: Date;
-}) {
-  return {
-    id: msg.id,
-    userId: msg.userId,
-    content: msg.content,
-    isAdmin: msg.isAdmin,
-    isRead: msg.isRead,
-    createdAt: msg.createdAt,
-  };
 }
 
 export function emitNewMessage(userId: string, message: ReturnType<typeof serializeMessage>) {

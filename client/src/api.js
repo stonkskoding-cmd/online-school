@@ -97,11 +97,16 @@ export const purchasesApi = {
 };
 
 export const chatApi = {
+  getMy: () => api.get('/chat/my'),
   getMessages: () => api.get('/chat/messages'),
+  getChatMessages: (chatId) => api.get(`/chat/${chatId}/messages`),
   getHistory: (userId) => api.get(`/chat/history/${userId}`),
   getUnreadCount: () => api.get('/chat/unread-count'),
-  markRead: (userId) => api.post(`/chat/mark-read/${userId}`),
+  markRead: (chatId) => api.patch(`/chat/${chatId}/read`),
   sendMessage: (text) => api.post('/chat/messages', { text, content: text }),
+  sendToChat: (chatId, content) => api.post(`/chat/${chatId}/message`, { content }),
+  clearChat: (chatId) => api.delete(`/chat/${chatId}/clear`),
+  deleteChat: (chatId) => api.delete(`/chat/${chatId}`),
 };
 
 export default api;
