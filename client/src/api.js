@@ -6,7 +6,7 @@ const apiBaseURL =
 
 const api = axios.create({
   baseURL: apiBaseURL,
-  withCredentials: true,
+  withCredentials: false,
 });
 
 api.interceptors.request.use((config) => {
@@ -27,7 +27,7 @@ export const authApi = {
 
 const adminApi = axios.create({
   baseURL: apiBaseURL,
-  withCredentials: true,
+  withCredentials: false,
 });
 
 adminApi.interceptors.request.use((config) => {

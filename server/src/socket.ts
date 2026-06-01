@@ -52,10 +52,10 @@ export function getIo(): Server | null {
 export function initSocket(httpServer: http.Server): Server {
   const io = new Server(httpServer, {
     cors: {
-      origin: true,
+      origin: '*',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
     },
     transports: ['websocket', 'polling'],
     allowUpgrades: true,
