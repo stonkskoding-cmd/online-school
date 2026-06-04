@@ -1,0 +1,14 @@
+node_modules/
+dist/
+uploads/*
+!uploads/.gitkeep
+.env
+.env.*
+*.log
+.git/
+coverage/
+.vscode/
+.idea/
+src/**/*.test.ts
+src/**/*.spec.ts
+prisma/migrations/**/README.md

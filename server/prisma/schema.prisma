@@ -51,11 +51,12 @@ model Purchase {
   @@map("purchases")
 }
 
-/// Чат поддержки: один тред на пользователя (chatId = userId). isAdmin — автор; isRead — прочитано админом.
+/// Чат поддержки: один тред на пользователя (chatId = userId).
+/// Колонки БД: user_id, content, is_admin, is_read, created_at (не senderId).
 model Message {
   id        Int      @id @default(autoincrement())
   userId    String   @map("user_id") @db.Uuid
-  content   String
+  content   String   @db.Text
   isAdmin   Boolean  @default(false) @map("is_admin")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   isRead    Boolean  @default(false) @map("is_read")

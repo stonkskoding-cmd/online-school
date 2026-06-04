@@ -1,7 +1,7 @@
 import { connectDB } from './db';
 
-const MAX_DB_RETRIES = 8;
-const RETRY_MS = 5000;
+const MAX_DB_RETRIES = 3;
+const RETRY_MS = 3000;
 
 export async function connectDBWithRetry(attempt = 1): Promise<void> {
   try {
