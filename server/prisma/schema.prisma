@@ -1,11 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // connection_limit=1 для Supabase pooler — в URL (?connection_limit=1), см. lib/databaseUrl.ts
 }
 
 model User {
@@ -51,15 +51,15 @@ model Purchase {
   @@map("purchases")
 }
 
-/// Чат поддержки: один тред на пользователя (chatId = userId).
-/// Колонки БД: user_id, content, is_admin, is_read, created_at (не senderId).
+/// Чат поддержки → таблица `messages` в PostgreSQL.
+/// userId = тред клиента (в API также отдаётся как senderId для не-админа).
 model Message {
   id        Int      @id @default(autoincrement())
   userId    String   @map("user_id") @db.Uuid
   content   String   @db.Text
   isAdmin   Boolean  @default(false) @map("is_admin")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])

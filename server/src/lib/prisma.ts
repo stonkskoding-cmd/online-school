@@ -22,3 +22,9 @@ if (process.env.NODE_ENV !== 'production') {
 if (process.env.NODE_ENV === 'production' && databaseUrl?.includes('pgbouncer=true')) {
   console.log('[prisma] DATABASE_URL configured for Supabase PgBouncer (pgbouncer=true)');
 }
+
+/** При старте: Prisma Client знает модель Message → таблица messages */
+void prisma.$queryRaw`SELECT 1 FROM messages LIMIT 0`.then(
+  () => console.log('[prisma] messages table: reachable'),
+  (err) => console.warn('[prisma] messages table check failed:', err instanceof Error ? err.message : err),
+);
