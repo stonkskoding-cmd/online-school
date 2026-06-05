@@ -13,9 +13,14 @@ export const CORS_ORIGINS = [
   'http://127.0.0.1:5174',
 ];
 
-export const CORS_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] as const;
+export const CORS_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] as const;
 
-export const CORS_ALLOWED_HEADERS = ['Content-Type', 'Authorization'] as const;
+export const CORS_ALLOWED_HEADERS = [
+  'Content-Type',
+  'Authorization',
+  'X-Requested-With',
+  'Accept',
+] as const;
 
 /** Любой Render static site / web service на *.onrender.com */
 const ONRENDER_ORIGIN = /^https:\/\/[\w-]+\.onrender\.com$/i;
@@ -46,8 +51,8 @@ export function isOriginAllowed(origin: string | undefined): boolean {
 }
 
 export function resolveCorsOrigin(origin: string | undefined): string | boolean {
-  if (!origin) return true;
-  if (isOriginAllowed(origin)) return origin;
+  if (!origin) return '*';
+  if (isOriginAllowed(origin)) return normalizeOrigin(origin);
   return false;
 }
 
@@ -70,7 +75,7 @@ export function handleHttpPreflight(
       : getAllowedOrigins()[0] || CORS_ORIGINS[0];
 
   res.setHeader('Access-Control-Allow-Origin', allowOrigin);
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', CORS_METHODS.join(', '));
   res.setHeader('Access-Control-Allow-Headers', CORS_ALLOWED_HEADERS.join(', '));
   res.setHeader('Access-Control-Max-Age', '86400');

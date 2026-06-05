@@ -117,18 +117,12 @@ export const chatApi = {
   markRead: (chatId) => api.patch(`/chat/${chatId}/read`),
   sendMessage: (text) => {
     const payload = { text, content: text };
-    const token = getBearerToken();
     console.log('[chat-api] POST /chat/messages', {
       url: `${apiBaseURL}/chat/messages`,
-      hasToken: Boolean(token),
+      hasToken: Boolean(getBearerToken()),
       contentLen: text.length,
     });
-    return api.post('/chat/messages', payload, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
+    return api.post('/chat/messages', payload);
   },
   sendToChat: (chatId, content) => api.post(`/chat/${chatId}/message`, { content }),
   clearChat: (chatId) => api.delete(`/chat/${chatId}/clear`),
