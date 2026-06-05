@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { attachUser, auth, admin, AuthRequest } from '../middleware/auth';
+import { attachUser, verifyToken, auth, admin, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 import { emitNewMessage } from '../socket';
 import { chatIdFromUserId, serializeMessage } from '../lib/chatHelpers';
@@ -175,16 +175,20 @@ router.get('/messages', attachUser, async (req: AuthRequest, res) => {
   }
 });
 
-router.post('/messages', attachUser, async (req: AuthRequest, res) => {
+router.post('/messages', verifyToken, async (req: AuthRequest, res) => {
   try {
-    console.log('[CHAT] POST /messages — User:', req.user);
+    console.log('[CHAT POST] Received request');
+    console.log('[CHAT POST] User:', req.user);
+    console.log('[CHAT POST] Body:', req.body);
+    console.log('[CHAT POST] Authorization:', req.headers.authorization ? 'present' : 'missing');
+
     const userId = resolveClientChatUserId(req, res);
     if (!userId) return;
-    const text = String(req.body.text ?? req.body.content ?? '').trim();
-    console.log('[CHAT] POST /messages from user:', userId, 'len:', text.length);
 
-    if (!text) {
-      res.status(400).json({ message: 'Message text is required' });
+    const content = String(req.body?.content ?? req.body?.text ?? '').trim();
+    if (!content) {
+      console.error('[CHAT POST] No content');
+      res.status(400).json({ error: 'Content required', message: 'Message text is required' });
       return;
     }
 
@@ -197,10 +201,22 @@ router.post('/messages', attachUser, async (req: AuthRequest, res) => {
       return;
     }
 
-    const message = await createUserMessage(userId, text);
-    safeEmit(userId, message);
-    res.status(201).json({ message });
+    const message = await prisma.message.create({
+      data: {
+        userId,
+        content,
+        isAdmin: false,
+        isRead: false,
+      },
+    });
+
+    const serialized = serializeMessage(message);
+    console.log('[CHAT POST] Message created:', message.id);
+    safeEmit(userId, serialized);
+    res.status(201).json({ message: serialized });
   } catch (error) {
+    const err = error as Error;
+    console.error('[CHAT POST] Error:', err.message, err.stack);
     respondChatError(res, 'POST /messages failed', error);
   }
 });

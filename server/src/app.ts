@@ -16,8 +16,8 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   res.setHeader('Access-Control-Allow-Origin', origin || '*');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   if (req.method === 'OPTIONS') {
     console.log('[CORS] preflight', req.originalUrl, 'origin:', origin ?? 'none');
     res.status(204).end();
@@ -39,6 +39,9 @@ app.options('*', cors());
 
 app.use((req, _res, next) => {
   console.log(`[REQUEST] ${req.method} ${req.originalUrl} | origin: ${req.headers.origin ?? 'none'}`);
+  if (req.method === 'POST' && req.originalUrl.includes('/chat/messages')) {
+    console.log('[REQUEST] chat POST incoming, content-type:', req.headers['content-type'] ?? 'none');
+  }
   next();
 });
 

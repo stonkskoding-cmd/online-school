@@ -106,12 +106,22 @@ export function useChat(isOpen: boolean) {
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
-      if (!trimmed || !chatReady) return;
+      if (!trimmed) {
+        console.warn('[CHAT] send skipped: empty text');
+        return;
+      }
+      if (!chatReady) {
+        console.warn('[CHAT] send skipped: not authenticated for support chat');
+        setError('Войдите в аккаунт (email), чтобы отправить сообщение');
+        return;
+      }
 
+      console.log('[CHAT] sending POST /api/chat/messages…');
       setSending(true);
       setError(null);
       try {
         const { data } = await chatApi.sendMessage(trimmed);
+        console.log('[CHAT] send ok', data);
         const item = normalizeMessage((data.message ?? {}) as unknown as Record<string, unknown>);
         setMessages((prev) => mergeMessages(prev, [item]));
       } catch (err: unknown) {

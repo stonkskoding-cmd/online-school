@@ -104,7 +104,21 @@ export const chatApi = {
   getHistory: (userId) => api.get(`/chat/history/${userId}`),
   getUnreadCount: () => api.get('/chat/unread-count'),
   markRead: (chatId) => api.patch(`/chat/${chatId}/read`),
-  sendMessage: (text) => api.post('/chat/messages', { text, content: text }),
+  sendMessage: (text) => {
+    const payload = { text, content: text };
+    const token = getBearerToken();
+    console.log('[chat-api] POST /chat/messages', {
+      url: `${apiBaseURL}/chat/messages`,
+      hasToken: Boolean(token),
+      contentLen: text.length,
+    });
+    return api.post('/chat/messages', payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+  },
   sendToChat: (chatId, content) => api.post(`/chat/${chatId}/message`, { content }),
   clearChat: (chatId) => api.delete(`/chat/${chatId}/clear`),
   deleteChat: (chatId) => api.delete(`/chat/${chatId}`),
