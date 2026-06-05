@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import apiRouter from './routes';
+import chatRoutes from './routes/chat';
 import { CORS_BUILD_ID } from './lib/cors';
 
 console.log('🚀 APP LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
@@ -10,6 +11,12 @@ console.log('🚀 APP LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 const app = express();
 
 app.set('trust proxy', 1);
+
+/** Лог всех входящих запросов (самый первый middleware) */
+app.use((req, _res, next) => {
+  console.log(`[MIDDLEWARE] ${req.method} ${req.path} | originalUrl: ${req.originalUrl}`);
+  next();
+});
 
 /** Открытый CORS (тест / Render). Preflight — вручную, до остальных middleware. */
 app.use((req, res, next) => {
@@ -30,8 +37,8 @@ app.use(
   cors({
     origin: '*',
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   }),
 );
 
@@ -55,6 +62,16 @@ app.get('/health', (_req, res) => {
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, build: CORS_BUILD_ID, ts: Date.now() });
 });
+
+/** Чат: явное подключение /api/chat/* (POST /messages, GET /messages, …) */
+app.use(
+  '/api/chat',
+  (req, _res, next) => {
+    console.log(`[CHAT ROUTER] ${req.method} ${req.path} | body keys: ${req.method === 'POST' ? 'pending' : 'n/a'}`);
+    next();
+  },
+  chatRoutes,
+);
 
 app.use('/api', apiRouter);
 

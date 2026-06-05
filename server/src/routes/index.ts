@@ -3,7 +3,6 @@ import authRoutes from './auth';
 import packageRoutes from './packages';
 import purchaseRoutes from './purchases';
 import paymentRoutes from './payments';
-import chatRoutes from './chat';
 import adminRoutes from './admin';
 import { verifyAdmin } from '../middleware/authMiddleware';
 import upload from '../middleware/upload';
@@ -16,7 +15,7 @@ apiRouter.use('/auth', authRoutes);
 apiRouter.use('/packages', packageRoutes);
 apiRouter.use('/purchases', purchaseRoutes);
 apiRouter.use('/payments', paymentRoutes);
-apiRouter.use('/chat', chatRoutes);
+// chat → app.use('/api/chat', chatRoutes) в app.ts
 apiRouter.use('/admin', verifyAdmin, adminRoutes);
 
 apiRouter.post(

@@ -2,8 +2,19 @@ import axios from 'axios';
 import { getAdminBearerToken, clearAdminSession } from './utils/adminAuth';
 import { getBearerToken } from './utils/authToken';
 
-const apiBaseURL =
-  import.meta.env.VITE_API_URL || 'https://online-school-backend-mqn9.onrender.com/api';
+const BACKEND_API = 'https://online-school-backend-mqn9.onrender.com/api';
+
+function resolveApiBaseURL() {
+  let raw = (import.meta.env.VITE_API_URL || BACKEND_API).trim().replace(/\/$/, '');
+  if (raw.includes('frontend') || raw.includes('online-school-frontend')) {
+    console.warn('[api] VITE_API_URL указывает на frontend — используем backend');
+    raw = BACKEND_API.replace(/\/api$/, '');
+  }
+  return raw.endsWith('/api') ? raw : `${raw}/api`;
+}
+
+const apiBaseURL = resolveApiBaseURL();
+console.log('[api] baseURL:', apiBaseURL);
 
 const api = axios.create({
   baseURL: apiBaseURL,

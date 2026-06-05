@@ -21,9 +21,17 @@ process.on('uncaughtException', (err) => {
 console.log('🚀 INDEX LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 
 const server = http.createServer(app);
+
+server.on('request', (req) => {
+  if (req.url?.includes('chat/messages')) {
+    console.log(`[HTTP RAW] ${req.method} ${req.url}`);
+  }
+});
+
 initSocket(server);
 
 server.listen(PORT, '0.0.0.0', () => {
+  console.log('[server] chat routes: POST/GET /api/chat/messages');
   console.log(`Server running on port ${PORT}`);
 
   setImmediate(() => {
