@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { env } from './config/env';
 import { prisma } from './lib/prisma';
-import { serializeMessage } from './lib/chatHelpers';
+import { buildMessageCreateData, parseMessageContent, serializeMessage } from './lib/chatHelpers';
 
 export type SocketUser = {
   userId: string;
@@ -98,18 +98,13 @@ export function initSocket(httpServer: http.Server): Server {
       callback?: (response: { success: boolean; message?: unknown; error?: string }) => void,
     ) => {
       try {
-        const content = String(data.content ?? data.text ?? '').trim();
+        const content = parseMessageContent(data);
         if (!content) {
           callback?.({ success: false, error: 'Empty message' });
           return;
         }
         const message = await prisma.message.create({
-          data: {
-            userId: user.userId,
-            content,
-            isAdmin: false,
-            isRead: false,
-          },
+          data: buildMessageCreateData(user.userId, content, false),
         });
         const serialized = serializeMessage(message);
         emitNewMessage(user.userId, serialized);
@@ -137,18 +132,13 @@ export function initSocket(httpServer: http.Server): Server {
         }
         try {
           const targetUserId = data.userId;
-          const content = String(data.content ?? data.text ?? '').trim();
+          const content = parseMessageContent(data);
           if (!targetUserId || !content) {
             callback?.({ success: false, error: 'Invalid payload' });
             return;
           }
           const message = await prisma.message.create({
-            data: {
-              userId: targetUserId,
-              content,
-              isAdmin: true,
-              isRead: true,
-            },
+            data: buildMessageCreateData(targetUserId, content, true),
           });
           const serialized = serializeMessage(message);
           emitNewMessage(targetUserId, serialized);

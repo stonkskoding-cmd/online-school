@@ -2,7 +2,12 @@ import { Router, Response } from 'express';
 import { attachUser, verifyToken, auth, admin, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 import { emitNewMessage } from '../socket';
-import { chatIdFromUserId, serializeMessage } from '../lib/chatHelpers';
+import {
+  buildMessageCreateData,
+  chatIdFromUserId,
+  parseMessageContent,
+  serializeMessage,
+} from '../lib/chatHelpers';
 import { isUuid, respondChatError } from '../lib/chatRouteUtils';
 import { checkMessagesTable } from '../lib/chatDb';
 
@@ -31,17 +36,12 @@ async function fetchMessagesForUser(targetUserId: string, take = 100) {
   return rows.map(serializeMessage);
 }
 
-async function createUserMessage(userId: string, text: string) {
+async function createUserMessage(userId: string, content: string) {
   if (!isUuid(userId)) {
     throw new Error('Invalid user id');
   }
   const message = await prisma.message.create({
-    data: {
-      userId,
-      content: text,
-      isAdmin: false,
-      isRead: false,
-    },
+    data: buildMessageCreateData(userId, content, false),
   });
   return serializeMessage(message);
 }
@@ -185,7 +185,7 @@ router.post('/messages', verifyToken, async (req: AuthRequest, res) => {
     const userId = resolveClientChatUserId(req, res);
     if (!userId) return;
 
-    const content = String(req.body?.content ?? req.body?.text ?? '').trim();
+    const content = parseMessageContent(req.body);
     if (!content) {
       console.error('[CHAT POST] No content');
       res.status(400).json({ error: 'Content required', message: 'Message text is required' });
@@ -202,12 +202,7 @@ router.post('/messages', verifyToken, async (req: AuthRequest, res) => {
     }
 
     const message = await prisma.message.create({
-      data: {
-        userId,
-        content,
-        isAdmin: false,
-        isRead: false,
-      },
+      data: buildMessageCreateData(userId, content, false),
     });
 
     const serialized = serializeMessage(message);
@@ -285,8 +280,8 @@ router.post('/:chatId/message', auth, async (req: AuthRequest, res) => {
       res.status(400).json({ message: 'Invalid chat id' });
       return;
     }
-    const text = String(req.body.content ?? req.body.text ?? '').trim();
-    if (!text) {
+    const content = parseMessageContent(req.body);
+    if (!content) {
       res.status(400).json({ message: 'Message text is required' });
       return;
     }
@@ -298,12 +293,7 @@ router.post('/:chatId/message', auth, async (req: AuthRequest, res) => {
     }
 
     const message = await prisma.message.create({
-      data: {
-        userId: chatId,
-        content: text,
-        isAdmin: isAdminUser,
-        isRead: isAdminUser,
-      },
+      data: buildMessageCreateData(chatId, content, isAdminUser),
     });
     const serialized = serializeMessage(message);
     safeEmit(chatId, serialized);
