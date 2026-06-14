@@ -629,6 +629,12 @@ export default function AdminDashboard() {
               </span>
             ) : null}
           </button>
+          <Link
+            to="/admin/footer-settings"
+            className={`${tabBase} ${tabInactive} no-underline`}
+          >
+            ⚙️ Футер
+          </Link>
         </div>
       </header>
 

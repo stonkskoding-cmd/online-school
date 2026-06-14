@@ -34,6 +34,13 @@ export declare const adminApiClient: {
   adminChatThread: (userId: string) => Promise<{ data: { messages: ApiChatMessage[] } }>;
   postAdminChatMessage: (payload: { userId: string; content: string }) => Promise<{ data: { message: ApiChatMessage } }>;
   deleteAdminChat: (userId: string) => Promise<{ data: { message: string } }>;
+  getSiteSettings: () => Promise<{ data: { settings: Record<string, string> } }>;
+  updateSiteSettings: (settings: Record<string, string>) => Promise<{ data: { ok: boolean; settings: Record<string, string> } }>;
+  resetFooterSettings: () => Promise<{ data: { ok: boolean; settings: Record<string, string> } }>;
+};
+
+export declare const siteSettingsApi: {
+  get: () => Promise<{ data: { settings: Record<string, string> } }>;
 };
 
 export declare const authApi: Record<string, unknown>;

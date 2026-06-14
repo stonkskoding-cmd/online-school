@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import PackageDetail from './pages/PackageDetail';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminChatPage from './pages/AdminChatPage';
+import AdminFooterSettings from './pages/AdminFooterSettings';
 import PrivateAdminRoute from './components/PrivateAdminRoute';
 import UserChat from './components/UserChat';
 import Footer from './components/Footer';
@@ -52,6 +53,14 @@ export default function App() {
           element={
             <PrivateAdminRoute>
               <AdminChatPage />
+            </PrivateAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/footer-settings"
+          element={
+            <PrivateAdminRoute>
+              <AdminFooterSettings />
             </PrivateAdminRoute>
           }
         />

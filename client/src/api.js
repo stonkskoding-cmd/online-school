@@ -94,6 +94,13 @@ export const adminApiClient = {
   postAdminChatMessage: (payload) => adminApi.post('/admin/message', payload),
   deleteAdminChat: (userId) => adminApi.delete(`/admin/chats/${userId}`),
   deleteAdminMessage: (messageId) => adminApi.delete(`/admin/message/${messageId}`),
+  getSiteSettings: () => adminApi.get('/site-settings'),
+  updateSiteSettings: (settings) => adminApi.put('/site-settings/bulk', { settings }),
+  resetFooterSettings: () => adminApi.post('/site-settings/footer/reset'),
+};
+
+export const siteSettingsApi = {
+  get: () => api.get('/site-settings'),
 };
 
 export const packagesApi = {

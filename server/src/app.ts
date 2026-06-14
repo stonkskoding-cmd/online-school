@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 
 import apiRouter from './routes';
 import { chatRouter } from './routes/chat';
+import siteSettingsRoutes from './routes/siteSettings';
 import { CORS_BUILD_ID } from './lib/cors';
 import { corsMiddleware, corsErrorLogger } from './middleware/cors';
 
@@ -44,6 +45,8 @@ app.use(
   },
   chatRouter,
 );
+
+app.use('/api/site-settings', siteSettingsRoutes);
 
 app.use('/api', apiRouter);
 
