@@ -163,7 +163,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
           backgroundPosition: 'center',
         }}
       >
-        <div className="relative flex h-28 w-full items-center justify-between gap-3 py-2 pl-1 pr-2 sm:pl-2 sm:pr-3 md:pr-0 lg:pl-3">
+        <div className="relative flex h-20 w-full items-center justify-between gap-2 py-2 pl-1 pr-2 sm:h-24 sm:pl-2 sm:pr-3 md:h-28 md:pr-0 lg:pl-3">
           <Link
             to="/"
             className="relative z-20 inline-flex shrink-0 items-center"
@@ -172,7 +172,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
             <img
               src="/logo-full.png"
               alt="Династия"
-              className="h-16 w-auto origin-left scale-[1.62] sm:scale-[1.78] md:scale-[1.9] lg:scale-[2.02]"
+              className="h-10 w-auto origin-left scale-100 sm:h-14 sm:scale-[1.35] md:h-16 md:scale-[1.62] lg:scale-[1.78] xl:scale-[1.9]"
             />
           </Link>
 

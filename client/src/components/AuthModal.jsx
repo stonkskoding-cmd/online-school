@@ -101,8 +101,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
+      <div className="w-11/12 max-w-md rounded-2xl bg-white p-4 shadow-xl sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
             <button
@@ -137,21 +137,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
           {mode === 'login' ? (
             <div>
               <label htmlFor="auth-identifier" className="mb-1 block text-sm font-medium text-gray-700">
-                Email или логин
+                Email
               </label>
               <input
                 id="auth-identifier"
                 type="text"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="email@mail.ru или dinastia_admin"
+                placeholder="Email"
                 required
                 autoComplete="username"
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-primary"
               />
-              <p className="mt-1.5 text-xs text-gray-500">
-                Логин <strong>{ADMIN_LOGIN_USERNAME}</strong> — вход в панель управления
-              </p>
             </div>
           ) : (
             <input

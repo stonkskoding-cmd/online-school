@@ -92,21 +92,21 @@ export default function HomePage() {
         authInitialMode={authModalMode}
       />
 
-      <section className="relative w-screen min-h-screen overflow-hidden">
+      <section className="relative w-screen min-h-[70vh] overflow-hidden sm:min-h-[85vh] md:min-h-screen">
         <img
           src="/hero-banner-royal.png"
           alt="Hero"
-          className="absolute inset-0 z-0 h-full w-full object-cover"
+          className="absolute inset-0 z-0 h-full w-full object-cover object-top md:object-center"
         />
         <a
           href="#catalog"
-          className="pointer-events-auto absolute bottom-[1.2%] left-1/2 z-40 w-[min(86vw,1000px)] -translate-x-1/2 translate-y-[1.4rem] cursor-pointer drop-shadow-2xl transition-all duration-300 hover:scale-105 hover:brightness-110 sm:w-[min(86vw,1090px)] md:w-[min(86vw,1190px)] lg:w-[min(88vw,1270px)] xl:w-[min(88vw,1350px)]"
+          className="pointer-events-auto absolute bottom-[2%] left-1/2 z-40 w-[min(92vw,1000px)] -translate-x-1/2 translate-y-2 cursor-pointer drop-shadow-2xl transition-all duration-300 hover:scale-105 hover:brightness-110 sm:bottom-[1.2%] sm:w-[min(86vw,1090px)] sm:translate-y-[1.4rem] md:w-[min(86vw,1190px)] lg:w-[min(88vw,1270px)] xl:w-[min(88vw,1350px)]"
         >
-          <img src="/gold-button.png" alt="Выбрать курс" className="block h-auto w-full" />
+          <img src="/gold-button.png" alt="Выбрать курс" className="block h-auto w-full max-h-16 sm:max-h-none" />
         </a>
       </section>
 
-      <section className="relative w-screen">
+      <section className="relative hidden w-screen sm:block">
         <img
           src="/features-banner.png"
           alt="Преимущества"
@@ -114,7 +114,7 @@ export default function HomePage() {
         />
       </section>
 
-      <main id="catalog" className="w-full px-4 py-10 sm:px-8 lg:px-16">
+      <main id="catalog" className="w-full px-3 py-8 sm:px-6 md:px-8 lg:px-16">
         <div className="mb-6 flex flex-wrap gap-2">
           {categories.map((category) => (
             <button

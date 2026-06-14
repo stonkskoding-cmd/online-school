@@ -586,7 +586,7 @@ export default function AdminDashboard() {
   };
 
   const tabBase =
-    'rounded-t-lg px-5 py-3 text-sm font-semibold transition border border-b-0 border-gray-200';
+    'rounded-t-lg px-3 py-2 text-xs font-semibold transition border border-b-0 border-gray-200 sm:px-5 sm:py-3 sm:text-sm';
   const tabActive = 'bg-[#244E77] text-white border-[#244E77]';
   const tabInactive = 'bg-white text-[#244E77] hover:bg-gray-100';
 
@@ -598,12 +598,12 @@ export default function AdminDashboard() {
             <Link to="/" className="text-sm font-medium text-[#244E77] hover:underline">
               ← На сайт
             </Link>
-            <h1 className="text-xl font-bold text-[#244E77] sm:text-2xl">Панель управления Династия</h1>
+            <h1 className="text-lg font-bold text-[#244E77] sm:text-xl md:text-2xl">Панель управления Династия</h1>
           </div>
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#e8c85c] px-4 py-2 text-sm font-semibold text-[#244E77] shadow transition hover:from-[#c9a431] hover:to-[#D4AF37]"
+            className="rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#e8c85c] px-3 py-1.5 text-xs font-semibold text-[#244E77] shadow transition hover:from-[#c9a431] hover:to-[#D4AF37] sm:px-4 sm:py-2 sm:text-sm"
           >
             Выход
           </button>
@@ -629,13 +629,6 @@ export default function AdminDashboard() {
               </span>
             ) : null}
           </button>
-          <a
-            href="/admin/chat"
-            className={`${tabBase} ${tabInactive} no-underline`}
-            title="Полноэкранный чат"
-          >
-            Чат ↗
-          </a>
         </div>
       </header>
 

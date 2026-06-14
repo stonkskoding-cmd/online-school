@@ -52,9 +52,9 @@ export default function AdminPackages({ packages, loading, onCreate, onEdit, onD
 
   return (
     <>
-      {/* Десктоп: таблица */}
-      <div className="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md md:block">
-        <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
+      {/* Десктоп: таблица с горизонтальной прокруткой */}
+      <div className="hidden overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-md md:block">
+        <table className="min-w-[640px] w-full divide-y divide-gray-200 text-left text-sm">
           <thead className="bg-gradient-to-r from-[#244E77] to-[#163754] text-white">
             <tr>
               <th className="px-4 py-3 font-semibold">Название</th>
@@ -89,14 +89,14 @@ export default function AdminPackages({ packages, loading, onCreate, onEdit, onD
                     <button
                       type="button"
                       onClick={() => onEdit(pkg)}
-                      className="mr-2 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#e8c85c] px-3 py-1.5 text-xs font-bold text-[#244E77] shadow-sm transition hover:from-[#c9a431] hover:to-[#D4AF37]"
+                      className="mr-2 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#e8c85c] px-2 py-1 text-xs font-bold text-[#244E77] shadow-sm transition hover:from-[#c9a431] hover:to-[#D4AF37] sm:px-3 sm:py-1.5"
                     >
                       Изменить
                     </button>
                     <button
                       type="button"
                       onClick={() => onDelete(pkg.id)}
-                      className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                      className="rounded-lg border border-red-200 bg-white px-2 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-50 sm:px-3 sm:py-1.5"
                     >
                       Удалить
                     </button>
