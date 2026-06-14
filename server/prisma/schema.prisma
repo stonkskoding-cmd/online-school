@@ -56,7 +56,7 @@ model Purchase {
 model Message {
   id        Int      @id @default(autoincrement())
   userId    String   @map("user_id") @db.Uuid
-  senderId  String   @map("sender_id")
+  senderId  String   @map("sender_id") @db.Text
   content   String   @db.Text
   isAdmin   Boolean  @default(false) @map("is_admin")
   isRead    Boolean  @default(false) @map("is_read")
