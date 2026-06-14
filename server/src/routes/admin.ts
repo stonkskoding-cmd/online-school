@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validation';
 import { prisma } from '../lib/prisma';
-import { buildMessageCreateData, chatIdFromUserId, serializeMessage } from '../lib/chatHelpers';
+import { buildMessageCreateData, chatIdFromUserId, resolveSenderId, serializeMessage } from '../lib/chatHelpers';
 import { emitNewMessage } from '../socket';
 import upload from '../middleware/upload';
 import { env } from '../config/env';
@@ -423,7 +423,12 @@ router.post('/message', validate(adminPostChatMessageSchema), async (req, res) =
     }
 
     const message = await prisma.message.create({
-      data: buildMessageCreateData(userId, String(content).trim(), true),
+      data: buildMessageCreateData(
+        userId,
+        resolveSenderId('admin', true),
+        String(content).trim(),
+        true,
+      ),
     });
 
     emitNewMessage(userId, serializeMessage(message));

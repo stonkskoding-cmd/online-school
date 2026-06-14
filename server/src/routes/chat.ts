@@ -6,6 +6,7 @@ import {
   buildMessageCreateData,
   chatIdFromUserId,
   parseMessageContent,
+  resolveSenderId,
   serializeMessage,
 } from '../lib/chatHelpers';
 import { isUuid, respondChatError } from '../lib/chatRouteUtils';
@@ -36,12 +37,12 @@ async function fetchMessagesForUser(targetUserId: string, take = 100) {
   return rows.map(serializeMessage);
 }
 
-async function createUserMessage(userId: string, content: string) {
+async function createUserMessage(userId: string, content: string, senderId: string) {
   if (!isUuid(userId)) {
     throw new Error('Invalid user id');
   }
   const message = await prisma.message.create({
-    data: buildMessageCreateData(userId, content, false),
+    data: buildMessageCreateData(userId, senderId, content, false),
   });
   return serializeMessage(message);
 }
@@ -179,8 +180,12 @@ router.post('/messages', verifyToken, async (req: AuthRequest, res) => {
   try {
     console.log('[CHAT POST] Received request');
     console.log('[CHAT POST] User:', req.user);
+    console.log('[CHAT POST] UserId:', req.user?.id);
     console.log('[CHAT POST] Body:', req.body);
-    console.log('[CHAT POST] Authorization:', req.headers.authorization ? 'present' : 'missing');
+
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'Unauthorized', message: 'Unauthorized' });
+    }
 
     const userId = resolveClientChatUserId(req, res);
     if (!userId) return;
@@ -201,8 +206,11 @@ router.post('/messages', verifyToken, async (req: AuthRequest, res) => {
       return;
     }
 
+    const senderId = req.user.id;
+    console.log('[CHAT POST] Creating message', { userId, senderId, contentLen: content.length });
+
     const message = await prisma.message.create({
-      data: buildMessageCreateData(userId, content, false),
+      data: buildMessageCreateData(userId, senderId, content, false),
     });
 
     const serialized = serializeMessage(message);
@@ -292,8 +300,9 @@ router.post('/:chatId/message', auth, async (req: AuthRequest, res) => {
       return;
     }
 
+    const senderId = resolveSenderId(req.user!.id, isAdminUser);
     const message = await prisma.message.create({
-      data: buildMessageCreateData(chatId, content, isAdminUser),
+      data: buildMessageCreateData(chatId, senderId, content, isAdminUser),
     });
     const serialized = serializeMessage(message);
     safeEmit(chatId, serialized);

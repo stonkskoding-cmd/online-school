@@ -14,19 +14,28 @@ export function parseMessageContent(body: unknown): string {
   return '';
 }
 
-/** Данные для prisma.message.create — только поле content (не text!) */
+/** senderId для записи в БД */
+export function resolveSenderId(userId: string, isAdmin: boolean): string {
+  if (isAdmin) return 'admin';
+  return userId;
+}
+
+/** Данные для prisma.message.create */
 export function buildMessageCreateData(
-  userId: string,
+  threadUserId: string,
+  senderId: string,
   content: string,
   isAdmin: boolean,
 ): {
   userId: string;
+  senderId: string;
   content: string;
   isAdmin: boolean;
   isRead: boolean;
 } {
   return {
-    userId,
+    userId: threadUserId,
+    senderId,
     content,
     isAdmin,
     isRead: isAdmin,
@@ -36,6 +45,7 @@ export function buildMessageCreateData(
 export function serializeMessage(msg: {
   id: number;
   userId: string;
+  senderId: string;
   content: string;
   isAdmin: boolean;
   isRead: boolean;
@@ -45,7 +55,7 @@ export function serializeMessage(msg: {
     id: msg.id,
     chatId: msg.userId,
     userId: msg.userId,
-    senderId: msg.isAdmin ? 'admin' : msg.userId,
+    senderId: msg.senderId,
     content: msg.content,
     isAdmin: msg.isAdmin,
     isRead: msg.isRead,

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { env } from './config/env';
 import { prisma } from './lib/prisma';
-import { buildMessageCreateData, parseMessageContent, serializeMessage } from './lib/chatHelpers';
+import { buildMessageCreateData, parseMessageContent, resolveSenderId, serializeMessage } from './lib/chatHelpers';
 
 export type SocketUser = {
   userId: string;
@@ -104,7 +104,7 @@ export function initSocket(httpServer: http.Server): Server {
           return;
         }
         const message = await prisma.message.create({
-          data: buildMessageCreateData(user.userId, content, false),
+          data: buildMessageCreateData(user.userId, user.userId, content, false),
         });
         const serialized = serializeMessage(message);
         emitNewMessage(user.userId, serialized);
@@ -138,7 +138,7 @@ export function initSocket(httpServer: http.Server): Server {
             return;
           }
           const message = await prisma.message.create({
-            data: buildMessageCreateData(targetUserId, content, true),
+            data: buildMessageCreateData(targetUserId, resolveSenderId('admin', true), content, true),
           });
           const serialized = serializeMessage(message);
           emitNewMessage(targetUserId, serialized);

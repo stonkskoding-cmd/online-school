@@ -52,10 +52,11 @@ model Purchase {
 }
 
 /// Чат поддержки → таблица `messages` в PostgreSQL.
-/// userId = тред клиента (в API также отдаётся как senderId для не-админа).
+/// userId = тред (клиент), senderId = автор сообщения (user id или 'admin').
 model Message {
   id        Int      @id @default(autoincrement())
   userId    String   @map("user_id") @db.Uuid
+  senderId  String   @map("sender_id")
   content   String   @db.Text
   isAdmin   Boolean  @default(false) @map("is_admin")
   isRead    Boolean  @default(false) @map("is_read")
