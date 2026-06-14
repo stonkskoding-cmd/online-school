@@ -1,5 +1,18 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { applyPoolerDatabaseUrl } from './databaseUrl';
+
+function logMessageModelTypes(): void {
+  const message = Prisma.dmmf.datamodel.models.find((m) => m.name === 'Message');
+  if (!message) {
+    console.warn('[prisma] Message model not found in DMMF');
+    return;
+  }
+  const fields = Object.fromEntries(message.fields.map((f) => [f.name, f.type]));
+  console.log('[prisma] Message field types:', fields);
+  if (fields.senderId !== 'String') {
+    console.error('[prisma] FATAL: senderId must be String in generated client, got:', fields.senderId);
+  }
+}
 
 declare global {
   // eslint-disable-next-line no-var
@@ -7,6 +20,8 @@ declare global {
 }
 
 const databaseUrl = applyPoolerDatabaseUrl();
+
+logMessageModelTypes();
 
 export const prisma =
   globalThis.__prismaClient ??
