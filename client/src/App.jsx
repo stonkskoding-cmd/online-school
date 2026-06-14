@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import PackageDetail from './pages/PackageDetail';
@@ -6,6 +6,13 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminChatPage from './pages/AdminChatPage';
 import PrivateAdminRoute from './components/PrivateAdminRoute';
 import UserChat from './components/UserChat';
+import Footer from './components/Footer';
+
+function AppFooter() {
+  const { pathname } = useLocation();
+  if (pathname.startsWith('/admin')) return null;
+  return <Footer />;
+}
 
 export default function App() {
   return (
@@ -51,6 +58,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <AppFooter />
       <UserChat />
     </>
   );
