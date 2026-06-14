@@ -1,5 +1,6 @@
 export interface ApiChatMessage {
   id: number | string;
+  senderId?: string;
   userId?: string;
   content: string;
   isAdmin: boolean;
@@ -22,16 +23,10 @@ export interface AdminChatSummary {
 }
 
 export declare const chatApi: {
-  getMy: () => Promise<{ data: { chatId: string; userId: string } }>;
-  getMessages: () => Promise<{ data: { messages: ApiChatMessage[] } }>;
-  getChatMessages: (chatId: string) => Promise<{ data: { messages: ApiChatMessage[] } }>;
-  getHistory: (userId: string) => Promise<{ data: { messages: ApiChatMessage[] } }>;
-  getUnreadCount: () => Promise<{ data: { count: number } }>;
-  markRead: (chatId: string) => Promise<{ data: { ok: boolean } }>;
-  sendMessage: (text: string) => Promise<{ data: { message: ApiChatMessage } }>;
-  sendToChat: (chatId: string, content: string) => Promise<{ data: { message: ApiChatMessage } }>;
-  clearChat: (chatId: string) => Promise<{ data: { ok: boolean } }>;
-  deleteChat: (chatId: string) => Promise<{ data: { ok: boolean } }>;
+  getMessages: () => Promise<{ data: ApiChatMessage[] }>;
+  sendMessage: (content: string) => Promise<{ data: ApiChatMessage }>;
+  getChats: () => Promise<{ data: Array<{ userId: string; messageCount: number; lastMessageAt: string }> }>;
+  deleteChat: (userId: string) => Promise<{ data: { success: boolean } }>;
 };
 
 export declare const adminApiClient: {

@@ -1,369 +1,121 @@
 import { Router, Response } from 'express';
-import { attachUser, verifyToken, auth, admin, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
-import { emitNewMessage } from '../socket';
-import {
-  buildMessageCreateData,
-  chatIdFromUserId,
-  parseMessageContent,
-  resolveSenderId,
-  serializeMessage,
-} from '../lib/chatHelpers';
-import { isUuid, respondChatError } from '../lib/chatRouteUtils';
-import { checkMessagesTable } from '../lib/chatDb';
+import { verifyToken } from '../middleware/auth';
+import { AuthRequest } from '../types/auth.types';
 
 const router = Router();
 
-router.use((req, _res, next) => {
-  console.log('Chat route hit:', req.method, req.originalUrl);
-  next();
-});
-
-async function fetchMessagesForUser(targetUserId: string, take = 100) {
-  console.log('[CHAT] fetchMessagesForUser userId:', targetUserId, 'take:', take);
-
-  if (!isUuid(targetUserId)) {
-    console.warn('[CHAT] invalid userId for fetch:', targetUserId);
-    return [];
-  }
-
-  const rows = await prisma.message.findMany({
-    where: { userId: targetUserId },
-    orderBy: { createdAt: 'asc' },
-    take,
-  });
-
-  console.log('[CHAT] Messages count:', rows.length);
-  return rows.map(serializeMessage);
-}
-
-async function createUserMessage(userId: string, content: string, senderId: string) {
-  if (!isUuid(userId)) {
-    throw new Error('Invalid user id');
-  }
-  const message = await prisma.message.create({
-    data: buildMessageCreateData(userId, senderId, content, false),
-  });
-  return serializeMessage(message);
-}
-
-function safeEmit(userId: string, message: ReturnType<typeof serializeMessage>) {
+router.post('/messages', verifyToken, async (req: AuthRequest, res: Response) => {
   try {
-    emitNewMessage(userId, message);
-  } catch (emitErr) {
-    console.warn('[chat] socket emit skipped', emitErr);
-  }
-}
+    const user = req.user!;
+    const { content } = req.body as { content?: string };
 
-/** Проверка req.user после verifyToken */
-function assertChatUser(req: AuthRequest, res: Response): boolean {
-  console.log('[CHAT] req.user:', req.user);
-  if (!req.user?.id) {
-    console.error('[CHAT] No user id in token!');
-    res.status(401).json({ error: 'User not authenticated', message: 'User not authenticated' });
-    return false;
-  }
-  return true;
-}
-
-// ——— Статические маршруты (до /:chatId/...) ———
-
-router.get('/health', async (_req, res) => {
-  const table = await checkMessagesTable();
-  res.status(table.ok ? 200 : 503).json({
-    ok: table.ok,
-    table: 'messages',
-    error: table.error,
-  });
-});
-
-router.get('/my', attachUser, async (req: AuthRequest, res) => {
-  try {
-    if (!assertChatUser(req, res)) return;
-    const userId = req.user!.id;
-    console.log('[CHAT] Getting chat for user:', userId);
-    const count = await prisma.message.count({ where: { userId } });
-    res.json({
-      chatId: chatIdFromUserId(userId),
-      userId,
-      hasMessages: count > 0,
-    });
-  } catch (error) {
-    respondChatError(res, 'GET /my failed', error);
-  }
-});
-
-router.get('/unread-count', auth, admin, async (_req, res) => {
-  try {
-    const count = await prisma.message.count({
-      where: { isAdmin: false, isRead: false },
-    });
-    res.json({ count });
-  } catch (error) {
-    respondChatError(res, 'GET /unread-count failed', error);
-  }
-});
-
-/** UUID клиента для чата поддержки (не системный admin) */
-function resolveClientChatUserId(req: AuthRequest, res: Response): string | null {
-  console.log('[CHAT] Request user:', req.user);
-  console.log('[CHAT] Authorization header:', req.headers.authorization ? 'present' : 'missing');
-
-  if (!req.user?.id) {
-    res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Войдите в аккаунт, чтобы использовать чат поддержки',
-    });
-    return null;
-  }
-
-  if (req.user.id === 'admin') {
-    res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Войдите как пользователь (email), не как администратор',
-    });
-    return null;
-  }
-
-  if (!isUuid(req.user.id)) {
-    res.status(401).json({ error: 'Unauthorized', message: 'Invalid user session' });
-    return null;
-  }
-
-  return req.user.id;
-}
-
-router.get('/messages', attachUser, async (req: AuthRequest, res) => {
-  try {
-    console.log('[CHAT] GET /messages — User:', req.user);
-
-    const userId = req.user?.id;
-    if (!userId) {
-      console.error('[CHAT] No user ID');
-      res.status(401).json({ error: 'No user ID', message: 'Войдите в аккаунт' });
+    if (!content || content.trim().length === 0) {
+      res.status(400).json({ error: 'Content required' });
       return;
     }
 
-    const queryUserId = req.query.userId as string | undefined;
-    console.log('[CHAT] queryUserId:', queryUserId ?? 'none');
-
-    if (queryUserId && req.user?.role !== 'admin') {
-      res.status(403).json({ message: 'Access denied' });
+    if (user.role === 'admin') {
+      res.status(403).json({ error: 'Admin must use /api/admin/message' });
       return;
     }
-
-    let targetUserId = queryUserId;
-    if (!targetUserId) {
-      const clientId = resolveClientChatUserId(req, res);
-      if (!clientId) return;
-      targetUserId = clientId;
-    }
-
-    const table = await checkMessagesTable();
-    if (!table.ok) {
-      res.status(503).json({
-        message: 'Таблица messages не создана. Выполните prisma migrate deploy.',
-        error: table.error,
-      });
-      return;
-    }
-
-    const messages = await fetchMessagesForUser(targetUserId, 50);
-    console.log('[CHAT] Returning', messages.length, 'messages for', targetUserId);
-    res.json({ chatId: chatIdFromUserId(targetUserId), messages });
-  } catch (error) {
-    respondChatError(res, 'GET /messages failed', error);
-  }
-});
-
-router.post('/messages', verifyToken, async (req: AuthRequest, res) => {
-  try {
-    console.log('[CHAT POST] Received request');
-    console.log('[CHAT POST] User:', req.user);
-    console.log('[CHAT POST] UserId:', req.user?.id);
-    console.log('[CHAT POST] Body:', req.body);
-
-    if (!req.user?.id) {
-      return res.status(401).json({ error: 'Unauthorized', message: 'Unauthorized' });
-    }
-
-    const userId = resolveClientChatUserId(req, res);
-    if (!userId) return;
-
-    const content = parseMessageContent(req.body);
-    if (!content) {
-      console.error('[CHAT POST] No content');
-      res.status(400).json({ error: 'Content required', message: 'Message text is required' });
-      return;
-    }
-
-    const table = await checkMessagesTable();
-    if (!table.ok) {
-      res.status(503).json({
-        message: 'Таблица messages не создана. Выполните prisma migrate deploy.',
-        error: table.error,
-      });
-      return;
-    }
-
-    const senderId = req.user.id;
-    console.log('[CHAT POST] Creating message', { userId, senderId, contentLen: content.length });
 
     const message = await prisma.message.create({
-      data: buildMessageCreateData(userId, senderId, content, false),
-    });
-
-    const serialized = serializeMessage(message);
-    console.log('[CHAT POST] Message created:', message.id);
-    safeEmit(userId, serialized);
-    res.status(201).json({ message: serialized });
-  } catch (error) {
-    const err = error as Error;
-    console.error('[CHAT POST] Error:', err.message, err.stack);
-    respondChatError(res, 'POST /messages failed', error);
-  }
-});
-
-router.get('/history/:userId', auth, async (req: AuthRequest, res) => {
-  try {
-    const { userId } = req.params;
-    if (req.user!.role !== 'admin' && req.user!.id !== userId) {
-      res.status(403).json({ message: 'Access denied' });
-      return;
-    }
-    const messages = await fetchMessagesForUser(userId, 50);
-    res.json({ chatId: chatIdFromUserId(userId), messages });
-  } catch (error) {
-    respondChatError(res, 'GET /history/:userId failed', error);
-  }
-});
-
-router.post('/mark-read/:userId', auth, admin, async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const result = await prisma.message.updateMany({
-      where: { userId, isAdmin: false, isRead: false },
-      data: { isRead: true },
-    });
-    res.json({ ok: true, updated: result.count });
-  } catch (error) {
-    respondChatError(res, 'POST /mark-read failed', error);
-  }
-});
-
-// ——— Параметрические маршруты (chatId = UUID пользователя) ———
-
-router.get('/:chatId/messages', auth, async (req: AuthRequest, res) => {
-  try {
-    const { chatId } = req.params;
-    if (chatId === 'messages') {
-      res.status(400).json({ message: 'Use GET /api/chat/messages' });
-      return;
-    }
-    if (!isUuid(chatId)) {
-      res.status(400).json({ message: 'Invalid chat id' });
-      return;
-    }
-    if (req.user!.role !== 'admin' && req.user!.id !== chatId) {
-      res.status(403).json({ message: 'Access denied' });
-      return;
-    }
-    const messages = await fetchMessagesForUser(chatId, 100);
-    if (req.user!.role === 'admin') {
-      await prisma.message.updateMany({
-        where: { userId: chatId, isAdmin: false, isRead: false },
-        data: { isRead: true },
-      });
-    }
-    res.json({ chatId, messages });
-  } catch (error) {
-    respondChatError(res, 'GET /:chatId/messages failed', error);
-  }
-});
-
-router.post('/:chatId/message', auth, async (req: AuthRequest, res) => {
-  try {
-    const { chatId } = req.params;
-    if (!isUuid(chatId)) {
-      res.status(400).json({ message: 'Invalid chat id' });
-      return;
-    }
-    const content = parseMessageContent(req.body);
-    if (!content) {
-      res.status(400).json({ message: 'Message text is required' });
-      return;
-    }
-
-    const isAdminUser = req.user!.role === 'admin';
-    if (!isAdminUser && req.user!.id !== chatId) {
-      res.status(403).json({ message: 'Access denied' });
-      return;
-    }
-
-    const senderId = resolveSenderId(req.user!.id, isAdminUser);
-    const message = await prisma.message.create({
-      data: buildMessageCreateData(chatId, senderId, content, isAdminUser),
-    });
-    const serialized = serializeMessage(message);
-    safeEmit(chatId, serialized);
-    res.status(201).json({ message: serialized });
-  } catch (error) {
-    respondChatError(res, 'POST /:chatId/message failed', error);
-  }
-});
-
-router.patch('/:chatId/read', auth, async (req: AuthRequest, res) => {
-  try {
-    const { chatId } = req.params;
-    if (!isUuid(chatId)) {
-      res.status(400).json({ message: 'Invalid chat id' });
-      return;
-    }
-    if (req.user!.role !== 'admin' && req.user!.id !== chatId) {
-      res.status(403).json({ message: 'Access denied' });
-      return;
-    }
-    const result = await prisma.message.updateMany({
-      where: {
-        userId: chatId,
-        isAdmin: req.user!.role === 'admin' ? false : true,
+      data: {
+        senderId: user.id,
+        content: content.trim(),
+        isAdmin: false,
         isRead: false,
       },
-      data: { isRead: true },
     });
-    res.json({ ok: true, updated: result.count });
+
+    console.log('[CHAT] Message created:', message.id);
+    res.json(message);
   } catch (error) {
-    respondChatError(res, 'PATCH /:chatId/read failed', error);
+    console.error('[CHAT] Create error:', error);
+    res.status(500).json({ error: 'Failed to send message' });
   }
 });
 
-router.delete('/:chatId/clear', auth, admin, async (req, res) => {
+router.get('/messages', verifyToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { chatId } = req.params;
-    if (!isUuid(chatId)) {
-      res.status(400).json({ message: 'Invalid chat id' });
+    const user = req.user!;
+    const { userId } = req.query;
+
+    let where: { senderId: string } | Record<string, never> = {};
+
+    if (user.role === 'admin') {
+      if (typeof userId === 'string' && userId.trim()) {
+        where = { senderId: userId.trim() };
+      }
+    } else {
+      where = { senderId: user.id };
+    }
+
+    const messages = await prisma.message.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      take: 100,
+    });
+
+    res.json(messages);
+  } catch (error) {
+    console.error('[CHAT] Get error:', error);
+    res.status(500).json({ error: 'Failed to get messages' });
+  }
+});
+
+router.get('/chats', verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.user!.role !== 'admin') {
+      res.status(403).json({ error: 'Admin only' });
       return;
     }
-    const result = await prisma.message.deleteMany({ where: { userId: chatId } });
-    console.log('[chat] cleared history', chatId, result.count);
-    res.json({ ok: true, deletedCount: result.count });
+
+    const chats = await prisma.$queryRaw<
+      Array<{ userId: string; messageCount: bigint; lastMessageAt: Date }>
+    >`
+      SELECT "senderId" as "userId",
+             COUNT(*)::bigint as "messageCount",
+             MAX("createdAt") as "lastMessageAt"
+      FROM "messages"
+      WHERE "isAdmin" = false
+      GROUP BY "senderId"
+      ORDER BY "lastMessageAt" DESC
+    `;
+
+    res.json(
+      chats.map((c) => ({
+        userId: c.userId,
+        messageCount: Number(c.messageCount),
+        lastMessageAt: c.lastMessageAt,
+      })),
+    );
   } catch (error) {
-    respondChatError(res, 'DELETE /:chatId/clear failed', error);
+    console.error('[CHAT] Chats list error:', error);
+    res.status(500).json({ error: 'Failed to get chats' });
   }
 });
 
-router.delete('/:chatId', auth, admin, async (req, res) => {
+router.delete('/chats/:userId', verifyToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { chatId } = req.params;
-    if (!isUuid(chatId)) {
-      res.status(400).json({ message: 'Invalid chat id' });
+    if (req.user!.role !== 'admin') {
+      res.status(403).json({ error: 'Admin only' });
       return;
     }
-    const result = await prisma.message.deleteMany({ where: { userId: chatId } });
-    res.json({ ok: true, message: 'Chat deleted', deletedCount: result.count });
+
+    const { userId } = req.params;
+
+    await prisma.message.deleteMany({
+      where: { senderId: userId },
+    });
+
+    res.json({ success: true });
   } catch (error) {
-    respondChatError(res, 'DELETE /:chatId failed', error);
+    console.error('[CHAT] Delete error:', error);
+    res.status(500).json({ error: 'Failed to delete chat' });
   }
 });
 
+export const chatRouter = router;
 export default router;

@@ -1,9 +1,9 @@
 import http from 'http';
 import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
+import { Message } from '@prisma/client';
 import { env } from './config/env';
 import { prisma } from './lib/prisma';
-import { buildMessageCreateData, parseMessageContent, resolveSenderId, serializeMessage } from './lib/chatHelpers';
 
 export type SocketUser = {
   userId: string;
@@ -16,7 +16,11 @@ function userRoom(userId: string) {
   return `chat_${userId}`;
 }
 
-export function emitNewMessage(userId: string, message: ReturnType<typeof serializeMessage>) {
+function parseContent(data: { content?: string; text?: string }): string {
+  return String(data.content ?? data.text ?? '').trim();
+}
+
+export function emitNewMessage(userId: string, message: Message) {
   if (!ioInstance) return;
   const ns = ioInstance.of('/support');
   const payload = { userId, message };
@@ -61,7 +65,6 @@ export function initSocket(httpServer: http.Server): Server {
       };
       if (decoded.role === 'admin') {
         socket.data.user = { userId: 'admin', isAdmin: true } satisfies SocketUser;
-        console.log('[socket] admin auth ok');
         return next();
       }
       const socketUserId = decoded.userId ?? decoded.id ?? decoded.sub;
@@ -80,13 +83,11 @@ export function initSocket(httpServer: http.Server): Server {
 
   supportNs.on('connection', (socket: Socket) => {
     const user = socket.data.user as SocketUser;
-    console.log('[socket] connected', user.userId, user.isAdmin ? 'admin' : 'user');
 
     if (user.isAdmin) {
       socket.join('admin_panel');
       socket.on('join_admin', () => {
         socket.join('admin_panel');
-        console.log('[socket] admin joined admin_panel');
       });
     } else {
       socket.join(userRoom(user.userId));
@@ -98,17 +99,21 @@ export function initSocket(httpServer: http.Server): Server {
       callback?: (response: { success: boolean; message?: unknown; error?: string }) => void,
     ) => {
       try {
-        const content = parseMessageContent(data);
+        const content = parseContent(data);
         if (!content) {
           callback?.({ success: false, error: 'Empty message' });
           return;
         }
         const message = await prisma.message.create({
-          data: buildMessageCreateData(user.userId, user.userId, content, false),
+          data: {
+            senderId: user.userId,
+            content,
+            isAdmin: false,
+            isRead: false,
+          },
         });
-        const serialized = serializeMessage(message);
-        emitNewMessage(user.userId, serialized);
-        callback?.({ success: true, message: serialized });
+        emitNewMessage(user.userId, message);
+        callback?.({ success: true, message });
       } catch (error) {
         console.error('[socket] send_message failed', error);
         callback?.({ success: false, error: 'Failed to send message' });
@@ -132,17 +137,21 @@ export function initSocket(httpServer: http.Server): Server {
         }
         try {
           const targetUserId = data.userId;
-          const content = parseMessageContent(data);
+          const content = parseContent(data);
           if (!targetUserId || !content) {
             callback?.({ success: false, error: 'Invalid payload' });
             return;
           }
           const message = await prisma.message.create({
-            data: buildMessageCreateData(targetUserId, resolveSenderId('admin', true), content, true),
+            data: {
+              senderId: targetUserId,
+              content,
+              isAdmin: true,
+              isRead: false,
+            },
           });
-          const serialized = serializeMessage(message);
-          emitNewMessage(targetUserId, serialized);
-          callback?.({ success: true, message: serialized });
+          emitNewMessage(targetUserId, message);
+          callback?.({ success: true, message });
         } catch (error) {
           console.error('[socket] admin:message failed', error);
           callback?.({ success: false, error: 'Failed to send message' });
@@ -162,7 +171,7 @@ export function initSocket(httpServer: http.Server): Server {
           return;
         }
         await prisma.message.updateMany({
-          where: { userId: targetUserId, isAdmin: false, isRead: false },
+          where: { senderId: targetUserId, isAdmin: false, isRead: false },
           data: { isRead: true },
         });
         callback?.({ success: true });
@@ -172,8 +181,8 @@ export function initSocket(httpServer: http.Server): Server {
       }
     });
 
-    socket.on('disconnect', (reason) => {
-      console.log('[socket] disconnected', user.userId, reason);
+    socket.on('disconnect', () => {
+      /* noop */
     });
   });
 

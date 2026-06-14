@@ -109,24 +109,10 @@ export const purchasesApi = {
 };
 
 export const chatApi = {
-  getMy: () => api.get('/chat/my'),
   getMessages: () => api.get('/chat/messages'),
-  getChatMessages: (chatId) => api.get(`/chat/${chatId}/messages`),
-  getHistory: (userId) => api.get(`/chat/history/${userId}`),
-  getUnreadCount: () => api.get('/chat/unread-count'),
-  markRead: (chatId) => api.patch(`/chat/${chatId}/read`),
-  sendMessage: (text) => {
-    const payload = { text, content: text };
-    console.log('[chat-api] POST /chat/messages', {
-      url: `${apiBaseURL}/chat/messages`,
-      hasToken: Boolean(getBearerToken()),
-      contentLen: text.length,
-    });
-    return api.post('/chat/messages', payload);
-  },
-  sendToChat: (chatId, content) => api.post(`/chat/${chatId}/message`, { content }),
-  clearChat: (chatId) => api.delete(`/chat/${chatId}/clear`),
-  deleteChat: (chatId) => api.delete(`/chat/${chatId}`),
+  sendMessage: (content) => api.post('/chat/messages', { content }),
+  getChats: () => api.get('/chat/chats'),
+  deleteChat: (userId) => api.delete(`/chat/chats/${userId}`),
 };
 
 export default api;

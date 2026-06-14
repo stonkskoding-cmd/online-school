@@ -1,6 +1,23 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import ChatMessage from '../chat/ChatMessage';
 import type { ChatMessageItem } from '../../hooks/useChat';
+
+function AdminChatBubble({ message }: { message: ChatMessageItem }) {
+  const mine = message.isFromAdmin;
+  return (
+    <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+          mine ? 'bg-[#244E77] text-white' : 'border border-gray-200 bg-white text-gray-900'
+        }`}
+      >
+        <p className="whitespace-pre-wrap break-words">{message.text}</p>
+        <span className={`mt-1 block text-[10px] ${mine ? 'text-white/70' : 'text-gray-400'}`}>
+          {new Date(message.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 interface AdminChatWindowProps {
   userEmail: string;
@@ -72,7 +89,7 @@ export default function AdminChatWindow({
         {!loading && messages.length === 0 ? (
           <p className="text-center text-sm text-gray-500">Нет сообщений. Напишите первым.</p>
         ) : (
-          messages.map((m) => <ChatMessage key={m.id} message={m} viewAsAdmin />)
+          messages.map((m) => <AdminChatBubble key={m.id} message={m} />)
         )}
         <div ref={endRef} />
       </div>

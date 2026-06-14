@@ -55,7 +55,8 @@ export function useChat(isOpen: boolean) {
     if (!chatReady) return;
     try {
       const { data } = await chatApi.getMessages();
-      const list = (data.messages ?? []).map((m: ApiChatMessage) =>
+      const raw = Array.isArray(data) ? data : (data as { messages?: ApiChatMessage[] }).messages ?? [];
+      const list = raw.map((m: ApiChatMessage) =>
         normalizeMessage(m as unknown as Record<string, unknown>),
       );
       setMessages(list);
@@ -122,7 +123,7 @@ export function useChat(isOpen: boolean) {
       try {
         const { data } = await chatApi.sendMessage(trimmed);
         console.log('[CHAT] send ok', data);
-        const item = normalizeMessage((data.message ?? {}) as unknown as Record<string, unknown>);
+        const item = normalizeMessage((data as unknown as Record<string, unknown>) ?? {});
         setMessages((prev) => mergeMessages(prev, [item]));
       } catch (err: unknown) {
         console.error('[chat-ui] send failed', err);

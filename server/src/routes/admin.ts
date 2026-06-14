@@ -2,7 +2,6 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validation';
 import { prisma } from '../lib/prisma';
-import { buildMessageCreateData, chatIdFromUserId, resolveSenderId, serializeMessage } from '../lib/chatHelpers';
 import { emitNewMessage } from '../socket';
 import upload from '../middleware/upload';
 import { env } from '../config/env';
@@ -308,7 +307,7 @@ router.get('/chats', async (_req, res) => {
   try {
     console.log('[admin] GET /chats');
     const grouped = await prisma.message.groupBy({
-      by: ['userId'],
+      by: ['senderId'],
       _count: { _all: true },
     });
 
@@ -316,15 +315,15 @@ router.get('/chats', async (_req, res) => {
       grouped.map(async (row) => {
         const [user, lastMessage, unreadCount] = await Promise.all([
           prisma.user.findUnique({
-            where: { id: row.userId },
+            where: { id: row.senderId },
             select: { id: true, email: true },
           }),
           prisma.message.findFirst({
-            where: { userId: row.userId },
+            where: { senderId: row.senderId },
             orderBy: { createdAt: 'desc' },
           }),
           prisma.message.count({
-            where: { userId: row.userId, isAdmin: false, isRead: false },
+            where: { senderId: row.senderId, isAdmin: false, isRead: false },
           }),
         ]);
 
@@ -332,7 +331,7 @@ router.get('/chats', async (_req, res) => {
         const name = email.includes('@') ? email.split('@')[0] : email;
 
         return {
-          userId: row.userId,
+          userId: row.senderId,
           email,
           name,
           lastMessage: lastMessage
@@ -385,13 +384,12 @@ router.get('/chats/:userId', validate(adminChatUserIdSchema), async (req, res, n
     }
 
     const messages = await prisma.message.findMany({
-      where: { userId },
+      where: { senderId: userId },
       orderBy: { createdAt: 'asc' },
-      include: { user: { select: { email: true } } },
     });
 
     await prisma.message.updateMany({
-      where: { userId, isAdmin: false, isRead: false },
+      where: { senderId: userId, isAdmin: false, isRead: false },
       data: { isRead: true },
     });
 
@@ -399,7 +397,8 @@ router.get('/chats/:userId', validate(adminChatUserIdSchema), async (req, res, n
       user: { id: user.id, email: user.email },
       messages: messages.map((m) => ({
         id: m.id,
-        userId: m.userId,
+        userId: m.senderId,
+        senderId: m.senderId,
         content: m.content,
         isAdmin: m.isAdmin,
         isRead: m.isRead,
@@ -423,15 +422,15 @@ router.post('/message', validate(adminPostChatMessageSchema), async (req, res) =
     }
 
     const message = await prisma.message.create({
-      data: buildMessageCreateData(
-        userId,
-        resolveSenderId('admin', true),
-        String(content).trim(),
-        true,
-      ),
+      data: {
+        senderId: userId,
+        content: String(content).trim(),
+        isAdmin: true,
+        isRead: false,
+      },
     });
 
-    emitNewMessage(userId, serializeMessage(message));
+    emitNewMessage(userId, message);
 
     console.log('[admin] POST /message ok, id:', message.id);
     res.status(201).json({ message });
@@ -445,7 +444,7 @@ router.post('/message', validate(adminPostChatMessageSchema), async (req, res) =
 router.delete('/chats/:userId/clear', validate(adminChatUserIdSchema), async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const result = await prisma.message.deleteMany({ where: { userId } });
+    const result = await prisma.message.deleteMany({ where: { senderId: userId } });
     console.log('[admin] DELETE /chats/:userId/clear', userId, result.count);
     res.json({ message: 'History cleared', deletedCount: result.count });
   } catch (error) {
@@ -456,7 +455,7 @@ router.delete('/chats/:userId/clear', validate(adminChatUserIdSchema), async (re
 router.delete('/chats/:userId', validate(adminChatUserIdSchema), async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const result = await prisma.message.deleteMany({ where: { userId } });
+    const result = await prisma.message.deleteMany({ where: { senderId: userId } });
     res.json({ message: 'Conversation deleted', deletedCount: result.count });
   } catch (error) {
     next(error);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { adminApiClient, chatApi, type AdminChatSummary } from '../api';
+import { adminApiClient, type AdminChatSummary } from '../api';
 import { getAdminBearerToken } from '../utils/adminAuth';
 import type { ChatMessageItem } from './useChat';
 
@@ -125,7 +125,7 @@ export function useAdminChat(selectedUserId: string | null) {
     if (!selectedUserId || !token) return;
     if (!window.confirm('Очистить всю историю сообщений в этом чате?')) return;
     try {
-      await chatApi.clearChat(selectedUserId);
+      await adminApiClient.deleteAdminChat(selectedUserId);
       setMessages([]);
       await loadThreads();
     } catch (err) {

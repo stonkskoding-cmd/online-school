@@ -5,7 +5,7 @@ import PackageDetail from './pages/PackageDetail';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminChatPage from './pages/AdminChatPage';
 import PrivateAdminRoute from './components/PrivateAdminRoute';
-import UserChat from './components/chat/UserChat';
+import UserChat from './components/UserChat';
 
 export default function App() {
   return (

@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 
 import apiRouter from './routes';
-import chatRoutes from './routes/chat';
+import { chatRouter } from './routes/chat';
 import { CORS_BUILD_ID } from './lib/cors';
 import { corsMiddleware, corsErrorLogger } from './middleware/cors';
 
@@ -42,7 +42,7 @@ app.use(
     console.log(`[CHAT ROUTER] ${req.method} ${req.path}`);
     next();
   },
-  chatRoutes,
+  chatRouter,
 );
 
 app.use('/api', apiRouter);
