@@ -1,1 +1,1 @@
-feat: Separate clear chat and delete chat actions in admin
+chore: Remove temporary git commit message file
