@@ -83,6 +83,7 @@ export const adminApiClient = {
   adminChats: () => adminApi.get('/admin/chats'),
   adminChatThread: (userId) => adminApi.get(`/admin/chats/${userId}`),
   postAdminChatMessage: (payload) => adminApi.post('/admin/message', payload),
+  clearAdminChat: (userId) => adminApi.delete(`/admin/chats/${userId}/clear`),
   deleteAdminChat: (userId) => adminApi.delete(`/admin/chats/${userId}`),
   deleteAdminMessage: (messageId) => adminApi.delete(`/admin/message/${messageId}`),
   getSiteSettings: () => adminApi.get('/site-settings'),

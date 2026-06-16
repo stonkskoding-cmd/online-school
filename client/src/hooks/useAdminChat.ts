@@ -123,20 +123,20 @@ export function useAdminChat(selectedUserId: string | null) {
 
   const clearHistory = useCallback(async () => {
     if (!selectedUserId || !token) return;
-    if (!window.confirm('Очистить всю историю сообщений в этом чате?')) return;
+    if (!window.confirm('Очистить все сообщения в этом чате? Чат останется открытым.')) return;
     try {
-      await adminApiClient.deleteAdminChat(selectedUserId);
+      await adminApiClient.clearAdminChat(selectedUserId);
       setMessages([]);
       await loadThreads();
     } catch (err) {
-      setError('Не удалось очистить историю');
+      setError('Не удалось очистить переписку');
       console.error(err);
     }
   }, [selectedUserId, token, loadThreads]);
 
   const deleteChat = useCallback(async () => {
     if (!selectedUserId || !token) return;
-    if (!window.confirm('Удалить чат полностью? Диалог исчезнет из списка.')) return;
+    if (!window.confirm('Удалить чат полностью? Переписка будет удалена, чат закроется.')) return;
     try {
       await adminApiClient.deleteAdminChat(selectedUserId);
       setMessages([]);

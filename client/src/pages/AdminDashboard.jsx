@@ -479,7 +479,7 @@ export default function AdminDashboard() {
 
   const handleDeleteChatRow = async (userId, e) => {
     e?.stopPropagation();
-    if (!window.confirm('Удалить всю переписку с этим пользователем?')) return;
+    if (!window.confirm('Удалить чат с этим пользователем? Переписка будет удалена.')) return;
     setError('');
     try {
       await adminApiClient.deleteAdminChat(userId);
@@ -493,13 +493,40 @@ export default function AdminDashboard() {
         setChatMessages([]);
       }
     } catch {
-      setError('Не удалось удалить переписку');
+      setError('Не удалось удалить чат');
     }
   };
 
-  const handleClearCurrentThread = () => {
+  const handleClearCurrentThread = async () => {
     if (selectedChatId == null) return;
-    void handleDeleteChatRow(selectedChatId);
+    if (!window.confirm('Очистить все сообщения? Чат останется открытым.')) return;
+    setError('');
+    try {
+      await adminApiClient.clearAdminChat(selectedChatId);
+      setChatMessages([]);
+      const { data } = await adminApiClient.adminChats();
+      setChats(data.chats ?? []);
+      setTotalUnread(data.totalUnread ?? 0);
+    } catch {
+      setError('Не удалось очистить переписку');
+    }
+  };
+
+  const handleDeleteCurrentThread = async () => {
+    if (selectedChatId == null) return;
+    if (!window.confirm('Удалить чат полностью? Переписка будет удалена, чат закроется.')) return;
+    setError('');
+    try {
+      await adminApiClient.deleteAdminChat(selectedChatId);
+      const { data } = await adminApiClient.adminChats();
+      setChats(data.chats ?? []);
+      setTotalUnread(data.totalUnread ?? 0);
+      setSelectedChatId(null);
+      setSelectedUserEmail('');
+      setChatMessages([]);
+    } catch {
+      setError('Не удалось удалить чат');
+    }
   };
 
   const handleRefreshChats = async () => {
@@ -694,7 +721,7 @@ export default function AdminDashboard() {
                         ) : null}
                         <button
                           type="button"
-                          title="Удалить переписку"
+                          title="Удалить чат"
                           onClick={(ev) => handleDeleteChatRow(c.userId, ev)}
                           className="rounded-full p-2 text-gray-400 opacity-80 transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
                         >
@@ -760,9 +787,16 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={handleClearCurrentThread}
+                        className="rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50"
+                      >
+                        Очистить переписку
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDeleteCurrentThread}
                         className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
                       >
-                        🗑️ Очистить переписку
+                        Удалить чат
                       </button>
                       <button
                         type="button"

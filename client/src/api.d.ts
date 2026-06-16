@@ -33,7 +33,8 @@ export declare const adminApiClient: {
   adminChats: () => Promise<{ data: { chats: AdminChatSummary[]; totalUnread: number } }>;
   adminChatThread: (userId: string) => Promise<{ data: { messages: ApiChatMessage[] } }>;
   postAdminChatMessage: (payload: { userId: string; content: string }) => Promise<{ data: { message: ApiChatMessage } }>;
-  deleteAdminChat: (userId: string) => Promise<{ data: { message: string } }>;
+  clearAdminChat: (userId: string) => Promise<{ data: { message: string; deletedCount: number } }>;
+  deleteAdminChat: (userId: string) => Promise<{ data: { message: string; deletedCount: number } }>;
   getSiteSettings: () => Promise<{ data: { settings: Record<string, string> } }>;
   updateSiteSettings: (settings: Record<string, string>) => Promise<{ data: { ok: boolean; settings: Record<string, string> } }>;
   resetFooterSettings: () => Promise<{ data: { ok: boolean; settings: Record<string, string> } }>;

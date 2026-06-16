@@ -70,7 +70,7 @@ export default function AdminChatWindow({
                 onClick={() => void onClearHistory()}
                 className="rounded-lg bg-white/15 px-2.5 py-1 text-xs font-medium hover:bg-white/25"
               >
-                Очистить историю
+                Очистить переписку
               </button>
               <button
                 type="button"

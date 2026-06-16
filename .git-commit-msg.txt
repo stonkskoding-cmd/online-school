@@ -1,1 +1,1 @@
-feat: Migrate file uploads from Cloudinary to Supabase Storage
+feat: Separate clear chat and delete chat actions in admin
