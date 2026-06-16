@@ -1,1 +1,1 @@
-chore: Update git commit helper script
+feat: Add purchase animation for package cards

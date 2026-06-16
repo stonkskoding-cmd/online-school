@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { purchasesApi } from '../api';
 
 const CATEGORY_LABELS = {
@@ -6,6 +7,9 @@ const CATEGORY_LABELS = {
   'EGE-IST': 'ЕГЭ История',
   'EGE-SOC': 'ЕГЭ Обществознание',
 };
+
+const PURCHASE_ANIMATION_MS = 1000;
+const SUCCESS_MESSAGE_MS = 2000;
 
 function materialIcon(type) {
   if (type === 'video') return '🎥';
@@ -19,33 +23,105 @@ function normalizeMaterials(raw) {
   return [...raw].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
+  const navigate = useNavigate();
+  const redirectTimerRef = useRef(null);
   const [expanded, setExpanded] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(false);
+  const [successVisible, setSuccessVisible] = useState(false);
   const materials = normalizeMaterials(item.materials);
+
+  useEffect(() => {
+    if (!isPurchased) {
+      setSuccessVisible(false);
+      return undefined;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setSuccessVisible(true));
+    });
+
+    redirectTimerRef.current = setTimeout(() => {
+      navigate('/my-purchases');
+    }, SUCCESS_MESSAGE_MS);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    };
+  }, [isPurchased, navigate]);
 
   const buy = async (e) => {
     e.stopPropagation();
+    if (isPurchasing || isPurchased) return;
+
     if (!isAuthorized) {
       onNeedAuth();
       return;
     }
 
+    setIsPurchasing(true);
+
     try {
-      await purchasesApi.create(item.id);
-      alert('Пакет добавлен в покупки');
+      await Promise.all([purchasesApi.create(item.id), delay(PURCHASE_ANIMATION_MS)]);
+      setIsPurchasing(false);
+      setIsPurchased(true);
     } catch (error) {
+      setIsPurchasing(false);
       alert(error?.response?.data?.message || 'Не удалось купить пакет');
     }
   };
 
   const toggleExpand = () => setExpanded((v) => !v);
 
+  const cardStateClass = isPurchasing
+    ? 'scale-105 animate-pulse shadow-xl'
+    : expanded
+      ? 'ring-2 ring-primary/20 shadow-lg'
+      : 'hover:-translate-y-0.5 hover:scale-105 hover:shadow-lg';
+
   return (
     <article
-      className={`overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 ${
-        expanded ? 'ring-2 ring-primary/20 shadow-lg' : 'hover:-translate-y-0.5 hover:shadow-lg'
-      }`}
+      className={`relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 ease-in-out ${cardStateClass}`}
     >
+      {isPurchased ? (
+        <div
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 rounded-xl bg-white/95 px-4 text-center backdrop-blur-[1px]"
+          aria-live="polite"
+        >
+          <div
+            className={`flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 transition-opacity duration-300 ease-in-out ${
+              successVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <svg
+              className="h-9 w-9 text-emerald-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p
+            className={`text-base font-semibold text-emerald-700 transition-opacity duration-300 ease-in-out delay-100 ${
+              successVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            ✅ Покупка успешна!
+          </p>
+        </div>
+      ) : null}
+
       {item.coverUrl ? (
         <button type="button" onClick={toggleExpand} className="block w-full text-left">
           <img
@@ -164,16 +240,18 @@ export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
             <button
               type="button"
               onClick={toggleExpand}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              disabled={isPurchasing || isPurchased}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {expanded ? 'Скрыть' : 'Подробнее'}
             </button>
             <button
               type="button"
               onClick={buy}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-light"
+              disabled={isPurchasing || isPurchased}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-all duration-300 ease-in-out hover:bg-primary-light disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Купить
+              {isPurchasing ? 'Покупка…' : isPurchased ? 'Куплено' : 'Купить'}
             </button>
           </div>
         </div>

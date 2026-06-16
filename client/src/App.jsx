@@ -27,6 +27,7 @@ export default function App() {
         <Route path="/package/:id" element={<PackageDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/purchases" element={<Dashboard />} />
+        <Route path="/my-purchases" element={<Dashboard />} />
 
         {/* Админка (вход — через модалку на главной) */}
         <Route path="/admin" element={<Navigate to="/" replace />} />
