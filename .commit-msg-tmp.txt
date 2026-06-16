@@ -1,1 +1,1 @@
-feat: Add purchase animation for package cards
+feat: Add package purchase statistics to admin panel

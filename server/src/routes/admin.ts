@@ -9,6 +9,75 @@ import { handleMulterError } from '../middleware/uploadRespond';
 
 const router = Router();
 
+const COUNTABLE_PURCHASE_STATUSES = ['paid', 'pending'] as const;
+
+type PackageWithSales = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  category: string;
+  coverUrl: string | null;
+  materials: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+  salesCount: number;
+  revenue: number;
+};
+
+async function loadPackagesWithSalesStats(): Promise<{
+  packages: PackageWithSales[];
+  stats: {
+    totalSales: number;
+    totalRevenue: number;
+    totalPackages: number;
+    topPackage: { id: string; title: string; salesCount: number } | null;
+  };
+}> {
+  const rows = await prisma.package.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: {
+      _count: {
+        select: {
+          purchases: {
+            where: { status: { in: [...COUNTABLE_PURCHASE_STATUSES] } },
+          },
+        },
+      },
+    },
+  });
+
+  const packages: PackageWithSales[] = rows.map(({ _count, ...pkg }) => {
+    const salesCount = _count.purchases;
+    return {
+      ...pkg,
+      salesCount,
+      revenue: pkg.price * salesCount,
+    };
+  });
+
+  const totalSales = packages.reduce((sum, pkg) => sum + pkg.salesCount, 0);
+  const totalRevenue = packages.reduce((sum, pkg) => sum + pkg.revenue, 0);
+  const topRow =
+    packages.length === 0
+      ? null
+      : packages.reduce((best, pkg) => (pkg.salesCount > best.salesCount ? pkg : best));
+
+  return {
+    packages,
+    stats: {
+      totalSales,
+      totalRevenue,
+      totalPackages: packages.length,
+      topPackage:
+        topRow && topRow.salesCount > 0
+          ? { id: topRow.id, title: topRow.title, salesCount: topRow.salesCount }
+          : null,
+    },
+  };
+}
+
 /** Материалы: text — content; image|video|file — url. order — coerce (из localStorage может быть строка). */
 const materialSchema = z
   .object({
@@ -136,14 +205,36 @@ router.get('/stats', async (_req, res, next) => {
   }
 });
 
+router.get('/packages/stats', async (_req, res) => {
+  try {
+    console.log('[admin] GET /packages/stats');
+    const { stats, packages } = await loadPackagesWithSalesStats();
+    res.json({
+      totalSales: stats.totalSales,
+      totalRevenue: stats.totalRevenue,
+      totalPackages: stats.totalPackages,
+      topPackage: stats.topPackage,
+      packagesWithStats: packages.map(({ id, title, price, salesCount, revenue }) => ({
+        id,
+        title,
+        price,
+        salesCount,
+        revenue,
+      })),
+    });
+  } catch (error) {
+    console.error('[admin] GET /packages/stats failed', error);
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    res.status(500).json({ message });
+  }
+});
+
 router.get('/packages', async (_req, res) => {
   try {
     console.log('[admin] GET /packages');
-    const packages = await prisma.package.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+    const { packages, stats } = await loadPackagesWithSalesStats();
     console.log('[admin] GET /packages ok, count:', packages.length);
-    res.json({ packages });
+    res.json({ packages, stats });
   } catch (error) {
     console.error('[admin] GET /packages failed', error);
     const message = error instanceof Error ? error.message : 'Internal server error';

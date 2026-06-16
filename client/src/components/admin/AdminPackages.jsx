@@ -25,7 +25,26 @@ const CATEGORY_OPTIONS = [
   { value: 'EGE-SOC', label: 'ЕГЭ Обществознание' },
 ];
 
-export default function AdminPackages({ packages, loading, onCreate, onEdit, onDelete }) {
+const EMPTY_PACKAGE_STATS = {
+  totalSales: 0,
+  totalRevenue: 0,
+  totalPackages: 0,
+  topPackage: null,
+};
+
+function StatCard({ icon, label, value, sub }) {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {icon} {label}
+      </p>
+      <p className="mt-2 text-2xl font-bold tabular-nums text-[#244E77]">{value}</p>
+      {sub ? <p className="mt-1 text-xs text-gray-500">{sub}</p> : null}
+    </div>
+  );
+}
+
+export default function AdminPackages({ packages, stats = EMPTY_PACKAGE_STATS, loading, onCreate, onEdit, onDelete }) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 text-gray-600">
@@ -37,28 +56,67 @@ export default function AdminPackages({ packages, loading, onCreate, onEdit, onD
 
   if (packages.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center shadow-sm">
-        <p className="text-gray-600">Пакетов пока нет.</p>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="mt-4 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#244E77] to-[#163754] px-6 py-3 text-sm font-bold text-[#D4AF37] shadow-md transition hover:shadow-lg"
-        >
-          Создать первый пакет
-        </button>
-      </div>
+      <>
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard icon="📊" label="Всего продаж" value={stats.totalSales ?? 0} />
+          <StatCard
+            icon="💰"
+            label="Общая выручка"
+            value={`${Number(stats.totalRevenue ?? 0).toLocaleString('ru-RU')} ₽`}
+          />
+          <StatCard icon="📦" label="Всего пакетов" value={stats.totalPackages ?? 0} />
+          <StatCard
+            icon="🏆"
+            label="Самый популярный"
+            value={stats.topPackage?.title ?? '—'}
+            sub={stats.topPackage ? `${stats.topPackage.salesCount} продаж` : 'Пока нет продаж'}
+          />
+        </div>
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center shadow-sm">
+          <p className="text-gray-600">Пакетов пока нет.</p>
+          <button
+            type="button"
+            onClick={onCreate}
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#244E77] to-[#163754] px-6 py-3 text-sm font-bold text-[#D4AF37] shadow-md transition hover:shadow-lg"
+          >
+            Создать первый пакет
+          </button>
+        </div>
+      </>
     );
   }
 
   return (
     <>
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard icon="📊" label="Всего продаж" value={stats.totalSales ?? 0} />
+        <StatCard
+          icon="💰"
+          label="Общая выручка"
+          value={`${Number(stats.totalRevenue ?? 0).toLocaleString('ru-RU')} ₽`}
+        />
+        <StatCard icon="📦" label="Всего пакетов" value={stats.totalPackages ?? packages.length} />
+        <StatCard
+          icon="🏆"
+          label="Самый популярный"
+          value={stats.topPackage?.title ?? '—'}
+          sub={
+            stats.topPackage
+              ? `${stats.topPackage.salesCount} продаж`
+              : 'Пока нет продаж'
+          }
+        />
+      </div>
+
       {/* Десктоп: таблица с горизонтальной прокруткой */}
       <div className="hidden overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-md md:block">
-        <table className="min-w-[640px] w-full divide-y divide-gray-200 text-left text-sm">
+        <table className="min-w-[760px] w-full divide-y divide-gray-200 text-left text-sm">
           <thead className="bg-gradient-to-r from-[#244E77] to-[#163754] text-white">
             <tr>
               <th className="px-4 py-3 font-semibold">Название</th>
               <th className="px-4 py-3 font-semibold">Цена</th>
+              <th className="px-4 py-3 font-semibold">Продажи</th>
+              <th className="px-4 py-3 font-semibold">Выручка</th>
               <th className="px-4 py-3 font-semibold">Материалы</th>
               <th className="px-4 py-3 font-semibold">Статус</th>
               <th className="px-4 py-3 font-semibold">Категория</th>
@@ -69,6 +127,8 @@ export default function AdminPackages({ packages, loading, onCreate, onEdit, onD
             {packages.map((pkg) => {
               const st = packageStatus(pkg);
               const mc = countFilledMaterials(pkg.materials);
+              const salesCount = Number(pkg.salesCount ?? 0);
+              const revenue = Number(pkg.revenue ?? pkg.price * salesCount);
               return (
                 <tr key={pkg.id} className="transition hover:bg-gray-50/80">
                   <td className="max-w-[14rem] px-4 py-3">
@@ -77,6 +137,10 @@ export default function AdminPackages({ packages, loading, onCreate, onEdit, onD
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 font-medium tabular-nums">
                     {Number(pkg.price).toLocaleString('ru-RU')} ₽
+                  </td>
+                  <td className="px-4 py-3 tabular-nums text-gray-700">{salesCount}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-medium tabular-nums text-emerald-700">
+                    {revenue.toLocaleString('ru-RU')} ₽
                   </td>
                   <td className="px-4 py-3 tabular-nums text-gray-700">{mc}</td>
                   <td className="px-4 py-3">
@@ -113,6 +177,8 @@ export default function AdminPackages({ packages, loading, onCreate, onEdit, onD
         {packages.map((pkg) => {
           const st = packageStatus(pkg);
           const mc = countFilledMaterials(pkg.materials);
+          const salesCount = Number(pkg.salesCount ?? 0);
+          const revenue = Number(pkg.revenue ?? pkg.price * salesCount);
           return (
             <div
               key={pkg.id}
@@ -132,6 +198,16 @@ export default function AdminPackages({ packages, loading, onCreate, onEdit, onD
                   <dt className="text-gray-400">Цена</dt>
                   <dd className="font-semibold tabular-nums text-gray-900">
                     {Number(pkg.price).toLocaleString('ru-RU')} ₽
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-gray-400">Продажи</dt>
+                  <dd className="font-semibold tabular-nums">{salesCount}</dd>
+                </div>
+                <div>
+                  <dt className="text-gray-400">Выручка</dt>
+                  <dd className="font-semibold tabular-nums text-emerald-700">
+                    {revenue.toLocaleString('ru-RU')} ₽
                   </dd>
                 </div>
                 <div>

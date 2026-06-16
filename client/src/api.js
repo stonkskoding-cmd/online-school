@@ -77,6 +77,7 @@ adminApi.interceptors.response.use(
 export const adminApiClient = {
   stats: () => adminApi.get('/admin/stats'),
   packages: () => adminApi.get('/admin/packages'),
+  packageStats: () => adminApi.get('/admin/packages/stats'),
   createPackage: (payload) => adminApi.post('/admin/packages', payload),
   updatePackage: (id, payload) => adminApi.put(`/admin/packages/${id}`, payload),
   deletePackage: (id) => adminApi.delete(`/admin/packages/${id}`),

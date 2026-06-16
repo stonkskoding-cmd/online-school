@@ -62,6 +62,12 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('packages');
 
   const [packages, setPackages] = useState([]);
+  const [packageStats, setPackageStats] = useState({
+    totalSales: 0,
+    totalRevenue: 0,
+    totalPackages: 0,
+    topPackage: null,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
@@ -109,6 +115,14 @@ export default function AdminDashboard() {
       const { data } = await adminApiClient.packages();
       console.log('[admin-ui] loadPackages ok, count:', data.packages?.length ?? 0);
       setPackages(data.packages ?? []);
+      setPackageStats(
+        data.stats ?? {
+          totalSales: 0,
+          totalRevenue: 0,
+          totalPackages: data.packages?.length ?? 0,
+          topPackage: null,
+        },
+      );
     } catch (err) {
       console.error('[admin-ui] loadPackages failed', err);
       const msg = err.response?.data?.message || 'Не удалось загрузить пакеты';
@@ -633,6 +647,7 @@ export default function AdminDashboard() {
 
             <AdminPackages
               packages={packages}
+              stats={packageStats}
               loading={loading}
               onCreate={openCreate}
               onEdit={openEdit}
