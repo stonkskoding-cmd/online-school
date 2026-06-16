@@ -80,15 +80,6 @@ export const adminApiClient = {
   createPackage: (payload) => adminApi.post('/admin/packages', payload),
   updatePackage: (id, payload) => adminApi.put(`/admin/packages/${id}`, payload),
   deletePackage: (id) => adminApi.delete(`/admin/packages/${id}`),
-  uploadFile: (formData) => adminApi.post('/upload', formData),
-  uploadFileWithProgress: (formData, onProgress) =>
-    adminApi.post('/upload', formData, {
-      onUploadProgress: (evt) => {
-        if (evt.total && onProgress) {
-          onProgress(Math.round((evt.loaded * 100) / evt.total));
-        }
-      },
-    }),
   adminChats: () => adminApi.get('/admin/chats'),
   adminChatThread: (userId) => adminApi.get(`/admin/chats/${userId}`),
   postAdminChatMessage: (payload) => adminApi.post('/admin/message', payload),

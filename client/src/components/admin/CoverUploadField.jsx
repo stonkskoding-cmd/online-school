@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { uploadFileToStorage } from '../../lib/supabase';
 
 function isImageFile(fileOrUrl) {
   if (!fileOrUrl) return false;
@@ -18,17 +19,25 @@ export default function CoverUploadField({
   id = 'package-cover-upload',
   coverUrl = '',
   setCoverUrl,
-  onFile,
   disabled = false,
-  uploading = false,
-  progress = 0,
+  onUploadingChange,
 }) {
   const [dragOver, setDragOver] = useState(false);
   const [localPreview, setLocalPreview] = useState(null);
   const [localFileName, setLocalFileName] = useState('');
   const [localMime, setLocalMime] = useState('');
+  const [uploadError, setUploadError] = useState('');
+  const [uploading, setUploading] = useState(false);
   const inputRef = useRef(null);
   const blobRef = useRef(null);
+
+  const setUploadingState = useCallback(
+    (value) => {
+      setUploading(value);
+      onUploadingChange?.(value);
+    },
+    [onUploadingChange],
+  );
 
   const revokeBlob = useCallback(() => {
     if (blobRef.current) {
@@ -49,12 +58,15 @@ export default function CoverUploadField({
   const displaySrc = localPreview || (coverUrl && isImageFile(coverUrl) ? coverUrl : null);
   const showFilePlaceholder = !displaySrc && (coverUrl || localFileName);
 
-  const handlePick = useCallback(
-    (file) => {
+  const uploadCover = useCallback(
+    async (file) => {
       if (!file || disabled || uploading) return;
       revokeBlob();
       setLocalFileName(file.name);
       setLocalMime(file.type);
+      setUploadError('');
+      setUploadingState(true);
+
       if (isImageFile(file)) {
         const url = URL.createObjectURL(file);
         blobRef.current = url;
@@ -62,9 +74,28 @@ export default function CoverUploadField({
       } else {
         setLocalPreview(null);
       }
-      onFile?.(file);
+
+      try {
+        const publicUrl = await uploadFileToStorage('packages', file);
+        setCoverUrl?.(publicUrl);
+        if (isImageFile(publicUrl)) {
+          revokeBlob();
+          setLocalPreview(publicUrl);
+        }
+      } catch (error) {
+        revokeBlob();
+        setLocalPreview(null);
+        setLocalFileName('');
+        setLocalMime('');
+        setUploadError(
+          error instanceof Error ? error.message : 'Не удалось загрузить обложку в Supabase Storage',
+        );
+        if (inputRef.current) inputRef.current.value = '';
+      } finally {
+        setUploadingState(false);
+      }
     },
-    [disabled, uploading, onFile, revokeBlob],
+    [disabled, uploading, revokeBlob, setCoverUrl, setUploadingState],
   );
 
   const clearCover = () => {
@@ -72,6 +103,7 @@ export default function CoverUploadField({
     setLocalPreview(null);
     setLocalFileName('');
     setLocalMime('');
+    setUploadError('');
     setCoverUrl?.('');
     if (inputRef.current) inputRef.current.value = '';
   };
@@ -79,13 +111,14 @@ export default function CoverUploadField({
   const onDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    handlePick(e.dataTransfer?.files?.[0]);
+    uploadCover(e.dataTransfer?.files?.[0]);
   };
 
   if (displaySrc || showFilePlaceholder) {
     return (
       <div className="space-y-2">
         <span className="block text-xs font-semibold text-gray-700">Обложка</span>
+        {uploadError ? <p className="text-xs text-red-600">{uploadError}</p> : null}
         <div className="relative h-48 w-full overflow-hidden rounded-lg bg-gray-100 shadow-inner ring-1 ring-gray-200">
           {displaySrc ? (
             <img
@@ -115,13 +148,7 @@ export default function CoverUploadField({
 
           {uploading ? (
             <div className="absolute inset-x-0 bottom-0 bg-black/50 px-3 py-2">
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/30">
-                <div
-                  className="h-full rounded-full bg-[#D4AF37] transition-all duration-300"
-                  style={{ width: `${Math.min(100, Math.max(8, progress))}%` }}
-                />
-              </div>
-              <p className="mt-1 text-center text-xs text-white">Загрузка… {progress}%</p>
+              <p className="text-center text-xs text-white">Загрузка в Supabase…</p>
             </div>
           ) : null}
 
@@ -145,6 +172,7 @@ export default function CoverUploadField({
     <div className="space-y-2">
       <span className="block text-xs font-semibold text-gray-700">Обложка</span>
       <p className="text-xs text-gray-500">По желанию. Изображение для карточки в каталоге.</p>
+      {uploadError ? <p className="text-xs text-red-600">{uploadError}</p> : null}
       <div
         role="button"
         tabIndex={0}
@@ -175,7 +203,7 @@ export default function CoverUploadField({
           className="hidden"
           disabled={disabled || uploading}
           onChange={(e) => {
-            handlePick(e.target.files?.[0]);
+            uploadCover(e.target.files?.[0]);
             e.target.value = '';
           }}
         />
@@ -185,12 +213,7 @@ export default function CoverUploadField({
           <p className="mt-1 text-xs text-gray-400">JPG, PNG, WebP · до 10 МБ</p>
         </label>
         {uploading ? (
-          <div className="mx-auto mt-4 h-2 max-w-xs overflow-hidden rounded-full bg-gray-200">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#244E77] to-[#D4AF37] transition-all"
-              style={{ width: `${Math.min(100, progress)}%` }}
-            />
-          </div>
+          <p className="mt-4 text-xs font-medium text-[#244E77]">Загрузка в Supabase…</p>
         ) : null}
       </div>
     </div>

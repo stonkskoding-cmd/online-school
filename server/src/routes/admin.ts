@@ -7,8 +7,6 @@ import upload from '../middleware/upload';
 import { env } from '../config/env';
 import { handleMulterError } from '../middleware/uploadRespond';
 
-export { adminUploadMulter, adminUploadRespond } from '../utils/cloudinary';
-
 const router = Router();
 
 /** Материалы: text — content; image|video|file — url. order — coerce (из localStorage может быть строка). */

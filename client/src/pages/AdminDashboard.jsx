@@ -71,8 +71,6 @@ export default function AdminDashboard() {
   const [successMessage, setSuccessMessage] = useState('');
   const [draftHint, setDraftHint] = useState(null);
   const [packageFormError, setPackageFormError] = useState('');
-  const [coverUploadProgress, setCoverUploadProgress] = useState(0);
-  const [materialUploadProgress, setMaterialUploadProgress] = useState(0);
 
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -81,9 +79,6 @@ export default function AdminDashboard() {
   const [description, setDescription] = useState('');
   const [materials, setMaterials] = useState([emptyMaterial(0)]);
   const [coverUrl, setCoverUrl] = useState('');
-  const [coverUploading, setCoverUploading] = useState(false);
-  /** Индекс строки материала, для которой идёт загрузка файла (null — нет) */
-  const [materialUploadIndex, setMaterialUploadIndex] = useState(null);
 
   const [chats, setChats] = useState([]);
   const [totalUnread, setTotalUnread] = useState(0);
@@ -280,31 +275,6 @@ export default function AdminDashboard() {
     setModalOpen(true);
   };
 
-  const handleCoverFileChange = async (file) => {
-    if (!file) return;
-    setCoverUploading(true);
-    setCoverUploadProgress(0);
-    setError('');
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const { data } = await adminApiClient.uploadFileWithProgress(fd, (p) => setCoverUploadProgress(p));
-      if (data?.url) setCoverUrl(data.url);
-      setCoverUploadProgress(100);
-    } catch (err) {
-      console.error('[admin-ui] cover upload failed', err);
-      const isNetwork = err?.code === 'ERR_NETWORK' || err?.message === 'Network Error';
-      setError(
-        isNetwork
-          ? 'Сервер недоступен. Подождите и повторите загрузку.'
-          : err?.response?.data?.message || err?.response?.data?.error || 'Не удалось загрузить файл.',
-      );
-    } finally {
-      setCoverUploading(false);
-      setTimeout(() => setCoverUploadProgress(0), 400);
-    }
-  };
-
   const openEdit = (pkg) => {
     setFieldErrors({});
     setPackageFormError('');
@@ -351,36 +321,6 @@ export default function AdminDashboard() {
       setCoverUrl('');
     }
   };
-  const handleMaterialFileUpload = async (index, file) => {
-    setMaterialUploadIndex(index);
-    setMaterialUploadProgress(0);
-    setError('');
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const { data } = await adminApiClient.uploadFileWithProgress(fd, (p) => setMaterialUploadProgress(p));
-      if (!data?.url) return;
-      const guess = file.type.startsWith('image/')
-        ? 'image'
-        : file.type.startsWith('video/')
-          ? 'video'
-          : 'file';
-      setMaterials((prev) =>
-        prev.map((row, i) => {
-          if (i !== index) return row;
-          const nextType = row.type === 'text' ? guess : row.type;
-          return { ...row, url: data.url, type: nextType, content: '' };
-        }),
-      );
-      setMaterialUploadProgress(100);
-    } catch {
-      setError('Не удалось загрузить файл материала.');
-    } finally {
-      setMaterialUploadIndex(null);
-      setTimeout(() => setMaterialUploadProgress(0), 400);
-    }
-  };
-
   const normalizedMaterials = () =>
     materials
       .map((m, i) => {
@@ -919,12 +859,6 @@ export default function AdminDashboard() {
         setCoverUrl={setCoverUrl}
         materials={materials}
         setMaterials={setMaterials}
-        coverUploading={coverUploading}
-        coverUploadProgress={coverUploadProgress}
-        materialUploadIndex={materialUploadIndex}
-        materialUploadProgress={materialUploadProgress}
-        onCoverFile={handleCoverFileChange}
-        onMaterialFileUpload={handleMaterialFileUpload}
         saving={saving}
         onSubmit={handleSubmit}
         fieldErrors={fieldErrors}

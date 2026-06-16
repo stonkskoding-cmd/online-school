@@ -48,12 +48,6 @@ export default function PackageFormModal({
   setCoverUrl,
   materials,
   setMaterials,
-  coverUploading,
-  coverUploadProgress,
-  materialUploadIndex,
-  materialUploadProgress,
-  onCoverFile,
-  onMaterialFileUpload,
   saving,
   onSubmit,
   fieldErrors,
@@ -61,6 +55,9 @@ export default function PackageFormModal({
   onDiscardDraft,
 }) {
   const [tab, setTab] = useState('edit');
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [materialUploading, setMaterialUploading] = useState(false);
+  const fileUploading = coverUploading || materialUploading;
 
   useEffect(() => {
     if (open) setTab('edit');
@@ -270,10 +267,8 @@ export default function PackageFormModal({
                       id="package-cover-upload"
                       coverUrl={coverUrl}
                       setCoverUrl={setCoverUrl}
-                      onFile={onCoverFile}
                       disabled={saving}
-                      uploading={coverUploading}
-                      progress={coverUploadProgress}
+                      onUploadingChange={setCoverUploading}
                     />
                   </div>
                 </div>
@@ -294,11 +289,9 @@ export default function PackageFormModal({
                 <PackageMaterialsEditor
                   materials={materials}
                   setMaterials={setMaterials}
-                  materialUploadIndex={materialUploadIndex}
-                  onMaterialFileUpload={onMaterialFileUpload}
                   fieldErrors={fieldErrors}
                   disabled={saving}
-                  materialUploadProgress={materialUploadProgress}
+                  onUploadingChange={setMaterialUploading}
                 />
               </section>
             </div>
@@ -306,7 +299,7 @@ export default function PackageFormModal({
             <div className="flex shrink-0 flex-wrap items-center gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:px-6">
               <button
                 type="submit"
-                disabled={saving || coverUploading}
+                disabled={saving || fileUploading}
                 className="inline-flex min-w-[10rem] flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#244E77] to-[#163754] py-3.5 text-sm font-bold text-[#D4AF37] shadow-md transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none sm:px-10"
               >
                 {saving ? (

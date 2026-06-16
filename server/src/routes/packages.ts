@@ -4,7 +4,6 @@ import { validate } from '../middleware/validation';
 import { auth, admin, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 import { PackageCategory, PackageMaterial } from '../models/types';
-
 const router = Router();
 
 const packageSchema = z.object({
