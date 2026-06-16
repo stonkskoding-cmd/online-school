@@ -1,1 +1,1 @@
-feat: Increase chat button size for better UX
+feat: Mobile responsive design - adapt PNG banners, add burger menu, optimize for phones

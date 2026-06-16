@@ -77,7 +77,7 @@ export const UserChat: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white md:inset-auto md:bottom-6 md:right-6 md:h-[32rem] md:w-96 md:rounded-lg md:border md:border-gray-200 md:shadow-2xl">
+    <div className="fixed inset-0 z-50 flex h-full w-full flex-col bg-white md:inset-auto md:bottom-20 md:right-8 md:h-[32rem] md:w-96 md:rounded-lg md:border md:border-gray-200 md:shadow-2xl">
       <div className="flex shrink-0 items-center justify-between rounded-t-lg border-b bg-blue-600 p-4 text-white">
         <h3 className="font-semibold">Поддержка</h3>
         <button type="button" onClick={() => setIsOpen(false)} className="text-white hover:text-gray-200" aria-label="Закрыть">

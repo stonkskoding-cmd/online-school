@@ -109,6 +109,25 @@ function MobileProfileMenuItems({ isAdmin, onClose, onLogout }) {
   );
 }
 
+function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="transition-transform duration-200 hover:scale-105 focus:outline-none"
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaExpanded != null ? 'true' : undefined}
+      aria-label={ariaLabel}
+    >
+      <img
+        src="/btn-profile.png"
+        alt="Профиль"
+        className="h-10 w-10 object-contain sm:h-12 sm:w-12"
+      />
+    </button>
+  );
+}
+
 export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'login' }) {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -163,7 +182,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
           backgroundPosition: 'center',
         }}
       >
-        <div className="relative flex h-20 w-full items-center justify-between gap-2 py-2 pl-1 pr-2 sm:h-24 sm:pl-2 sm:pr-3 md:h-28 md:pr-0 lg:pl-3">
+        <div className="relative flex h-16 w-full items-center justify-between gap-2 px-3 py-2 sm:h-20 sm:px-4 md:h-28 md:px-8 lg:px-16">
           <Link
             to="/"
             className="relative z-20 inline-flex shrink-0 items-center"
@@ -172,7 +191,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
             <img
               src="/logo-full.png"
               alt="Династия"
-              className="h-10 w-auto origin-left scale-100 sm:h-14 sm:scale-[1.35] md:h-16 md:scale-[1.62] lg:scale-[1.78] xl:scale-[1.9]"
+              className="h-auto max-h-12 max-w-[120px] w-full object-contain sm:max-h-14 sm:max-w-[160px]"
             />
           </Link>
 
@@ -184,7 +203,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
               <img
                 src="/btn-oge.png"
                 alt="ОГЭ История"
-                className="max-h-full max-w-full object-contain object-center"
+                className="h-auto max-h-full max-w-full object-contain object-center"
               />
             </Link>
             <Link
@@ -194,7 +213,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
               <img
                 src="/btn-ege.png"
                 alt="ЕГЭ История"
-                className="max-h-full max-w-full object-contain object-center"
+                className="h-auto max-h-full max-w-full object-contain object-center"
               />
             </Link>
             <Link
@@ -204,87 +223,85 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
               <img
                 src="/btn-soc.png"
                 alt="ЕГЭ Обществознание"
-                className="max-h-full max-w-full object-contain object-center"
+                className="h-auto max-h-full max-w-full object-contain object-center"
               />
             </Link>
           </nav>
 
-          <div className="relative z-20 hidden shrink-0 md:flex" ref={profileMenuRef}>
-            {showAccountMenu ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setProfileMenuOpen((v) => !v)}
-                  className="hover:scale-105 transition-transform duration-200 focus:outline-none"
-                  aria-expanded={profileMenuOpen}
-                  aria-haspopup="true"
-                >
-                  <img src="/btn-profile.png" alt="Профиль" className="h-24 w-auto md:h-28" />
-                </button>
-                {profileMenuOpen ? (
-                  <div className="absolute right-0 top-full z-50 mt-2 min-w-[12rem] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                    <ProfileMenuItems
-                      isAdmin={isAdmin}
-                      onClose={closeProfileMenu}
-                      onLogout={logout}
-                    />
-                  </div>
-                ) : null}
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={openAuth}
-                className="hover:scale-105 transition-transform duration-200 focus:outline-none"
-                aria-label="Профиль — войти"
-              >
-                <img src="/btn-profile.png" alt="Профиль" className="h-24 w-auto md:h-28" />
-              </button>
-            )}
-          </div>
+          <div className="relative z-20 flex shrink-0 items-center gap-2">
+            <div className="hidden md:block" ref={profileMenuRef}>
+              {showAccountMenu ? (
+                <>
+                  <ProfileButton
+                    onClick={() => setProfileMenuOpen((v) => !v)}
+                    ariaExpanded={profileMenuOpen}
+                  />
+                  {profileMenuOpen ? (
+                    <div className="absolute right-0 top-full z-50 mt-2 min-w-[12rem] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg animate-fade-in">
+                      <ProfileMenuItems
+                        isAdmin={isAdmin}
+                        onClose={closeProfileMenu}
+                        onLogout={logout}
+                      />
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <ProfileButton onClick={openAuth} ariaLabel="Профиль — войти" />
+              )}
+            </div>
 
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen((value) => !value)}
-            className="relative z-20 shrink-0 rounded-lg border border-primary/80 bg-white/70 px-3 py-2 text-primary backdrop-blur-sm md:hidden"
-            aria-label="Открыть меню"
-            aria-expanded={isMenuOpen}
-          >
-            ☰
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((value) => !value)}
+              className="rounded-lg border border-primary/80 bg-white/70 px-3 py-2 text-xl leading-none text-primary backdrop-blur-sm transition-transform duration-200 hover:scale-105 md:hidden"
+              aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+              aria-expanded={isMenuOpen}
+            >
+              ☰
+            </button>
+          </div>
         </div>
 
         {isMenuOpen ? (
-          <div className="border-t border-primary/20 bg-[#163754]/95 px-4 py-4 backdrop-blur-sm md:hidden">
+          <div className="animate-slide-down border-t border-primary/20 bg-[#163754]/95 px-4 py-4 backdrop-blur-sm md:hidden">
             <nav className="flex flex-col gap-3">
               {mobileNavLinks.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
                   onClick={closeMobileMenu}
-                  className="text-sm font-medium text-white hover:text-accent-400"
+                  className="text-sm font-medium text-white transition hover:text-accent-400 sm:text-base"
                 >
                   {item.label}
                 </Link>
               ))}
-              {showAccountMenu ? (
-                <MobileProfileMenuItems
-                  isAdmin={isAdmin}
-                  onClose={closeMobileMenu}
-                  onLogout={handleLogout}
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    closeMobileMenu();
-                    openAuth();
-                  }}
-                  className="self-start transition-transform duration-200 hover:scale-105 focus:outline-none"
-                >
-                  <img src="/btn-profile.png" alt="Профиль" className="h-24 w-auto" />
-                </button>
-              )}
+              <div className="mt-1 border-t border-white/15 pt-3">
+                {showAccountMenu ? (
+                  <MobileProfileMenuItems
+                    isAdmin={isAdmin}
+                    onClose={closeMobileMenu}
+                    onLogout={handleLogout}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMobileMenu();
+                      openAuth();
+                    }}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-accent-400 transition hover:text-accent-500 sm:text-base"
+                  >
+                    <img
+                      src="/btn-profile.png"
+                      alt=""
+                      className="h-10 w-10 object-contain sm:h-12 sm:w-12"
+                      aria-hidden
+                    />
+                    Войти
+                  </button>
+                )}
+              </div>
             </nav>
           </div>
         ) : null}

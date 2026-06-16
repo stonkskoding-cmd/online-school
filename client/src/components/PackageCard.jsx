@@ -135,13 +135,13 @@ export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
         </button>
       ) : null}
 
-      <div className="p-5">
+      <div className="p-3 sm:p-4 md:p-6">
         <div className="flex items-start justify-between gap-2">
           <button type="button" onClick={toggleExpand} className="min-w-0 flex-1 text-left">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
               {CATEGORY_LABELS[item.category] || item.category}
             </p>
-            <h3 className="mt-0.5 text-xl font-bold text-gray-900">{item.title}</h3>
+            <h3 className="mt-0.5 text-base font-bold text-gray-900 sm:text-lg md:text-xl">{item.title}</h3>
           </button>
           <button
             type="button"
@@ -215,7 +215,7 @@ export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
                 )}
               </div>
 
-              <p className="text-2xl font-extrabold text-accent-500">
+              <p className="text-lg font-extrabold text-accent-500 sm:text-xl md:text-2xl">
                 {item.price.toLocaleString('ru-RU')} ₽
               </p>
             </div>
@@ -224,7 +224,7 @@ export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           {!expanded ? (
-            <span className="text-2xl font-extrabold text-accent-500">
+            <span className="text-lg font-extrabold text-accent-500 sm:text-xl md:text-2xl">
               {item.price.toLocaleString('ru-RU')} ₽
             </span>
           ) : (
@@ -241,7 +241,7 @@ export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
               type="button"
               onClick={toggleExpand}
               disabled={isPurchasing || isPurchased}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:py-2 sm:text-sm"
             >
               {expanded ? 'Скрыть' : 'Подробнее'}
             </button>
@@ -249,7 +249,7 @@ export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
               type="button"
               onClick={buy}
               disabled={isPurchasing || isPurchased}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-all duration-300 ease-in-out hover:bg-primary-light disabled:cursor-not-allowed disabled:opacity-70"
+              className="rounded-lg bg-primary px-2 py-1 text-xs font-semibold text-white transition-all duration-300 ease-in-out hover:bg-primary-light disabled:cursor-not-allowed disabled:opacity-70 sm:px-4 sm:py-2 sm:text-sm"
             >
               {isPurchasing ? 'Покупка…' : isPurchased ? 'Куплено' : 'Купить'}
             </button>

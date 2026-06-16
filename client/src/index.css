@@ -8,6 +8,11 @@
   --primary-dark: #163754;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   min-height: 100vh;

@@ -12,6 +12,13 @@ const categories = [
   { label: 'ЕГЭ Обществознание', value: 'EGE-SOC' },
 ];
 
+const mobileBenefits = [
+  { icon: '📚', text: 'Структурированные материалы по каждой теме экзамена' },
+  { icon: '👨‍🏫', text: 'Опытные преподаватели и понятные объяснения' },
+  { icon: '⏱️', text: 'Удобный темп подготовки — учитесь в своём ритме' },
+  { icon: '✅', text: 'Практика и разбор типовых заданий ЕГЭ и ОГЭ' },
+];
+
 export default function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [packages, setPackages] = useState([]);
@@ -84,7 +91,7 @@ export default function HomePage() {
   const hasPackages = useMemo(() => packages.length > 0, [packages.length]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-x-hidden bg-gray-50">
       <Header
         user={user}
         onAuthSuccess={setUser}
@@ -92,50 +99,83 @@ export default function HomePage() {
         authInitialMode={authModalMode}
       />
 
-      <section className="relative w-screen min-h-[70vh] overflow-hidden sm:min-h-[85vh] md:min-h-screen">
+      <section className="relative w-full min-h-[50vh] overflow-hidden bg-primary-dark sm:min-h-[60vh] md:min-h-[70vh]">
+        <div
+          className="absolute inset-0 bg-[url('/hero-banner-royal.png')] bg-contain bg-center bg-no-repeat md:hidden"
+          role="img"
+          aria-label="Онлайн-школа Династия — подготовка к ЕГЭ и ОГЭ"
+        />
         <img
           src="/hero-banner-royal.png"
-          alt="Hero"
-          className="absolute inset-0 z-0 h-full w-full object-cover object-top md:object-center"
+          alt="Онлайн-школа Династия — подготовка к ЕГЭ и ОГЭ"
+          className="absolute inset-0 hidden h-full w-full max-w-full object-cover object-top md:block md:object-center"
         />
+        <div className="relative z-10 flex min-h-[50vh] flex-col items-center justify-end px-3 pb-[4.5rem] pt-8 sm:min-h-[60vh] sm:px-4 sm:pb-20 md:hidden">
+          <h1 className="sr-only">Династия — подготовка к ЕГЭ и ОГЭ</h1>
+        </div>
         <a
           href="#catalog"
           className="pointer-events-auto absolute bottom-[2%] left-1/2 z-40 w-[min(92vw,1000px)] -translate-x-1/2 translate-y-2 cursor-pointer drop-shadow-2xl transition-all duration-300 hover:scale-105 hover:brightness-110 sm:bottom-[1.2%] sm:w-[min(86vw,1090px)] sm:translate-y-[1.4rem] md:w-[min(86vw,1190px)] lg:w-[min(88vw,1270px)] xl:w-[min(88vw,1350px)]"
         >
-          <img src="/gold-button.png" alt="Выбрать курс" className="block h-auto w-full max-h-16 sm:max-h-none" />
+          <img
+            src="/gold-button.png"
+            alt="Выбрать курс"
+            className="block h-auto max-h-14 w-full max-w-full sm:max-h-none"
+          />
         </a>
       </section>
 
-      <section className="relative hidden w-screen sm:block">
+      <section className="bg-gradient-to-b from-primary-dark to-primary px-3 py-8 sm:px-4 sm:py-12 md:hidden">
+        <h2 className="text-center text-2xl font-bold uppercase leading-tight tracking-wide text-white sm:text-3xl">
+          Когда готовиться к экзаменам легко
+        </h2>
+        <ul className="mx-auto mt-6 max-w-lg space-y-4">
+          {mobileBenefits.map((item) => (
+            <li key={item.text} className="flex items-start gap-3 rounded-xl bg-white/10 p-3 text-white">
+              <span className="shrink-0 text-2xl" aria-hidden>
+                {item.icon}
+              </span>
+              <span className="text-sm leading-relaxed sm:text-base">{item.text}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="relative hidden w-full md:block">
         <img
           src="/features-banner.png"
-          alt="Преимущества"
-          className="h-auto w-full object-cover"
+          alt="Преимущества онлайн-школы Династия"
+          className="h-auto w-full max-w-full object-cover"
         />
       </section>
 
-      <main id="catalog" className="w-full px-3 py-8 sm:px-6 md:px-8 lg:px-16">
-        <div className="mb-6 flex flex-wrap gap-2">
-          {categories.map((category) => (
-            <button
-              key={category.label}
-              onClick={() => setActiveCategory(category.value)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                activeCategory === category.value
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-gray-700 hover:bg-primary/10'
-              }`}
-            >
-              {category.label}
-            </button>
-          ))}
+      <main id="catalog" className="w-full px-3 py-8 sm:px-4 sm:py-12 md:px-8 md:py-16 lg:px-16">
+        <div className="-mx-1 mb-6 overflow-x-auto px-1 pb-1">
+          <div className="flex flex-nowrap gap-2 whitespace-nowrap sm:flex-wrap">
+            {categories.map((category) => (
+              <button
+                key={category.label}
+                type="button"
+                onClick={() => setActiveCategory(category.value)}
+                className={`shrink-0 rounded-full px-3 py-2 text-sm font-medium transition sm:px-4 sm:text-base ${
+                  activeCategory === category.value
+                    ? 'bg-primary text-white'
+                    : 'bg-white text-gray-700 hover:bg-primary/10'
+                }`}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {loading ? <p className="text-gray-600">Загрузка...</p> : null}
-        {error ? <p className="text-red-600">{error}</p> : null}
-        {!loading && !hasPackages ? <p className="text-gray-600">Пакеты пока не добавлены</p> : null}
+        {loading ? <p className="text-sm text-gray-600 sm:text-base">Загрузка...</p> : null}
+        {error ? <p className="text-sm text-red-600 sm:text-base">{error}</p> : null}
+        {!loading && !hasPackages ? (
+          <p className="text-sm text-gray-600 sm:text-base">Пакеты пока не добавлены</p>
+        ) : null}
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {packages.map((item) => (
             <PackageCard
               key={item.id}
