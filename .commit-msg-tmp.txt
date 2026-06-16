@@ -1,1 +1,1 @@
-feat: Add package purchase statistics to admin panel
+feat: Increase chat button size for better UX
