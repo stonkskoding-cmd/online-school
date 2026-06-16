@@ -1,1 +1,0 @@
-chore: Remove temporary git commit message file
