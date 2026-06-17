@@ -113,13 +113,13 @@ export default function HomePage() {
           <button
             type="button"
             onClick={scrollToCatalog}
-            className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 transition-all duration-300 hover:scale-110 hover:drop-shadow-2xl sm:bottom-10 md:bottom-12"
+            className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 transition-all duration-300 hover:scale-105 hover:drop-shadow-2xl sm:bottom-12"
             aria-label="Выбрать курс"
           >
             <img
               src="/gold-button.png"
               alt=""
-              className="h-auto w-[200px] max-w-full sm:w-[250px] md:w-[300px] lg:w-[350px]"
+              className="h-auto w-[250px] max-w-full sm:w-[300px] md:w-[400px] lg:w-[500px] xl:w-[600px]"
             />
           </button>
         </div>
