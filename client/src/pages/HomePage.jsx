@@ -104,22 +104,22 @@ export default function HomePage() {
       />
 
       <section className="relative w-full overflow-hidden">
-        <div className="relative min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] lg:min-h-[80vh]">
+        <div className="relative w-full">
           <img
             src="/hero-banner-royal.png"
             alt="Онлайн-школа Династия — подготовка к ЕГЭ и ОГЭ"
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className="block h-auto w-full object-contain"
           />
           <button
             type="button"
             onClick={scrollToCatalog}
-            className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 transition-all duration-300 hover:scale-105 hover:drop-shadow-2xl sm:bottom-12"
+            className="absolute bottom-[5%] left-1/2 z-10 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 transition-all duration-300 hover:scale-105 hover:drop-shadow-2xl sm:bottom-[8%]"
             aria-label="Выбрать курс"
           >
             <img
               src="/gold-button.png"
               alt=""
-              className="h-auto w-[250px] max-w-full sm:w-[300px] md:w-[400px] lg:w-[500px] xl:w-[600px]"
+              className="h-auto w-[280px] max-w-[92vw] sm:w-[350px] md:w-[450px] lg:w-[550px] xl:w-[650px]"
             />
           </button>
         </div>
