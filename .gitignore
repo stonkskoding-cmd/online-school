@@ -46,6 +46,7 @@ server/uploads/*
 # Temporary files
 *.tmp
 *.temp
+.commit-msg-tmp.txt
 
 # Coverage and testing
 .coverage

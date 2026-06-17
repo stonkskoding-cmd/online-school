@@ -1,1 +1,0 @@
-feat: Mobile responsive design - adapt PNG banners, add burger menu, optimize for phones
