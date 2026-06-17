@@ -90,6 +90,10 @@ export default function HomePage() {
 
   const hasPackages = useMemo(() => packages.length > 0, [packages.length]);
 
+  const scrollToCatalog = () => {
+    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-gray-50">
       <Header
@@ -106,14 +110,18 @@ export default function HomePage() {
             alt="Онлайн-школа Династия — подготовка к ЕГЭ и ОГЭ"
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
-          <div className="relative z-10 flex min-h-[50vh] flex-col items-center justify-end px-3 pb-8 sm:min-h-[60vh] sm:pb-10 md:min-h-[70vh] md:pb-12 lg:min-h-[80vh]">
-            <a
-              href="#catalog"
-              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#D4AF37] to-[#e8c85c] px-6 py-3 text-base font-bold uppercase tracking-wide text-[#244E77] shadow-lg shadow-amber-900/20 transition-all duration-300 hover:scale-105 hover:from-[#c9a431] hover:to-[#D4AF37] hover:shadow-xl md:px-10 md:py-4 md:text-xl"
-            >
-              Выбрать курс
-            </a>
-          </div>
+          <button
+            type="button"
+            onClick={scrollToCatalog}
+            className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 transition-all duration-300 hover:scale-110 hover:drop-shadow-2xl sm:bottom-10 md:bottom-12"
+            aria-label="Выбрать курс"
+          >
+            <img
+              src="/gold-button.png"
+              alt=""
+              className="h-auto w-[200px] max-w-full sm:w-[250px] md:w-[300px] lg:w-[350px]"
+            />
+          </button>
         </div>
       </section>
 

@@ -114,7 +114,7 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
     <button
       type="button"
       onClick={onClick}
-      className="transition-transform duration-200 hover:scale-105 focus:outline-none"
+      className="cursor-pointer transition-transform duration-200 hover:scale-110 focus:outline-none"
       aria-expanded={ariaExpanded}
       aria-haspopup={ariaExpanded != null ? 'true' : undefined}
       aria-label={ariaLabel}
@@ -122,7 +122,7 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
       <img
         src="/btn-profile.png"
         alt="Профиль"
-        className="h-10 w-10 object-contain sm:h-11 sm:w-11 md:h-12 md:w-12 lg:h-14 lg:w-14"
+        className="h-10 w-10 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16"
       />
     </button>
   );
