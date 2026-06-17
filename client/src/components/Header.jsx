@@ -122,7 +122,7 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
       <img
         src="/btn-profile.png"
         alt="Профиль"
-        className="h-10 w-10 object-contain sm:h-12 sm:w-12"
+        className="h-10 w-10 object-contain sm:h-11 sm:w-11 md:h-12 md:w-12 lg:h-14 lg:w-14"
       />
     </button>
   );
@@ -191,7 +191,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
             <img
               src="/logo-full.png"
               alt="Династия"
-              className="h-auto max-h-12 max-w-[120px] w-full object-contain sm:max-h-14 sm:max-w-[160px]"
+              className="h-auto w-full max-w-[120px] object-contain sm:max-w-[160px] md:max-w-[220px] lg:max-w-[280px]"
             />
           </Link>
 
@@ -295,7 +295,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
                     <img
                       src="/btn-profile.png"
                       alt=""
-                      className="h-10 w-10 object-contain sm:h-12 sm:w-12"
+                      className="h-10 w-10 object-contain sm:h-11 sm:w-11"
                       aria-hidden
                     />
                     Войти

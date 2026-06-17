@@ -99,30 +99,22 @@ export default function HomePage() {
         authInitialMode={authModalMode}
       />
 
-      <section className="relative w-full min-h-[50vh] overflow-hidden bg-primary-dark sm:min-h-[60vh] md:min-h-[70vh]">
-        <div
-          className="absolute inset-0 bg-[url('/hero-banner-royal.png')] bg-contain bg-center bg-no-repeat md:hidden"
-          role="img"
-          aria-label="Онлайн-школа Династия — подготовка к ЕГЭ и ОГЭ"
-        />
-        <img
-          src="/hero-banner-royal.png"
-          alt="Онлайн-школа Династия — подготовка к ЕГЭ и ОГЭ"
-          className="absolute inset-0 hidden h-full w-full max-w-full object-cover object-top md:block md:object-center"
-        />
-        <div className="relative z-10 flex min-h-[50vh] flex-col items-center justify-end px-3 pb-[4.5rem] pt-8 sm:min-h-[60vh] sm:px-4 sm:pb-20 md:hidden">
-          <h1 className="sr-only">Династия — подготовка к ЕГЭ и ОГЭ</h1>
-        </div>
-        <a
-          href="#catalog"
-          className="pointer-events-auto absolute bottom-[2%] left-1/2 z-40 w-[min(92vw,1000px)] -translate-x-1/2 translate-y-2 cursor-pointer drop-shadow-2xl transition-all duration-300 hover:scale-105 hover:brightness-110 sm:bottom-[1.2%] sm:w-[min(86vw,1090px)] sm:translate-y-[1.4rem] md:w-[min(86vw,1190px)] lg:w-[min(88vw,1270px)] xl:w-[min(88vw,1350px)]"
-        >
+      <section className="relative w-full overflow-hidden">
+        <div className="relative min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] lg:min-h-[80vh]">
           <img
-            src="/gold-button.png"
-            alt="Выбрать курс"
-            className="block h-auto max-h-14 w-full max-w-full sm:max-h-none"
+            src="/hero-banner-royal.png"
+            alt="Онлайн-школа Династия — подготовка к ЕГЭ и ОГЭ"
+            className="absolute inset-0 h-full w-full object-cover object-center"
           />
-        </a>
+          <div className="relative z-10 flex min-h-[50vh] flex-col items-center justify-end px-3 pb-8 sm:min-h-[60vh] sm:pb-10 md:min-h-[70vh] md:pb-12 lg:min-h-[80vh]">
+            <a
+              href="#catalog"
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#D4AF37] to-[#e8c85c] px-6 py-3 text-base font-bold uppercase tracking-wide text-[#244E77] shadow-lg shadow-amber-900/20 transition-all duration-300 hover:scale-105 hover:from-[#c9a431] hover:to-[#D4AF37] hover:shadow-xl md:px-10 md:py-4 md:text-xl"
+            >
+              Выбрать курс
+            </a>
+          </div>
+        </div>
       </section>
 
       <section className="bg-gradient-to-b from-primary-dark to-primary px-3 py-8 sm:px-4 sm:py-12 md:hidden">
