@@ -122,7 +122,7 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
       <img
         src="/btn-profile.png"
         alt="Профиль"
-        className="h-10 w-10 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-[4.5rem] lg:w-[4.5rem] xl:h-24 xl:w-24"
+        className="h-10 w-10 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 xl:h-20 xl:w-20"
       />
     </button>
   );
@@ -188,7 +188,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
               <img
                 src="/logo-full.png"
                 alt="Династия"
-                className="ml-0 h-auto max-w-[160px] pl-2 object-contain sm:max-w-[200px] sm:pl-4 md:max-w-[260px] lg:max-w-[320px] xl:max-w-[380px]"
+                className="ml-0 h-auto max-w-[150px] pl-2 object-contain sm:max-w-[180px] sm:pl-4 md:max-w-[230px] lg:max-w-[280px] xl:max-w-[320px]"
               />
             </Link>
           </div>

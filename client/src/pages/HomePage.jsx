@@ -103,27 +103,25 @@ export default function HomePage() {
         authInitialMode={authModalMode}
       />
 
-      <section className="relative w-full overflow-hidden">
-        <div className="relative w-full">
+      <div className="relative w-full overflow-hidden">
+        <img
+          src="/hero-banner-royal.png"
+          alt="Баннер Династия"
+          className="h-auto w-full object-contain"
+        />
+        <button
+          type="button"
+          onClick={scrollToCatalog}
+          className="absolute bottom-[3%] left-1/2 z-10 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 transition-all duration-300 hover:scale-105 hover:drop-shadow-2xl sm:bottom-[5%]"
+          aria-label="Выбрать курс"
+        >
           <img
-            src="/hero-banner-royal.png"
-            alt="Онлайн-школа Династия — подготовка к ЕГЭ и ОГЭ"
-            className="block h-auto w-full object-contain"
+            src="/gold-button.png"
+            alt=""
+            className="h-auto w-[250px] max-w-[92vw] sm:w-[300px] md:w-[400px] lg:w-[500px] xl:w-[600px]"
           />
-          <button
-            type="button"
-            onClick={scrollToCatalog}
-            className="absolute bottom-[5%] left-1/2 z-10 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 transition-all duration-300 hover:scale-105 hover:drop-shadow-2xl sm:bottom-[8%]"
-            aria-label="Выбрать курс"
-          >
-            <img
-              src="/gold-button.png"
-              alt=""
-              className="h-auto w-[280px] max-w-[92vw] sm:w-[350px] md:w-[450px] lg:w-[550px] xl:w-[650px]"
-            />
-          </button>
-        </div>
-      </section>
+        </button>
+      </div>
 
       <section className="bg-gradient-to-b from-primary-dark to-primary px-3 py-8 sm:px-4 sm:py-12 md:hidden">
         <h2 className="text-center text-2xl font-bold uppercase leading-tight tracking-wide text-white sm:text-3xl">
