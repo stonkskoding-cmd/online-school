@@ -118,7 +118,7 @@ export default function HomePage() {
           <img
             src="/gold-button.png"
             alt=""
-            className="h-auto w-[250px] max-w-[92vw] sm:w-[300px] md:w-[400px] lg:w-[500px] xl:w-[600px]"
+            className="h-auto w-[500px] max-w-[95vw] sm:w-[600px] md:w-[800px] lg:w-[1000px] xl:w-[1200px]"
           />
         </button>
       </div>
