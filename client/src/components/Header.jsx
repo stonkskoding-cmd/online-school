@@ -122,7 +122,11 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
       <img
         src="/btn-profile.png"
         alt="Профиль"
-        className="h-[60px] w-[60px] object-contain sm:h-[72px] sm:w-[72px] md:h-[84px] md:w-[84px] lg:h-24 lg:w-24 xl:h-[120px] xl:w-[120px]"
+        className="cursor-pointer object-contain transition-transform duration-200 hover:scale-110"
+        style={{
+          width: 'clamp(40px, 5vw, 80px)',
+          height: 'clamp(40px, 5vw, 80px)',
+        }}
       />
     </button>
   );
@@ -188,7 +192,10 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
               <img
                 src="/logo-full.png"
                 alt="Династия"
-                className="ml-0 h-auto max-w-[150px] pl-2 object-contain sm:max-w-[180px] sm:pl-4 md:max-w-[230px] lg:max-w-[280px] xl:max-w-[320px]"
+                className="ml-0 h-auto pl-2 object-contain sm:pl-4"
+                style={{
+                  maxWidth: 'clamp(140px, 20vw, 350px)',
+                }}
               />
             </Link>
           </div>
@@ -293,7 +300,11 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
                     <img
                       src="/btn-profile.png"
                       alt=""
-                      className="h-[60px] w-[60px] object-contain sm:h-[66px] sm:w-[66px]"
+                      className="object-contain"
+                      style={{
+                        width: 'clamp(40px, 5vw, 80px)',
+                        height: 'clamp(40px, 5vw, 80px)',
+                      }}
                       aria-hidden
                     />
                     Войти

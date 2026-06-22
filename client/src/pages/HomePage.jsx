@@ -109,18 +109,26 @@ export default function HomePage() {
           alt="Баннер Династия"
           className="h-auto w-full object-contain"
         />
-        <button
-          type="button"
+        <img
+          src="/gold-button.png"
+          className="absolute left-1/2 z-10 -translate-x-1/2 cursor-pointer transition-all duration-300 hover:scale-105 hover:drop-shadow-2xl"
+          style={{
+            bottom: '3%',
+            width: 'min(90vw, 700px)',
+            height: 'auto',
+            maxWidth: '700px',
+          }}
           onClick={scrollToCatalog}
-          className="absolute bottom-[3%] left-1/2 z-10 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 transition-all duration-300 hover:scale-105 hover:drop-shadow-2xl sm:bottom-[5%]"
-          aria-label="Выбрать курс"
-        >
-          <img
-            src="/gold-button.png"
-            alt=""
-            className="h-auto w-[500px] max-w-[95vw] sm:w-[600px] md:w-[800px] lg:w-[1000px] xl:w-[1200px]"
-          />
-        </button>
+          alt="Выбрать курс"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              scrollToCatalog();
+            }
+          }}
+        />
       </div>
 
       <section className="bg-gradient-to-b from-primary-dark to-primary px-3 py-8 sm:px-4 sm:py-12 md:hidden">
