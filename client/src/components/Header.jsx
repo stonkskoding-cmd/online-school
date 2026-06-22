@@ -114,18 +114,29 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
     <button
       type="button"
       onClick={onClick}
-      className="cursor-pointer transition-transform duration-200 hover:scale-110 focus:outline-none"
+      className="border-0 bg-transparent p-0 focus:outline-none"
+      style={{ width: '80px', height: '80px', flexShrink: 0 }}
       aria-expanded={ariaExpanded}
       aria-haspopup={ariaExpanded != null ? 'true' : undefined}
       aria-label={ariaLabel}
     >
       <img
         src="/btn-profile.png"
+        data-ui="profile-button"
         alt="Профиль"
-        className="cursor-pointer object-contain transition-transform duration-200 hover:scale-110"
         style={{
-          width: 'clamp(40px, 5vw, 80px)',
-          height: 'clamp(40px, 5vw, 80px)',
+          width: '80px',
+          height: '80px',
+          cursor: 'pointer',
+          transition: 'transform 0.2s',
+          objectFit: 'contain',
+          display: 'block',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.1)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
         }}
       />
     </button>
@@ -299,11 +310,13 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
                   >
                     <img
                       src="/btn-profile.png"
+                      data-ui="profile-button"
                       alt=""
-                      className="object-contain"
                       style={{
-                        width: 'clamp(40px, 5vw, 80px)',
-                        height: 'clamp(40px, 5vw, 80px)',
+                        width: '80px',
+                        height: '80px',
+                        objectFit: 'contain',
+                        display: 'block',
                       }}
                       aria-hidden
                     />

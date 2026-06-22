@@ -111,22 +111,27 @@ export default function HomePage() {
         />
         <img
           src="/gold-button.png"
-          className="absolute left-1/2 z-10 -translate-x-1/2 cursor-pointer transition-all duration-300 hover:scale-105 hover:drop-shadow-2xl"
-          style={{
-            bottom: '3%',
-            width: 'min(90vw, 700px)',
-            height: 'auto',
-            maxWidth: '700px',
-          }}
-          onClick={scrollToCatalog}
+          data-ui="gold-button"
           alt="Выбрать курс"
           role="button"
           tabIndex={0}
+          onClick={scrollToCatalog}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               scrollToCatalog();
             }
+          }}
+          style={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bottom: '3%',
+            width: '700px',
+            maxWidth: 'min(90vw, 700px)',
+            height: 'auto',
+            cursor: 'pointer',
+            zIndex: 10,
           }}
         />
       </div>
