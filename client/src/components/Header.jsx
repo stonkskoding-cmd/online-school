@@ -128,8 +128,8 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
-        width: '160px',
-        height: '160px',
+        width: '64px',
+        height: '64px',
         transition: 'transform 0.2s ease',
       }}
       onMouseEnter={(e) => {
@@ -196,7 +196,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
           backgroundPosition: 'center',
         }}
       >
-        <div className="relative flex h-16 w-full items-center justify-between gap-2 py-2 pl-0 pr-3 sm:h-20 sm:pr-4 md:h-32 md:pr-8 lg:pr-16">
+        <div className="relative flex h-16 w-full items-center justify-between gap-2 py-2 pl-0 pr-2 sm:h-20 md:h-32 md:pr-2">
           <div className="flex shrink-0 items-center justify-start">
             <Link to="/" className="relative z-20 inline-flex items-center justify-start" onClick={closeMobileMenu}>
               <img
@@ -243,33 +243,33 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
             </Link>
           </nav>
 
-          <div className="relative z-20 flex shrink-0 items-center gap-2">
-            <div className="hidden md:block" ref={profileMenuRef}>
-              {showAccountMenu ? (
-                <>
-                  <ProfileButton
-                    onClick={() => setProfileMenuOpen((v) => !v)}
-                    ariaExpanded={profileMenuOpen}
-                  />
-                  {profileMenuOpen ? (
-                    <div className="absolute right-0 top-full z-50 mt-2 min-w-[12rem] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg animate-fade-in">
-                      <ProfileMenuItems
-                        isAdmin={isAdmin}
-                        onClose={closeProfileMenu}
-                        onLogout={logout}
-                      />
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <ProfileButton onClick={openAuth} ariaLabel="Профиль — войти" />
-              )}
-            </div>
+          <div className="absolute right-1 top-1/2 z-20 hidden -translate-y-1/2 md:block" ref={profileMenuRef}>
+            {showAccountMenu ? (
+              <>
+                <ProfileButton
+                  onClick={() => setProfileMenuOpen((v) => !v)}
+                  ariaExpanded={profileMenuOpen}
+                />
+                {profileMenuOpen ? (
+                  <div className="absolute right-0 top-full z-50 mt-2 min-w-[12rem] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg animate-fade-in">
+                    <ProfileMenuItems
+                      isAdmin={isAdmin}
+                      onClose={closeProfileMenu}
+                      onLogout={logout}
+                    />
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <ProfileButton onClick={openAuth} ariaLabel="Профиль — войти" />
+            )}
+          </div>
 
+          <div className="relative z-20 ml-auto flex shrink-0 items-center md:hidden">
             <button
               type="button"
               onClick={() => setIsMenuOpen((value) => !value)}
-              className="rounded-lg border border-primary/80 bg-white/70 px-3 py-2 text-xl leading-none text-primary backdrop-blur-sm transition-transform duration-200 hover:scale-105 md:hidden"
+              className="rounded-lg border border-primary/80 bg-white/70 px-3 py-2 text-xl leading-none text-primary backdrop-blur-sm transition-transform duration-200 hover:scale-105"
               aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
               aria-expanded={isMenuOpen}
             >
@@ -312,8 +312,8 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
                       alt=""
                       className="cursor-pointer"
                       style={{
-                        width: '160px',
-                        height: '160px',
+                        width: '48px',
+                        height: '48px',
                         transition: 'transform 0.2s ease',
                       }}
                       aria-hidden
