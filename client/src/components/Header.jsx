@@ -128,8 +128,8 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
-        width: '80px',
-        height: '80px',
+        width: '160px',
+        height: '160px',
         transition: 'transform 0.2s ease',
       }}
       onMouseEnter={(e) => {
@@ -312,8 +312,8 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
                       alt=""
                       className="cursor-pointer"
                       style={{
-                        width: '80px',
-                        height: '80px',
+                        width: '160px',
+                        height: '160px',
                         transition: 'transform 0.2s ease',
                       }}
                       aria-hidden
