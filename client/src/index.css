@@ -27,8 +27,8 @@ body {
 
 /* Перебиваем Tailwind preflight: img { max-width: 100% } */
 img[alt='Выбрать курс'] {
-  width: 700px !important;
-  max-width: 90vw !important;
+  width: 900px !important;
+  max-width: 95vw !important;
   height: auto !important;
 }
 

@@ -106,7 +106,7 @@ export default function HomePage() {
           className="h-auto w-full object-contain"
         />
         {/* Кнопка "ВЫБРАТЬ КУРС" */}
-        <div className="absolute left-1/2 -translate-x-1/2 z-20" style={{ bottom: '40px' }}>
+        <div className="absolute left-1/2 -translate-x-1/2 z-20" style={{ bottom: '80px' }}>
           <img
             src="/gold-button.png"
             alt="Выбрать курс"
@@ -116,9 +116,9 @@ export default function HomePage() {
             }}
             className="cursor-pointer"
             style={{
-              width: '700px',
+              width: '900px',
               height: 'auto',
-              maxWidth: '90vw',
+              maxWidth: '95vw',
               transition: 'all 0.3s ease',
               transform: 'scale(1)',
             }}
