@@ -90,10 +90,6 @@ export default function HomePage() {
 
   const hasPackages = useMemo(() => packages.length > 0, [packages.length]);
 
-  const scrollToCatalog = () => {
-    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   return (
     <div className="min-h-screen overflow-x-hidden bg-gray-50">
       <Header
@@ -109,31 +105,39 @@ export default function HomePage() {
           alt="Баннер Династия"
           className="h-auto w-full object-contain"
         />
-        <img
-          src="/gold-button.png"
-          data-ui="gold-button"
-          alt="Выбрать курс"
-          role="button"
-          tabIndex={0}
-          onClick={scrollToCatalog}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              scrollToCatalog();
-            }
-          }}
-          style={{
-            position: 'absolute',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            bottom: '3%',
-            width: '700px',
-            maxWidth: 'min(90vw, 700px)',
-            height: 'auto',
-            cursor: 'pointer',
-            zIndex: 10,
-          }}
-        />
+        {/* Кнопка "ВЫБРАТЬ КУРС" */}
+        <div className="absolute left-1/2 -translate-x-1/2 z-20" style={{ bottom: '40px' }}>
+          <img
+            src="/gold-button.png"
+            alt="Выбрать курс"
+            onClick={() => {
+              const el = document.getElementById('catalog');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="cursor-pointer"
+            style={{
+              width: '700px',
+              height: 'auto',
+              maxWidth: '90vw',
+              transition: 'all 0.3s ease',
+              transform: 'scale(1)',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'scale(1.08)';
+              e.target.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.3))';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.2))';
+            }}
+            onMouseDown={(e) => {
+              e.target.style.transform = 'scale(0.95)';
+            }}
+            onMouseUp={(e) => {
+              e.target.style.transform = 'scale(1.05)';
+            }}
+          />
+        </div>
       </div>
 
       <section className="bg-gradient-to-b from-primary-dark to-primary px-3 py-8 sm:px-4 sm:py-12 md:hidden">

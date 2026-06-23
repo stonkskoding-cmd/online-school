@@ -26,13 +26,13 @@ body {
 }
 
 /* Перебиваем Tailwind preflight: img { max-width: 100% } */
-img[data-ui='gold-button'] {
-  width: min(90vw, 700px) !important;
-  max-width: min(90vw, 700px) !important;
+img[alt='Выбрать курс'] {
+  width: 700px !important;
+  max-width: 90vw !important;
   height: auto !important;
 }
 
-img[data-ui='profile-button'] {
+img[alt='Профиль'] {
   width: 80px !important;
   height: 80px !important;
   max-width: none !important;

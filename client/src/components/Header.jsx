@@ -111,35 +111,34 @@ function MobileProfileMenuItems({ isAdmin, onClose, onLogout }) {
 
 function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) {
   return (
-    <button
-      type="button"
+    <img
+      src="/btn-profile.png"
+      alt="Профиль"
       onClick={onClick}
-      className="border-0 bg-transparent p-0 focus:outline-none"
-      style={{ width: '80px', height: '80px', flexShrink: 0 }}
+      className="cursor-pointer"
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel}
       aria-expanded={ariaExpanded}
       aria-haspopup={ariaExpanded != null ? 'true' : undefined}
-      aria-label={ariaLabel}
-    >
-      <img
-        src="/btn-profile.png"
-        data-ui="profile-button"
-        alt="Профиль"
-        style={{
-          width: '80px',
-          height: '80px',
-          cursor: 'pointer',
-          transition: 'transform 0.2s',
-          objectFit: 'contain',
-          display: 'block',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
-      />
-    </button>
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+      style={{
+        width: '80px',
+        height: '80px',
+        transition: 'transform 0.2s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.transform = 'scale(1.15)';
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.transform = 'scale(1)';
+      }}
+    />
   );
 }
 
@@ -310,13 +309,12 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
                   >
                     <img
                       src="/btn-profile.png"
-                      data-ui="profile-button"
                       alt=""
+                      className="cursor-pointer"
                       style={{
                         width: '80px',
                         height: '80px',
-                        objectFit: 'contain',
-                        display: 'block',
+                        transition: 'transform 0.2s ease',
                       }}
                       aria-hidden
                     />
