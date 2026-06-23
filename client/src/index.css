@@ -33,7 +33,8 @@ img[alt='Выбрать курс'] {
 }
 
 img[alt='Профиль'] {
-  width: 64px !important;
-  height: 64px !important;
+  width: 96px !important;
+  height: 96px !important;
+  max-height: 112px !important;
   max-width: none !important;
 }

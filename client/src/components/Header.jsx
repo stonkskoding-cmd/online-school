@@ -128,12 +128,14 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
-        width: '64px',
-        height: '64px',
+        width: '96px',
+        height: '96px',
+        maxHeight: '112px',
+        objectFit: 'contain',
         transition: 'transform 0.2s ease',
       }}
       onMouseEnter={(e) => {
-        e.target.style.transform = 'scale(1.15)';
+        e.target.style.transform = 'scale(1.08)';
       }}
       onMouseLeave={(e) => {
         e.target.style.transform = 'scale(1)';
@@ -243,7 +245,7 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
             </Link>
           </nav>
 
-          <div className="absolute right-1 top-1/2 z-20 hidden -translate-y-1/2 md:block" ref={profileMenuRef}>
+          <div className="absolute right-2 top-1/2 z-20 hidden max-h-[112px] -translate-y-1/2 md:flex md:items-center" ref={profileMenuRef}>
             {showAccountMenu ? (
               <>
                 <ProfileButton
