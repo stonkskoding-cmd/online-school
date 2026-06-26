@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { uploadFileToStorage } from '../../lib/supabase';
+import { isSupabaseConfigured, uploadFileToStorage } from '../../lib/supabase';
+import SupabaseEnvNotice from './SupabaseEnvNotice';
 
 function isImageFile(fileOrUrl) {
   if (!fileOrUrl) return false;
@@ -61,6 +62,12 @@ export default function CoverUploadField({
   const uploadCover = useCallback(
     async (file) => {
       if (!file || disabled || uploading) return;
+      if (!isSupabaseConfigured()) {
+        setUploadError(
+          'Добавьте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env (см. README_SUPABASE.md)',
+        );
+        return;
+      }
       revokeBlob();
       setLocalFileName(file.name);
       setLocalMime(file.type);
@@ -114,9 +121,13 @@ export default function CoverUploadField({
     uploadCover(e.dataTransfer?.files?.[0]);
   };
 
+  const supabaseReady = isSupabaseConfigured();
+  const uploadDisabled = disabled || uploading || !supabaseReady;
+
   if (displaySrc || showFilePlaceholder) {
     return (
       <div className="space-y-2">
+        <SupabaseEnvNotice />
         <span className="block text-xs font-semibold text-gray-700">Обложка</span>
         {uploadError ? <p className="text-xs text-red-600">{uploadError}</p> : null}
         <div className="relative h-48 w-full overflow-hidden rounded-lg bg-gray-100 shadow-inner ring-1 ring-gray-200">
@@ -170,6 +181,7 @@ export default function CoverUploadField({
 
   return (
     <div className="space-y-2">
+      <SupabaseEnvNotice />
       <span className="block text-xs font-semibold text-gray-700">Обложка</span>
       <p className="text-xs text-gray-500">По желанию. Изображение для карточки в каталоге.</p>
       {uploadError ? <p className="text-xs text-red-600">{uploadError}</p> : null}
@@ -184,16 +196,16 @@ export default function CoverUploadField({
         }}
         onDragOver={(e) => {
           e.preventDefault();
-          if (!disabled && !uploading) setDragOver(true);
+          if (!uploadDisabled) setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        onClick={() => !disabled && !uploading && inputRef.current?.click()}
+        onClick={() => !uploadDisabled && inputRef.current?.click()}
         className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-all duration-200 ${
           dragOver
             ? 'border-[#244E77] bg-blue-50/80'
             : 'border-gray-300 bg-gray-50 hover:border-blue-500 hover:bg-white'
-        } ${disabled || uploading ? 'pointer-events-none opacity-60' : ''}`}
+        } ${uploadDisabled ? 'pointer-events-none opacity-60' : ''}`}
       >
         <input
           ref={inputRef}
@@ -201,7 +213,7 @@ export default function CoverUploadField({
           type="file"
           accept="image/*,.pdf,.doc,.docx,.zip"
           className="hidden"
-          disabled={disabled || uploading}
+          disabled={uploadDisabled}
           onChange={(e) => {
             uploadCover(e.target.files?.[0]);
             e.target.value = '';

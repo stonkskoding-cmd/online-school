@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import FileUploadZone from './FileUploadZone';
-import { uploadFileToStorage } from '../../lib/supabase';
+import { isSupabaseConfigured, uploadFileToStorage } from '../../lib/supabase';
+import SupabaseEnvNotice from './SupabaseEnvNotice';
 
 const MATERIAL_TYPES = [
   { value: 'text', label: 'Текст' },
@@ -37,6 +38,12 @@ export default function PackageMaterialsEditor({
   const handleMaterialFileUpload = useCallback(
     async (index, file) => {
       if (!file || disabled) return;
+      if (!isSupabaseConfigured()) {
+        setUploadError(
+          'Добавьте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env (см. README_SUPABASE.md)',
+        );
+        return;
+      }
       setUploadError('');
       setMaterialUploadIndex(index);
       bumpUploading(1);
@@ -91,8 +98,11 @@ export default function PackageMaterialsEditor({
     [materials.length, setMaterials],
   );
 
+  const supabaseReady = isSupabaseConfigured();
+
   return (
     <div className="space-y-3 pt-1">
+      <SupabaseEnvNotice />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-xs text-gray-500">
@@ -224,7 +234,7 @@ export default function PackageMaterialsEditor({
                   id={`mat-upload-${index}`}
                   compact
                   accept="image/*,video/*,.pdf,.doc,.docx,.zip"
-                  disabled={disabled || materialUploadIndex === index}
+                  disabled={disabled || !supabaseReady || materialUploadIndex === index}
                   uploading={materialUploadIndex === index}
                   progress={materialUploadIndex === index ? 50 : 0}
                   onFile={(file) => handleMaterialFileUpload(index, file)}
