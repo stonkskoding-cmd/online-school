@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { chatApi, type ApiChatMessage } from '../api';
 import { canUseSupportChat } from '../utils/authToken';
 
@@ -14,6 +15,7 @@ const ChatIcon = () => (
 );
 
 export const UserChat: React.FC = () => {
+  const navigate = useNavigate();
   const chatReady = canUseSupportChat();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ApiChatMessage[]>([]);
@@ -59,16 +61,12 @@ export const UserChat: React.FC = () => {
     }
   };
 
-  if (!chatReady) {
-    return null;
-  }
-
   if (!isOpen) {
     return (
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 z-50 flex h-16 w-16 items-center justify-center rounded-full border border-gray-200 bg-white shadow-2xl shadow-blue-500/30 transition-transform duration-200 hover:scale-110"
+        className="fixed bottom-8 right-8 z-[100] flex h-16 w-16 items-center justify-center rounded-full border border-gray-200 bg-white shadow-2xl shadow-blue-500/30 transition-transform duration-200 hover:scale-110"
         aria-label="Открыть чат поддержки"
       >
         <ChatIcon />
@@ -76,8 +74,36 @@ export const UserChat: React.FC = () => {
     );
   }
 
+  if (!chatReady) {
+    return (
+      <div className="fixed inset-0 z-[100] flex h-full w-full flex-col bg-white md:inset-auto md:bottom-20 md:right-8 md:h-auto md:max-h-[24rem] md:w-96 md:rounded-lg md:border md:border-gray-200 md:shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between rounded-t-lg border-b bg-blue-600 p-4 text-white">
+          <h3 className="font-semibold">Поддержка</h3>
+          <button type="button" onClick={() => setIsOpen(false)} className="text-white hover:text-gray-200" aria-label="Закрыть">
+            ✕
+          </button>
+        </div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+          <p className="text-gray-600">
+            Войдите в аккаунт, чтобы написать в чат поддержки. Мы ответим вам здесь же.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsOpen(false);
+              navigate('/?auth=login');
+            }}
+            className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            Войти
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex h-full w-full flex-col bg-white md:inset-auto md:bottom-20 md:right-8 md:h-[32rem] md:w-96 md:rounded-lg md:border md:border-gray-200 md:shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex h-full w-full flex-col bg-white md:inset-auto md:bottom-20 md:right-8 md:h-[32rem] md:w-96 md:rounded-lg md:border md:border-gray-200 md:shadow-2xl">
       <div className="flex shrink-0 items-center justify-between rounded-t-lg border-b bg-blue-600 p-4 text-white">
         <h3 className="font-semibold">Поддержка</h3>
         <button type="button" onClick={() => setIsOpen(false)} className="text-white hover:text-gray-200" aria-label="Закрыть">
