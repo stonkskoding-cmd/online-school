@@ -104,6 +104,7 @@ export default function HomePage() {
           src="/hero-banner-royal.png"
           alt="Баннер Династия"
           className="h-auto w-full object-contain"
+          fetchPriority="high"
         />
         {/* Кнопка "ВЫБРАТЬ КУРС" */}
         <div className="absolute left-1/2 -translate-x-1/2 z-20" style={{ bottom: '80px' }}>
@@ -161,6 +162,8 @@ export default function HomePage() {
           src="/features-banner.png"
           alt="Преимущества онлайн-школы Династия"
           className="h-auto w-full max-w-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
       </section>
 

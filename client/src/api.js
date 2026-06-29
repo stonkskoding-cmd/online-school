@@ -2,6 +2,30 @@ import axios from 'axios';
 import { getAdminBearerToken, clearAdminSession } from './utils/adminAuth';
 import { getBearerToken } from './utils/authToken';
 
+const GET_CACHE_TTL_MS = 5 * 60 * 1000;
+const getResponseCache = new Map();
+
+function buildCacheKey(url, params) {
+  const qs = params && Object.keys(params).length ? JSON.stringify(params) : '';
+  return `${url}?${qs}`;
+}
+
+function cachedGet(client, url, config = {}) {
+  const key = buildCacheKey(url, config.params);
+  const hit = getResponseCache.get(key);
+  if (hit && Date.now() - hit.at < GET_CACHE_TTL_MS) {
+    return Promise.resolve(hit.response);
+  }
+  return client.get(url, config).then((response) => {
+    getResponseCache.set(key, { at: Date.now(), response });
+    return response;
+  });
+}
+
+export function clearPublicGetCache() {
+  getResponseCache.clear();
+}
+
 const BACKEND_API = 'https://online-school-backend-mqn9.onrender.com/api';
 
 function resolveApiBaseURL() {
@@ -93,11 +117,12 @@ export const adminApiClient = {
 };
 
 export const siteSettingsApi = {
-  get: () => api.get('/site-settings'),
+  get: () => cachedGet(api, '/site-settings'),
 };
 
 export const packagesApi = {
-  list: (category) => api.get('/packages', { params: category ? { category } : {} }),
+  list: (category) =>
+    cachedGet(api, '/packages', { params: category ? { category } : {} }),
   getBySlug: (slug) => api.get(`/packages/${slug}`),
   getById: (id) => api.get(`/packages/id/${id}`),
   getContent: (slug) => api.get(`/packages/${slug}/content`),

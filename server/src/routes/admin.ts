@@ -6,6 +6,7 @@ import { emitNewMessage } from '../socket';
 import upload from '../middleware/upload';
 import { env } from '../config/env';
 import { handleMulterError } from '../middleware/uploadRespond';
+import { invalidatePackagesCache } from '../lib/memoryCache';
 
 const router = Router();
 
@@ -307,6 +308,7 @@ router.post(
     });
 
     console.log('[admin] Package created id:', pkg.id, 'coverUrl:', pkg.coverUrl ?? null);
+    invalidatePackagesCache();
     res.status(201).json({ message: 'Package created', package: pkg });
   } catch (error) {
     console.error('[admin] POST /packages', error);
@@ -367,6 +369,7 @@ router.put('/packages/:id', validate(adminUpdatePackageSchema), async (req, res)
       },
     });
 
+    invalidatePackagesCache();
     res.json({ message: 'Package updated', package: pkg });
   } catch (error) {
     console.error('[admin] PUT /packages/:id', error);
@@ -385,6 +388,7 @@ router.delete('/packages/:id', validate(adminDeletePackageSchema), async (req, r
       return;
     }
 
+    invalidatePackagesCache();
     res.json({ message: 'Package deleted' });
   } catch (error) {
     next(error);

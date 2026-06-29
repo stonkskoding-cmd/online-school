@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { purchasesApi } from '../api';
 
@@ -29,7 +29,7 @@ function delay(ms) {
   });
 }
 
-export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
+function PackageCard({ item, isAuthorized, onNeedAuth }) {
   const navigate = useNavigate();
   const redirectTimerRef = useRef(null);
   const [expanded, setExpanded] = useState(false);
@@ -128,6 +128,8 @@ export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
             src={item.coverUrl}
             alt=""
             className="h-40 w-full object-cover"
+            loading="lazy"
+            decoding="async"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}
@@ -259,3 +261,5 @@ export default function PackageCard({ item, isAuthorized, onNeedAuth }) {
     </article>
   );
 }
+
+export default memo(PackageCard);

@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
 import apiRouter from './routes';
@@ -6,12 +7,17 @@ import { chatRouter } from './routes/chat';
 import siteSettingsRoutes from './routes/siteSettings';
 import { CORS_BUILD_ID } from './lib/cors';
 import { corsMiddleware, corsErrorLogger } from './middleware/cors';
+import { registerKeepaliveRoutes } from './keepalive';
 
 console.log('🚀 APP LOADED | CORS_BUILD_ID:', CORS_BUILD_ID);
 
 const app = express();
 
 app.set('trust proxy', 1);
+
+registerKeepaliveRoutes(app);
+
+app.use(compression());
 
 app.use((req, _res, next) => {
   console.log(`[MIDDLEWARE] ${req.method} ${req.path} | originalUrl: ${req.originalUrl}`);
@@ -29,13 +35,6 @@ app.use((req, _res, next) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
-
-app.get('/health', (_req, res) => {
-  res.json({ ok: true, build: CORS_BUILD_ID, ts: Date.now() });
-});
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, build: CORS_BUILD_ID, ts: Date.now() });
-});
 
 app.use(
   '/api/chat',

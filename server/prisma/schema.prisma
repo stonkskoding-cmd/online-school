@@ -33,6 +33,7 @@ model Package {
   updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
   purchases   Purchase[]
 
+  @@index([category])
   @@map("packages")
 }
 

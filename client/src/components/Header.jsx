@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
@@ -144,7 +144,7 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
   );
 }
 
-export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'login' }) {
+function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'login' }) {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -338,3 +338,5 @@ export default function Header({ user, onAuthSuccess, forceOpenAuth = 0, authIni
     </>
   );
 }
+
+export default memo(Header);

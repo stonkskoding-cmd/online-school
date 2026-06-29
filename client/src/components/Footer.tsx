@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { siteSettingsApi } from '../api';
 import { DEFAULT_FOOTER_SETTINGS, normalizeFooterSettings } from '../constants/footerDefaults';
@@ -26,7 +26,7 @@ function phoneHref(phone: string) {
   return `tel:${phone.replace(/\s|\(|\)|-/g, '')}`;
 }
 
-export default function Footer() {
+function Footer() {
   const [settings, setSettings] = useState(normalizeFooterSettings());
 
   useEffect(() => {
@@ -94,3 +94,5 @@ export default function Footer() {
     </footer>
   );
 }
+
+export default memo(Footer);

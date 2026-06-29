@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { validate } from '../middleware/validation';
 import { auth, admin, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
+import { apiCache, invalidatePackagesCache, PACKAGES_LIST_TTL_MS } from '../lib/memoryCache';
 import { PackageCategory, PackageMaterial } from '../models/types';
 const router = Router();
 
@@ -45,13 +46,25 @@ const packageSchema = z.object({
 router.get('/', async (req, res, next) => {
   try {
     const { category } = req.query;
-    const where = category ? { category: String(category) } : {};
+    const cat = category ? String(category) : '';
+    const cacheKey = `packages:list:${cat || 'all'}`;
+    const cached = apiCache.get<{ packages: unknown[] }>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.json(cached);
+      return;
+    }
+
+    const where = cat ? { category: cat } : {};
 
     const packages = await prisma.package.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
-    res.json({ packages });
+    const payload = { packages };
+    apiCache.set(cacheKey, payload, PACKAGES_LIST_TTL_MS);
+    res.setHeader('X-Cache', 'MISS');
+    res.json(payload);
   } catch (error) {
     next(error);
   }
@@ -157,6 +170,8 @@ router.post('/', auth, admin, validate(packageSchema), async (req, res, next) =>
       },
     });
 
+    invalidatePackagesCache();
+
     res.status(201).json({
       message: 'Package created successfully',
       package: pkg,
@@ -200,6 +215,8 @@ router.put('/:id', auth, admin, validate(packageSchema), async (req, res, next) 
       },
     });
 
+    invalidatePackagesCache();
+
     res.json({
       message: 'Package updated successfully',
       package: pkg,
@@ -218,6 +235,8 @@ router.delete('/:id', auth, admin, async (req, res, next) => {
       res.status(404).json({ message: 'Package not found' });
       return;
     }
+
+    invalidatePackagesCache();
 
     res.json({ message: 'Package deleted successfully' });
   } catch (error) {
