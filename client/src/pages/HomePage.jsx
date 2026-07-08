@@ -107,7 +107,7 @@ export default function HomePage() {
           fetchPriority="high"
         />
         {/* Кнопка "ВЫБРАТЬ КУРС" */}
-        <div className="absolute left-1/2 -translate-x-1/2 z-20" style={{ bottom: '80px' }}>
+        <div className="absolute left-1/2 z-20 -translate-x-1/2" style={{ bottom: 'clamp(24px, 5vw, 64px)' }}>
           <img
             src="/gold-button.png"
             alt="Выбрать курс"
@@ -117,9 +117,9 @@ export default function HomePage() {
             }}
             className="cursor-pointer"
             style={{
-              width: '900px',
+              width: 'min(90vw, 550px)',
               height: 'auto',
-              maxWidth: '95vw',
+              maxWidth: '90vw',
               transition: 'all 0.3s ease',
               transform: 'scale(1)',
             }}
@@ -193,7 +193,7 @@ export default function HomePage() {
           <p className="text-sm text-gray-600 sm:text-base">Пакеты пока не добавлены</p>
         ) : null}
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {packages.map((item) => (
             <PackageCard
               key={item.id}

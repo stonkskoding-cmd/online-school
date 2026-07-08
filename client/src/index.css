@@ -27,14 +27,31 @@ body {
 
 /* Перебиваем Tailwind preflight: img { max-width: 100% } */
 img[alt='Выбрать курс'] {
-  width: 900px !important;
-  max-width: 95vw !important;
+  width: min(90vw, 550px) !important;
+  max-width: 90vw !important;
   height: auto !important;
 }
 
 img[alt='Профиль'] {
-  width: 96px !important;
-  height: 96px !important;
-  max-height: 112px !important;
+  width: clamp(40px, 5vw, 80px) !important;
+  height: clamp(40px, 5vw, 80px) !important;
   max-width: none !important;
+}
+
+@media (max-width: 767px) {
+  img[alt='Выбрать курс'] {
+    max-width: 320px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  img[alt='Выбрать курс'] {
+    max-width: 350px !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  img[alt='Выбрать курс'] {
+    max-width: 450px !important;
+  }
 }

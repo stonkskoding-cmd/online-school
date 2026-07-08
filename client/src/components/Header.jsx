@@ -128,17 +128,19 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
-        width: '96px',
-        height: '96px',
-        maxHeight: '112px',
+        width: 'clamp(40px, 5vw, 80px)',
+        height: 'clamp(40px, 5vw, 80px)',
         objectFit: 'contain',
         transition: 'transform 0.2s ease',
+        filter: 'brightness(1.2) contrast(1.15) saturate(1.2)',
       }}
       onMouseEnter={(e) => {
-        e.target.style.transform = 'scale(1.08)';
+        e.target.style.transform = 'scale(1.15)';
+        e.target.style.filter = 'brightness(1.35) contrast(1.25) saturate(1.3)';
       }}
       onMouseLeave={(e) => {
         e.target.style.transform = 'scale(1)';
+        e.target.style.filter = 'brightness(1.2) contrast(1.15) saturate(1.2)';
       }}
     />
   );
@@ -190,62 +192,59 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
 
   return (
     <>
-      <header
-        className="sticky top-0 z-40 overflow-visible border-b border-primary/25 shadow-md"
-        style={{
-          backgroundImage: 'url(/header-bg.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="relative flex h-16 w-full items-center justify-between gap-2 py-2 pl-0 pr-2 sm:h-20 md:h-32 md:pr-2">
-          <div className="flex shrink-0 items-center justify-start">
-            <Link to="/" className="relative z-20 inline-flex items-center justify-start" onClick={closeMobileMenu}>
+      <header className="sticky top-0 z-50 w-full border-b border-primary/25 bg-white shadow-sm">
+        <div className="flex w-full items-center justify-between gap-2 px-2 py-2 sm:min-h-[72px] sm:px-4 md:min-h-[80px] md:gap-4 md:px-6 lg:px-8">
+          <div className="flex shrink-0 items-center">
+            <Link to="/" className="inline-flex items-center justify-start" onClick={closeMobileMenu}>
               <img
                 src="/logo-full.png"
                 alt="Династия"
-                className="ml-0 h-auto pl-2 object-contain sm:pl-4"
+                className="h-auto object-contain"
                 style={{
-                  maxWidth: 'clamp(140px, 20vw, 350px)',
+                  maxWidth: 'clamp(120px, 18vw, 280px)',
+                  minWidth: '120px',
                 }}
               />
             </Link>
           </div>
 
-          <nav className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 md:flex">
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-2 px-2 md:flex md:gap-3 md:px-4 lg:gap-4">
             <Link
               to="/?category=OGE-IST#catalog"
-              className="flex h-40 w-[22rem] shrink-0 items-center justify-center transition-transform duration-200 hover:scale-105"
+              className="flex min-w-0 flex-1 items-center justify-center"
+              onClick={closeMobileMenu}
             >
               <img
                 src="/btn-oge.png"
                 alt="ОГЭ История"
-                className="h-auto max-h-full max-w-full object-contain object-center"
+                className="h-8 w-auto max-w-[30%] object-contain sm:h-9 md:h-10 lg:h-11"
               />
             </Link>
             <Link
               to="/?category=EGE-IST#catalog"
-              className="flex h-40 w-[22rem] shrink-0 items-center justify-center transition-transform duration-200 hover:scale-105"
+              className="flex min-w-0 flex-1 items-center justify-center"
+              onClick={closeMobileMenu}
             >
               <img
                 src="/btn-ege.png"
                 alt="ЕГЭ История"
-                className="h-auto max-h-full max-w-full object-contain object-center"
+                className="h-8 w-auto max-w-[30%] object-contain sm:h-9 md:h-10 lg:h-11"
               />
             </Link>
             <Link
               to="/?category=EGE-SOC#catalog"
-              className="flex h-40 w-[22rem] shrink-0 items-center justify-center transition-transform duration-200 hover:scale-105"
+              className="flex min-w-0 flex-1 items-center justify-center"
+              onClick={closeMobileMenu}
             >
               <img
                 src="/btn-soc.png"
                 alt="ЕГЭ Обществознание"
-                className="h-auto max-h-full max-w-full object-contain object-center"
+                className="h-8 w-auto max-w-[30%] object-contain sm:h-9 md:h-10 lg:h-11"
               />
             </Link>
           </nav>
 
-          <div className="absolute right-2 top-1/2 z-20 hidden max-h-[112px] -translate-y-1/2 md:flex md:items-center" ref={profileMenuRef}>
+          <div className="relative hidden shrink-0 items-center md:flex" ref={profileMenuRef}>
             {showAccountMenu ? (
               <>
                 <ProfileButton
@@ -271,7 +270,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
             <button
               type="button"
               onClick={() => setIsMenuOpen((value) => !value)}
-              className="rounded-lg border border-primary/80 bg-white/70 px-3 py-2 text-xl leading-none text-primary backdrop-blur-sm transition-transform duration-200 hover:scale-105"
+              className="z-50 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-primary/80 bg-white/70 px-3 py-2 text-xl leading-none text-primary backdrop-blur-sm transition-transform duration-200 hover:scale-105"
               aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
               aria-expanded={isMenuOpen}
             >
