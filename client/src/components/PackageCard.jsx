@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { purchasesApi } from '../api';
 
 const CATEGORY_LABELS = {
-  'OGE-IST': 'ОГЭ История',
+  'OGE-IST': 'ОГЭ Обществознание',
   'EGE-IST': 'ЕГЭ История',
   'EGE-SOC': 'ЕГЭ Обществознание',
 };

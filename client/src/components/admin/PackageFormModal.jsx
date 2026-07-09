@@ -3,7 +3,7 @@ import PackageMaterialsEditor from './PackageMaterialsEditor';
 import CoverUploadField from './CoverUploadField';
 
 const CATEGORY_OPTIONS = [
-  { value: 'OGE-IST', label: 'ОГЭ История' },
+  { value: 'OGE-IST', label: 'ОГЭ Обществознание' },
   { value: 'EGE-IST', label: 'ЕГЭ История' },
   { value: 'EGE-SOC', label: 'ЕГЭ Обществознание' },
 ];

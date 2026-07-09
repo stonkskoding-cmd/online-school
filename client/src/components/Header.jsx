@@ -3,10 +3,28 @@ import { Link } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
 
+const desktopNavItems = [
+  {
+    to: '/?category=EGE-IST#catalog',
+    src: '/btn-ege-istoriya.png',
+    alt: 'ЕГЭ История',
+  },
+  {
+    to: '/?category=EGE-SOC#catalog',
+    src: '/btn-ege-obschestvo.png',
+    alt: 'ЕГЭ Обществознание',
+  },
+  {
+    to: '/?category=OGE-IST#catalog',
+    src: '/btn-oge-obschestvo.png',
+    alt: 'ОГЭ Обществознание',
+  },
+];
+
 const mobileNavLinks = [
-  { to: '/?category=OGE-IST#catalog', label: 'ОГЭ История' },
   { to: '/?category=EGE-IST#catalog', label: 'ЕГЭ История' },
   { to: '/?category=EGE-SOC#catalog', label: 'ЕГЭ Обществознание' },
+  { to: '/?category=OGE-IST#catalog', label: 'ОГЭ Обществознание' },
 ];
 
 function isAdminSession(user) {
@@ -193,7 +211,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-primary/25 bg-white shadow-sm">
-        <div className="flex w-full items-center justify-between gap-2 px-2 py-2 sm:min-h-[72px] sm:px-4 md:min-h-[80px] md:gap-4 md:px-6 lg:px-8">
+        <div className="flex min-h-[64px] w-full items-center justify-between gap-2 px-2 py-2 sm:min-h-[72px] sm:px-4 md:min-h-[80px] md:gap-4 md:px-6 lg:px-8">
           <div className="flex shrink-0 items-center">
             <Link to="/" className="inline-flex items-center justify-start" onClick={closeMobileMenu}>
               <img
@@ -209,39 +227,20 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
           </div>
 
           <nav className="hidden min-w-0 flex-1 items-center justify-center gap-2 px-2 md:flex md:gap-3 md:px-4 lg:gap-4">
-            <Link
-              to="/?category=OGE-IST#catalog"
-              className="flex min-w-0 flex-1 items-center justify-center"
-              onClick={closeMobileMenu}
-            >
-              <img
-                src="/btn-oge.png"
-                alt="ОГЭ История"
-                className="h-8 w-auto max-w-[30%] object-contain sm:h-9 md:h-10 lg:h-11"
-              />
-            </Link>
-            <Link
-              to="/?category=EGE-IST#catalog"
-              className="flex min-w-0 flex-1 items-center justify-center"
-              onClick={closeMobileMenu}
-            >
-              <img
-                src="/btn-ege.png"
-                alt="ЕГЭ История"
-                className="h-8 w-auto max-w-[30%] object-contain sm:h-9 md:h-10 lg:h-11"
-              />
-            </Link>
-            <Link
-              to="/?category=EGE-SOC#catalog"
-              className="flex min-w-0 flex-1 items-center justify-center"
-              onClick={closeMobileMenu}
-            >
-              <img
-                src="/btn-soc.png"
-                alt="ЕГЭ Обществознание"
-                className="h-8 w-auto max-w-[30%] object-contain sm:h-9 md:h-10 lg:h-11"
-              />
-            </Link>
+            {desktopNavItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex min-w-0 flex-1 items-center justify-center"
+                onClick={closeMobileMenu}
+              >
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  className="h-8 w-auto max-w-[30%] cursor-pointer object-contain transition-transform duration-200 hover:scale-105 sm:h-9 md:h-10 lg:h-11"
+                />
+              </Link>
+            ))}
           </nav>
 
           <div className="relative hidden shrink-0 items-center md:flex" ref={profileMenuRef}>
@@ -316,6 +315,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
                         width: '48px',
                         height: '48px',
                         transition: 'transform 0.2s ease',
+                        filter: 'brightness(1.2) contrast(1.15) saturate(1.2)',
                       }}
                       aria-hidden
                     />

@@ -7,9 +7,9 @@ import { resolveCurrentUser } from '../utils/session';
 
 const categories = [
   { label: 'Все', value: '' },
-  { label: 'ОГЭ История', value: 'OGE-IST' },
   { label: 'ЕГЭ История', value: 'EGE-IST' },
   { label: 'ЕГЭ Обществознание', value: 'EGE-SOC' },
+  { label: 'ОГЭ Обществознание', value: 'OGE-IST' },
 ];
 
 const mobileBenefits = [
