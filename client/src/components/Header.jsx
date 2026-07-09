@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
 
+const navButtonStyle = {
+  height: 'clamp(36px, 5vw, 60px)',
+  maxHeight: '60px',
+  width: 'auto',
+};
+
+const navButtonClassName =
+  'h-auto w-auto cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg';
+
 const desktopNavItems = [
   {
     to: '/?category=EGE-IST#catalog',
@@ -146,10 +155,10 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
-        width: 'clamp(40px, 5vw, 80px)',
-        height: 'clamp(40px, 5vw, 80px)',
+        width: 'clamp(44px, 5vw, 80px)',
+        height: 'clamp(44px, 5vw, 80px)',
         objectFit: 'contain',
-        transition: 'transform 0.2s ease',
+        transition: 'all 0.2s ease',
         filter: 'brightness(1.2) contrast(1.15) saturate(1.2)',
       }}
       onMouseEnter={(e) => {
@@ -210,8 +219,8 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-primary/25 bg-white shadow-sm">
-        <div className="flex min-h-[64px] w-full items-center justify-between gap-2 px-2 py-2 sm:min-h-[72px] sm:px-4 md:min-h-[80px] md:gap-4 md:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 w-full bg-white shadow-md">
+        <div className="flex min-h-[70px] w-full items-center justify-between gap-2 px-2 sm:min-h-[80px] sm:px-4 md:min-h-[90px] md:gap-4 md:px-6 lg:px-8 xl:px-12">
           <div className="flex shrink-0 items-center">
             <Link to="/" className="inline-flex items-center justify-start" onClick={closeMobileMenu}>
               <img
@@ -219,25 +228,26 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
                 alt="Династия"
                 className="h-auto object-contain"
                 style={{
-                  maxWidth: 'clamp(120px, 18vw, 280px)',
-                  minWidth: '120px',
+                  maxWidth: 'clamp(120px, 20vw, 320px)',
+                  minWidth: '100px',
                 }}
               />
             </Link>
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-2 px-2 md:flex md:gap-3 md:px-4 lg:gap-4">
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-2 px-1 sm:gap-3 sm:px-2 md:flex md:gap-4 md:px-4 lg:gap-5">
             {desktopNavItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="flex min-w-0 flex-1 items-center justify-center"
+                className="flex shrink-0 items-center justify-center"
                 onClick={closeMobileMenu}
               >
                 <img
                   src={item.src}
                   alt={item.alt}
-                  className="h-8 w-auto max-w-[30%] cursor-pointer object-contain transition-transform duration-200 hover:scale-105 sm:h-9 md:h-10 lg:h-11"
+                  className={navButtonClassName}
+                  style={navButtonStyle}
                 />
               </Link>
             ))}
