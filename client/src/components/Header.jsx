@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
 
-const navButtonStyle = { width: 'clamp(180px, 18vw, 280px)' };
+const navButtonStyle = { width: 'clamp(180px, 18vw, 260px)' };
 
 const navButtonClassName =
   'h-auto shrink-0 cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg';
@@ -138,7 +138,7 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
       src="/btn-profile.png"
       alt="Профиль"
       onClick={onClick}
-      className="cursor-pointer"
+      className="h-auto w-full cursor-pointer transition-all duration-200 hover:scale-110"
       role="button"
       tabIndex={0}
       aria-label={ariaLabel}
@@ -151,18 +151,12 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
-        width: 'clamp(55px, 6vw, 90px)',
-        height: 'clamp(55px, 6vw, 90px)',
-        objectFit: 'contain',
-        transition: 'all 0.2s ease',
         filter: 'brightness(1.25) contrast(1.2) saturate(1.3)',
       }}
       onMouseEnter={(e) => {
-        e.target.style.transform = 'scale(1.15)';
         e.target.style.filter = 'brightness(1.4) contrast(1.3) saturate(1.4)';
       }}
       onMouseLeave={(e) => {
-        e.target.style.transform = 'scale(1)';
         e.target.style.filter = 'brightness(1.25) contrast(1.2) saturate(1.3)';
       }}
     />
@@ -216,22 +210,18 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-white shadow-md">
-        <div className="flex w-full items-center justify-between px-3 py-2 md:px-6 md:py-3">
-          <div className="shrink-0">
-            <Link to="/" className="inline-flex items-center" onClick={closeMobileMenu}>
+        <div className="flex w-full items-center justify-between px-4 py-1.5 md:px-8 md:py-2">
+          <div className="w-[200px] shrink-0 md:w-[240px]">
+            <Link to="/" className="inline-flex w-full items-center" onClick={closeMobileMenu}>
               <img
                 src="/logo-full.png"
                 alt="Династия"
-                className="h-auto object-contain"
-                style={{
-                  width: 'clamp(140px, 16vw, 240px)',
-                  height: 'auto',
-                }}
+                className="h-auto w-full object-contain"
               />
             </Link>
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-4 px-4 md:flex md:gap-5 lg:gap-6">
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-6 md:flex md:gap-8 lg:gap-10">
             {desktopNavItems.map((item) => (
               <Link
                 key={item.to}
@@ -249,7 +239,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
             ))}
           </nav>
 
-          <div className="relative hidden shrink-0 md:flex" ref={profileMenuRef}>
+          <div className="relative hidden w-[80px] shrink-0 md:flex md:w-[90px]" ref={profileMenuRef}>
             {showAccountMenu ? (
               <>
                 <ProfileButton
