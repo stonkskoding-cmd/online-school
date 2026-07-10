@@ -3,14 +3,8 @@ import { Link } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
 
-const navButtonStyle = {
-  height: 'clamp(36px, 5vw, 60px)',
-  maxHeight: '60px',
-  width: 'auto',
-};
-
 const navButtonClassName =
-  'h-auto w-auto cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg';
+  'h-[40px] w-auto max-w-none cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg sm:h-[44px] md:h-[48px] lg:h-[52px] xl:h-[56px]';
 
 const desktopNavItems = [
   {
@@ -220,7 +214,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-white shadow-md">
-        <div className="flex min-h-[70px] w-full items-center justify-between gap-2 px-2 sm:min-h-[80px] sm:px-4 md:min-h-[90px] md:gap-4 md:px-6 lg:px-8 xl:px-12">
+        <div className="flex min-h-[80px] w-full items-center justify-between gap-4 px-4 sm:min-h-[90px] md:min-h-[100px] md:gap-6 md:px-6 lg:px-8">
           <div className="flex shrink-0 items-center">
             <Link to="/" className="inline-flex items-center justify-start" onClick={closeMobileMenu}>
               <img
@@ -235,7 +229,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
             </Link>
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-2 px-1 sm:gap-3 sm:px-2 md:flex md:gap-4 md:px-4 lg:gap-5">
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-3 px-2 sm:gap-4 sm:px-4 md:flex md:gap-5 lg:gap-6">
             {desktopNavItems.map((item) => (
               <Link
                 key={item.to}
@@ -243,12 +237,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
                 className="flex shrink-0 items-center justify-center"
                 onClick={closeMobileMenu}
               >
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  className={navButtonClassName}
-                  style={navButtonStyle}
-                />
+                <img src={item.src} alt={item.alt} className={navButtonClassName} />
               </Link>
             ))}
           </nav>

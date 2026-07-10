@@ -41,8 +41,6 @@ img[alt='Профиль'] {
 img[alt='ЕГЭ История'],
 img[alt='ЕГЭ Обществознание'],
 img[alt='ОГЭ Обществознание'] {
-  height: clamp(36px, 5vw, 60px) !important;
-  max-height: 60px !important;
   width: auto !important;
   max-width: none !important;
 }
