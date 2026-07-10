@@ -38,11 +38,19 @@ img[alt='Профиль'] {
   max-width: none !important;
 }
 
-img[alt='ЕГЭ История'],
+img[alt='ЕГЭ История'] {
+  width: clamp(140px, 14vw, 240px) !important;
+  min-width: 140px !important;
+  max-width: none !important;
+  height: auto !important;
+}
+
 img[alt='ЕГЭ Обществознание'],
 img[alt='ОГЭ Обществознание'] {
-  width: auto !important;
+  width: clamp(160px, 16vw, 280px) !important;
+  min-width: 160px !important;
   max-width: none !important;
+  height: auto !important;
 }
 
 @media (max-width: 767px) {

@@ -4,23 +4,35 @@ import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
 
 const navButtonClassName =
-  'h-[40px] w-auto max-w-none cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg sm:h-[44px] md:h-[48px] lg:h-[52px] xl:h-[56px]';
+  'h-auto shrink-0 cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg';
 
 const desktopNavItems = [
   {
     to: '/?category=EGE-IST#catalog',
     src: '/btn-ege-istoriya.png',
     alt: 'ЕГЭ История',
+    style: {
+      width: 'clamp(140px, 14vw, 240px)',
+      minWidth: '140px',
+    },
   },
   {
     to: '/?category=EGE-SOC#catalog',
     src: '/btn-ege-obschestvo.png',
     alt: 'ЕГЭ Обществознание',
+    style: {
+      width: 'clamp(160px, 16vw, 280px)',
+      minWidth: '160px',
+    },
   },
   {
     to: '/?category=OGE-IST#catalog',
     src: '/btn-oge-obschestvo.png',
     alt: 'ОГЭ Обществознание',
+    style: {
+      width: 'clamp(160px, 16vw, 280px)',
+      minWidth: '160px',
+    },
   },
 ];
 
@@ -237,7 +249,12 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
                 className="flex shrink-0 items-center justify-center"
                 onClick={closeMobileMenu}
               >
-                <img src={item.src} alt={item.alt} className={navButtonClassName} />
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  className={navButtonClassName}
+                  style={item.style}
+                />
               </Link>
             ))}
           </nav>
