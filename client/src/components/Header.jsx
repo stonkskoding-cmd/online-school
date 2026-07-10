@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
 
+const navButtonStyle = { width: 'clamp(180px, 18vw, 280px)' };
+
 const navButtonClassName =
   'h-auto shrink-0 cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg';
 
@@ -11,28 +13,16 @@ const desktopNavItems = [
     to: '/?category=EGE-IST#catalog',
     src: '/btn-ege-istoriya.png',
     alt: 'ЕГЭ История',
-    style: {
-      width: 'clamp(280px, 28vw, 480px)',
-      minWidth: '280px',
-    },
   },
   {
     to: '/?category=EGE-SOC#catalog',
     src: '/btn-ege-obschestvo.png',
     alt: 'ЕГЭ Обществознание',
-    style: {
-      width: 'clamp(320px, 32vw, 560px)',
-      minWidth: '320px',
-    },
   },
   {
     to: '/?category=OGE-IST#catalog',
     src: '/btn-oge-obschestvo.png',
     alt: 'ОГЭ Обществознание',
-    style: {
-      width: 'clamp(320px, 32vw, 560px)',
-      minWidth: '320px',
-    },
   },
 ];
 
@@ -161,19 +151,19 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
-        width: 'clamp(50px, 6vw, 90px)',
-        height: 'clamp(50px, 6vw, 90px)',
+        width: 'clamp(55px, 6vw, 90px)',
+        height: 'clamp(55px, 6vw, 90px)',
         objectFit: 'contain',
         transition: 'all 0.2s ease',
-        filter: 'brightness(1.2) contrast(1.15) saturate(1.2)',
+        filter: 'brightness(1.25) contrast(1.2) saturate(1.3)',
       }}
       onMouseEnter={(e) => {
         e.target.style.transform = 'scale(1.15)';
-        e.target.style.filter = 'brightness(1.35) contrast(1.25) saturate(1.3)';
+        e.target.style.filter = 'brightness(1.4) contrast(1.3) saturate(1.4)';
       }}
       onMouseLeave={(e) => {
         e.target.style.transform = 'scale(1)';
-        e.target.style.filter = 'brightness(1.2) contrast(1.15) saturate(1.2)';
+        e.target.style.filter = 'brightness(1.25) contrast(1.2) saturate(1.3)';
       }}
     />
   );
@@ -226,22 +216,22 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-white shadow-md">
-        <div className="flex min-h-[70px] w-full items-center justify-between gap-4 px-1 sm:min-h-[80px] sm:px-2 md:gap-6 md:px-4">
-          <div className="flex shrink-0 items-center">
-            <Link to="/" className="inline-flex items-center justify-start" onClick={closeMobileMenu}>
+        <div className="flex w-full items-center justify-between px-3 py-2 md:px-6 md:py-3">
+          <div className="shrink-0">
+            <Link to="/" className="inline-flex items-center" onClick={closeMobileMenu}>
               <img
                 src="/logo-full.png"
                 alt="Династия"
                 className="h-auto object-contain"
                 style={{
-                  maxWidth: 'clamp(160px, 24vw, 360px)',
-                  minWidth: '120px',
+                  width: 'clamp(140px, 16vw, 240px)',
+                  height: 'auto',
                 }}
               />
             </Link>
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-4 px-1 md:flex md:gap-8 lg:gap-10">
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-4 px-4 md:flex md:gap-5 lg:gap-6">
             {desktopNavItems.map((item) => (
               <Link
                 key={item.to}
@@ -253,13 +243,13 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
                   src={item.src}
                   alt={item.alt}
                   className={navButtonClassName}
-                  style={item.style}
+                  style={navButtonStyle}
                 />
               </Link>
             ))}
           </nav>
 
-          <div className="relative hidden shrink-0 items-center md:flex" ref={profileMenuRef}>
+          <div className="relative hidden shrink-0 md:flex" ref={profileMenuRef}>
             {showAccountMenu ? (
               <>
                 <ProfileButton
