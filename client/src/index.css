@@ -33,22 +33,22 @@ img[alt='Выбрать курс'] {
 }
 
 img[alt='Профиль'] {
-  width: clamp(44px, 5vw, 80px) !important;
-  height: clamp(44px, 5vw, 80px) !important;
+  width: clamp(50px, 6vw, 90px) !important;
+  height: clamp(50px, 6vw, 90px) !important;
   max-width: none !important;
 }
 
 img[alt='ЕГЭ История'] {
-  width: clamp(140px, 14vw, 240px) !important;
-  min-width: 140px !important;
+  width: clamp(280px, 28vw, 480px) !important;
+  min-width: 280px !important;
   max-width: none !important;
   height: auto !important;
 }
 
 img[alt='ЕГЭ Обществознание'],
 img[alt='ОГЭ Обществознание'] {
-  width: clamp(160px, 16vw, 280px) !important;
-  min-width: 160px !important;
+  width: clamp(320px, 32vw, 560px) !important;
+  min-width: 320px !important;
   max-width: none !important;
   height: auto !important;
 }

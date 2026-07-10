@@ -12,8 +12,8 @@ const desktopNavItems = [
     src: '/btn-ege-istoriya.png',
     alt: 'ЕГЭ История',
     style: {
-      width: 'clamp(140px, 14vw, 240px)',
-      minWidth: '140px',
+      width: 'clamp(280px, 28vw, 480px)',
+      minWidth: '280px',
     },
   },
   {
@@ -21,8 +21,8 @@ const desktopNavItems = [
     src: '/btn-ege-obschestvo.png',
     alt: 'ЕГЭ Обществознание',
     style: {
-      width: 'clamp(160px, 16vw, 280px)',
-      minWidth: '160px',
+      width: 'clamp(320px, 32vw, 560px)',
+      minWidth: '320px',
     },
   },
   {
@@ -30,8 +30,8 @@ const desktopNavItems = [
     src: '/btn-oge-obschestvo.png',
     alt: 'ОГЭ Обществознание',
     style: {
-      width: 'clamp(160px, 16vw, 280px)',
-      minWidth: '160px',
+      width: 'clamp(320px, 32vw, 560px)',
+      minWidth: '320px',
     },
   },
 ];
@@ -161,8 +161,8 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
-        width: 'clamp(44px, 5vw, 80px)',
-        height: 'clamp(44px, 5vw, 80px)',
+        width: 'clamp(50px, 6vw, 90px)',
+        height: 'clamp(50px, 6vw, 90px)',
         objectFit: 'contain',
         transition: 'all 0.2s ease',
         filter: 'brightness(1.2) contrast(1.15) saturate(1.2)',
@@ -226,7 +226,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-white shadow-md">
-        <div className="flex min-h-[80px] w-full items-center justify-between gap-4 px-4 sm:min-h-[90px] md:min-h-[100px] md:gap-6 md:px-6 lg:px-8">
+        <div className="flex min-h-[70px] w-full items-center justify-between gap-4 px-1 sm:min-h-[80px] sm:px-2 md:gap-6 md:px-4">
           <div className="flex shrink-0 items-center">
             <Link to="/" className="inline-flex items-center justify-start" onClick={closeMobileMenu}>
               <img
@@ -234,14 +234,14 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
                 alt="Династия"
                 className="h-auto object-contain"
                 style={{
-                  maxWidth: 'clamp(120px, 20vw, 320px)',
-                  minWidth: '100px',
+                  maxWidth: 'clamp(160px, 24vw, 360px)',
+                  minWidth: '120px',
                 }}
               />
             </Link>
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-3 px-2 sm:gap-4 sm:px-4 md:flex md:gap-5 lg:gap-6">
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-4 px-1 md:flex md:gap-8 lg:gap-10">
             {desktopNavItems.map((item) => (
               <Link
                 key={item.to}
