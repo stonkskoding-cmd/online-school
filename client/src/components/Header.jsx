@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
 
-const navButtonStyle = { width: 'clamp(180px, 18vw, 260px)' };
+const navButtonStyle = { width: 'clamp(200px, 18vw, 280px)' };
 
 const navButtonClassName =
-  'h-auto shrink-0 cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg';
+  'h-auto cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg';
 
 const desktopNavItems = [
   {
@@ -138,7 +138,7 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
       src="/btn-profile.png"
       alt="Профиль"
       onClick={onClick}
-      className="h-auto w-full cursor-pointer transition-all duration-200 hover:scale-110"
+      className="h-auto cursor-pointer transition-all duration-200 hover:scale-110"
       role="button"
       tabIndex={0}
       aria-label={ariaLabel}
@@ -151,6 +151,9 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
         }
       }}
       style={{
+        width: 'clamp(50px, 5vw, 80px)',
+        height: 'clamp(50px, 5vw, 80px)',
+        objectFit: 'contain',
         filter: 'brightness(1.25) contrast(1.2) saturate(1.3)',
       }}
       onMouseEnter={(e) => {
@@ -210,23 +213,24 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-white shadow-md">
-        <div className="flex w-full items-center justify-between px-4 py-1.5 md:px-8 md:py-2">
-          <div className="w-[200px] shrink-0 md:w-[240px]">
-            <Link to="/" className="inline-flex w-full items-center" onClick={closeMobileMenu}>
+        <div className="relative min-h-[70px] w-full px-4 py-2 sm:min-h-[80px] md:px-6 md:py-3">
+          <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2 md:left-6">
+            <Link to="/" className="inline-flex items-center" onClick={closeMobileMenu}>
               <img
                 src="/logo-full.png"
                 alt="Династия"
-                className="h-auto w-full object-contain"
+                className="h-auto object-contain"
+                style={{ width: 'clamp(140px, 15vw, 220px)' }}
               />
             </Link>
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-6 md:flex md:gap-8 lg:gap-10">
+          <nav className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-5 md:flex lg:gap-7">
             {desktopNavItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="flex shrink-0 items-center justify-center"
+                className="inline-flex items-center"
                 onClick={closeMobileMenu}
               >
                 <img
@@ -239,7 +243,10 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
             ))}
           </nav>
 
-          <div className="relative hidden w-[80px] shrink-0 md:flex md:w-[90px]" ref={profileMenuRef}>
+          <div
+            className="absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 md:right-6 md:block"
+            ref={profileMenuRef}
+          >
             {showAccountMenu ? (
               <>
                 <ProfileButton
@@ -261,17 +268,17 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
             )}
           </div>
 
-          <div className="relative z-20 ml-auto flex shrink-0 items-center md:hidden">
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen((value) => !value)}
-              className="z-50 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-primary/80 bg-white/70 px-3 py-2 text-xl leading-none text-primary backdrop-blur-sm transition-transform duration-200 hover:scale-105"
-              aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
-              aria-expanded={isMenuOpen}
-            >
-              ☰
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen((value) => !value)}
+            className="absolute right-4 top-1/2 z-20 -translate-y-1/2 p-2 md:hidden"
+            aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+            aria-expanded={isMenuOpen}
+          >
+            <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
 
         {isMenuOpen ? (

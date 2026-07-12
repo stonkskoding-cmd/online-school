@@ -33,13 +33,13 @@ img[alt='Выбрать курс'] {
 }
 
 img[alt='Профиль'] {
-  width: 100% !important;
+  width: clamp(50px, 5vw, 80px) !important;
+  height: clamp(50px, 5vw, 80px) !important;
   max-width: none !important;
-  height: auto !important;
 }
 
 img[alt='Династия'] {
-  width: 100% !important;
+  width: clamp(140px, 15vw, 220px) !important;
   max-width: none !important;
   height: auto !important;
 }
@@ -47,7 +47,7 @@ img[alt='Династия'] {
 img[alt='ЕГЭ История'],
 img[alt='ЕГЭ Обществознание'],
 img[alt='ОГЭ Обществознание'] {
-  width: clamp(180px, 18vw, 260px) !important;
+  width: clamp(200px, 18vw, 280px) !important;
   max-width: none !important;
   height: auto !important;
 }
