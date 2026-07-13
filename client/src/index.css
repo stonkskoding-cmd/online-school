@@ -6,6 +6,9 @@
   --primary: #244E77;
   --primary-light: #2F6699;
   --primary-dark: #163754;
+  --accent-gold: #D4AF37;
+  --site-surface-gradient: linear-gradient(135deg, #0a1a2e 0%, #163754 48%, #0d2236 100%);
+  --site-pattern-opacity: 0.26;
 }
 
 html,
@@ -16,7 +19,7 @@ body {
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: #f3f4f6;
   color: #111827;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
@@ -25,47 +28,465 @@ body {
   box-sizing: border-box;
 }
 
+@layer components {
+  .site-header,
+  .site-footer,
+  .brand-surface,
+  .btn-brand,
+  .catalog-chip--active,
+  .support-chat-fab__btn,
+  .support-chat-fab__tooltip,
+  .support-chat-panel__header,
+  .support-chat-bubble--user {
+    background: var(--site-surface-gradient);
+  }
+
+  .brand-surface,
+  .btn-brand,
+  .catalog-chip--active,
+  .support-chat-fab__btn,
+  .support-chat-fab__tooltip,
+  .support-chat-panel__header,
+  .support-chat-bubble--user {
+    @apply relative isolate overflow-hidden text-white;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .brand-surface::before,
+  .btn-brand::before,
+  .catalog-chip--active::before,
+  .support-chat-fab__btn::before,
+  .support-chat-fab__tooltip::before,
+  .support-chat-panel__header::before,
+  .support-chat-bubble--user::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/header-bg.png');
+    background-size: cover;
+    background-position: center;
+    opacity: var(--site-pattern-opacity);
+    pointer-events: none;
+  }
+
+  .brand-surface > *,
+  .support-chat-panel__header > *,
+  .support-chat-bubble--user > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .site-header {
+    @apply sticky top-0 z-50 w-full overflow-visible border-b border-white/10 shadow-lg shadow-black/25;
+  }
+
+  .site-footer {
+    @apply border-t border-white/10;
+  }
+
+  .site-surface__pattern {
+    @apply pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.26];
+  }
+
+  .header-nav-btn-img {
+    height: clamp(108px, 10vw, 132px);
+    width: auto;
+    display: block;
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .header-nav-btn-hit {
+    width: 54%;
+    height: 48%;
+    min-width: 36px;
+    min-height: 26px;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+  }
+
+  .header-nav-btn-img-mobile {
+    height: clamp(44px, 12vw, 56px);
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+  }
+
+  .header-nav-btn--active .header-nav-btn-img {
+    filter: drop-shadow(0 0 14px rgba(212, 175, 55, 0.45));
+  }
+
+  .header-nav-btn-img-mobile--active {
+    filter: drop-shadow(0 0 14px rgba(212, 175, 55, 0.45));
+  }
+
+  .header-profile-btn {
+    width: clamp(44px, 4.5vw, 54px) !important;
+    height: clamp(44px, 4.5vw, 54px) !important;
+    max-width: none !important;
+    object-fit: contain;
+    filter: brightness(1.2) contrast(1.15) saturate(1.25);
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  .header-profile-btn:hover {
+    transform: scale(1.08);
+    filter: brightness(1.35) contrast(1.2) saturate(1.35);
+  }
+
+  .catalog-chip {
+    @apply relative isolate shrink-0 overflow-hidden rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ease-out sm:text-base;
+  }
+
+  .catalog-chip--active {
+    @apply text-white;
+    transform: scale(1.05);
+    box-shadow:
+      0 0 14px rgba(212, 175, 55, 0.4),
+      0 6px 16px rgba(0, 0, 0, 0.22);
+    animation: catalog-chip-glow 2.6s ease-in-out infinite;
+  }
+
+  .catalog-chip--idle {
+    @apply bg-white text-gray-700 ring-1 ring-gray-200;
+  }
+
+  .catalog-chip--idle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    @apply ring-2 ring-primary-dark/25;
+  }
+
+  .catalog-chip--idle:active {
+    transform: scale(0.96);
+  }
+
+  .btn-brand {
+    @apply inline-flex items-center justify-center rounded-lg font-semibold text-white shadow-md transition-all duration-300 ease-out disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-brand:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow:
+      0 0 14px rgba(212, 175, 55, 0.35),
+      0 8px 18px rgba(0, 0, 0, 0.25);
+  }
+
+  .btn-brand:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  .btn-gold-interactive {
+    width: min(90vw, 550px) !important;
+    max-width: 90vw !important;
+    height: auto !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    transform: scale(1);
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+  }
+
+  .btn-gold-interactive:hover {
+    transform: scale(1.08);
+    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.3));
+  }
+
+  .btn-gold-interactive:active {
+    transform: scale(0.95);
+  }
+
+  .support-chat-fab {
+    @apply fixed bottom-6 right-6 z-[100] flex h-[3.75rem] w-[3.75rem] items-center justify-center sm:bottom-8 sm:right-8;
+  }
+
+  .support-chat-fab__pulse {
+    @apply absolute inset-0 rounded-full bg-accent-400/30;
+    animation: chat-pulse 2.4s ease-out infinite;
+  }
+
+  .support-chat-fab__glow {
+    @apply absolute inset-0 rounded-full;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.35) 0%, transparent 70%);
+    animation: chat-glow 3s ease-in-out infinite;
+  }
+
+  .support-chat-fab__btn {
+    @apply relative flex h-14 w-14 items-center justify-center rounded-full shadow-xl shadow-black/30 transition-all duration-300;
+    animation: chat-float 3.2s ease-in-out infinite;
+  }
+
+  .support-chat-fab:hover .support-chat-fab__btn {
+    @apply scale-110 shadow-2xl shadow-accent-400/30;
+    animation-play-state: paused;
+  }
+
+  .support-chat-fab:active .support-chat-fab__btn {
+    @apply scale-95;
+  }
+
+  .support-chat-fab__tooltip {
+    @apply pointer-events-none absolute right-[calc(100%+0.75rem)] hidden whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold opacity-0 shadow-lg transition-all duration-200 group-hover:opacity-100 md:block;
+  }
+
+  .support-chat-backdrop {
+    @apply fixed inset-0 z-[99] bg-primary-dark/40 backdrop-blur-[2px];
+    animation: support-fade-in 0.25s ease-out;
+  }
+
+  .support-chat-panel {
+    @apply fixed inset-0 z-[100] flex h-full w-full flex-col overflow-hidden bg-white md:inset-auto md:bottom-24 md:right-8 md:h-[32rem] md:max-h-[calc(100vh-7rem)] md:w-[24rem] md:rounded-2xl md:border md:border-gray-200/80 md:shadow-2xl md:shadow-primary/20;
+    animation: support-slide-up 0.28s ease-out;
+  }
+
+  .support-chat-panel__header {
+    @apply flex shrink-0 items-center justify-between px-4 py-3.5 sm:px-5;
+  }
+
+  .support-chat-panel__status {
+    @apply h-2 w-2 rounded-full bg-emerald-400;
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+    animation: chat-status 2s ease-in-out infinite;
+  }
+
+  .support-chat-panel__close {
+    @apply rounded-lg p-1.5 text-white/80 transition hover:bg-white/15 hover:text-white;
+  }
+
+  .support-chat-panel__messages {
+    @apply min-h-0 flex-1 space-y-3 overflow-y-auto bg-gray-50/80 p-4;
+  }
+
+  .support-chat-bubble {
+    @apply max-w-[88%] rounded-2xl px-3.5 py-2.5 shadow-sm;
+  }
+
+  .support-chat-bubble--user {
+    @apply mr-auto rounded-bl-md border-0;
+  }
+
+  .support-chat-bubble--admin {
+    @apply ml-auto rounded-br-md border border-gray-200 bg-white text-gray-800;
+  }
+
+  .support-chat-bubble__time {
+    @apply mt-1 block text-[0.65rem] opacity-70;
+  }
+
+  .support-chat-panel__form {
+    @apply flex shrink-0 gap-2 border-t border-gray-200 bg-white p-3 sm:p-4;
+  }
+
+  .support-chat-panel__input {
+    @apply min-w-0 flex-1 rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-primary-dark focus:ring-2 focus:ring-primary-dark/20 disabled:bg-gray-50;
+  }
+
+  .support-chat-panel__send {
+    @apply btn-brand h-10 w-10 shrink-0 rounded-xl p-0;
+  }
+
+  .support-chat-panel__spinner {
+    @apply h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white;
+  }
+}
+
+@keyframes catalog-chip-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 12px rgba(212, 175, 55, 0.32),
+      0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(212, 175, 55, 0.5),
+      0 8px 20px rgba(0, 0, 0, 0.28);
+  }
+}
+
+@keyframes support-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes support-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes chat-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes chat-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+@keyframes chat-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes chat-status {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
 /* Перебиваем Tailwind preflight: img { max-width: 100% } */
-img[alt='Выбрать курс'] {
-  width: min(90vw, 550px) !important;
-  max-width: 90vw !important;
-  height: auto !important;
-}
-
-img[alt='Профиль'] {
-  width: clamp(50px, 5vw, 80px) !important;
-  height: clamp(50px, 5vw, 80px) !important;
-  max-width: none !important;
-}
-
 img[alt='Династия'] {
-  width: clamp(140px, 15vw, 220px) !important;
+  width: clamp(110px, 11vw, 160px) !important;
+  max-height: 48px !important;
   max-width: none !important;
   height: auto !important;
 }
 
-img[alt='ЕГЭ История'],
-img[alt='ЕГЭ Обществознание'],
-img[alt='ОГЭ Обществознание'] {
-  width: clamp(200px, 18vw, 280px) !important;
+.header-logo {
+  width: clamp(110px, 11vw, 160px) !important;
+  max-height: 48px !important;
+}
+
+header nav .header-nav-btn-img {
+  height: clamp(108px, 10vw, 132px) !important;
+  width: auto !important;
   max-width: none !important;
-  height: auto !important;
+  object-fit: contain !important;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  header nav .header-nav-btn-img {
+    height: clamp(72px, 7.5vw, 94px) !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  header nav .header-nav-btn-img {
+    height: clamp(88px, 8.5vw, 112px) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  header nav .header-nav-btn-img {
+    height: clamp(120px, 11vw, 148px) !important;
+  }
+}
+
+@media (max-width: 639px) {
+  .header-logo,
+  img[alt='Династия'] {
+    width: clamp(96px, 28vw, 130px) !important;
+    max-height: 42px !important;
+  }
+
+  .header-profile-btn {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .catalog-chip {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .catalog-chips-scroll {
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .catalog-chips-row {
+    @apply gap-2 px-1;
+  }
+
+  .catalog-chip {
+    scroll-snap-align: center;
+  }
+
+  .support-chat-fab {
+    @apply bottom-4 right-4;
+  }
+
+  .support-chat-fab__btn {
+    @apply h-12 w-12;
+  }
+
+  .support-chat-panel {
+    @apply md:bottom-20 md:right-4 md:w-[min(100vw-2rem,24rem)];
+  }
+
+  .header-nav-btn-img-mobile {
+    height: clamp(52px, 14vw, 64px);
+    max-width: min(92vw, 340px);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .header-nav-btn-img-mobile {
+    height: clamp(56px, 10vw, 68px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-nav-btn-img,
+  .catalog-chip,
+  .catalog-chip--active,
+  .btn-brand,
+  .btn-gold-interactive,
+  .support-chat-fab__btn,
+  .support-chat-fab__pulse,
+  .support-chat-fab__glow {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 @media (max-width: 767px) {
-  img[alt='Выбрать курс'] {
+  .btn-gold-interactive {
     max-width: 320px !important;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  img[alt='Выбрать курс'] {
+  .btn-gold-interactive {
     max-width: 350px !important;
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
-  img[alt='Выбрать курс'] {
+  .btn-gold-interactive {
     max-width: 450px !important;
   }
 }

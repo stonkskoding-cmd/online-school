@@ -38,7 +38,9 @@ function resolveApiBaseURL() {
 }
 
 const apiBaseURL = resolveApiBaseURL();
-console.log('[api] baseURL:', apiBaseURL);
+if (import.meta.env.DEV) {
+  console.log('[api] baseURL:', apiBaseURL);
+}
 
 const api = axios.create({
   baseURL: apiBaseURL,
@@ -49,7 +51,9 @@ api.interceptors.request.use((config) => {
   const token = getBearerToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log('[api] Authorization Bearer set:', config.method?.toUpperCase(), config.url ?? '');
+    if (import.meta.env.DEV) {
+      console.log('[api] Authorization Bearer set:', config.method?.toUpperCase(), config.url ?? '');
+    }
   }
   return config;
 });
@@ -70,8 +74,10 @@ adminApi.interceptors.request.use((config) => {
   const bearer = getAdminBearerToken();
   if (bearer) {
     config.headers.Authorization = `Bearer ${bearer}`;
-    console.log('[admin-api] Sending request with token:', config.method?.toUpperCase(), config.url);
-  } else {
+    if (import.meta.env.DEV) {
+      console.log('[admin-api] Sending request with token:', config.method?.toUpperCase(), config.url);
+    }
+  } else if (import.meta.env.DEV) {
     console.warn('[admin-api] No admin token — request may fail:', config.method?.toUpperCase(), config.url);
   }
   return config;

@@ -14,9 +14,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          axios: ['axios'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-router') || id.includes('react-dom') || id.includes('/react/')) {
+              return 'vendor';
+            }
+            if (id.includes('axios')) return 'axios';
+            if (id.includes('@supabase')) return 'supabase';
+          }
+          if (id.includes('/src/pages/Admin') || id.includes('/src/components/admin/')) {
+            return 'admin';
+          }
         },
       },
     },

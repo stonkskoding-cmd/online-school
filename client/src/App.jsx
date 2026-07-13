@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import PrivateAdminRoute from './components/PrivateAdminRoute';
 
@@ -25,6 +25,45 @@ function AppFooter() {
   return (
     <Suspense fallback={null}>
       <Footer />
+    </Suspense>
+  );
+}
+
+function AppChat() {
+  const { pathname } = useLocation();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (pathname.startsWith('/admin')) {
+      setReady(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    const mount = () => {
+      if (!cancelled) setReady(true);
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(mount, { timeout: 2000 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(id);
+      };
+    }
+
+    const timer = window.setTimeout(mount, 1200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [pathname]);
+
+  if (!ready || pathname.startsWith('/admin')) return null;
+
+  return (
+    <Suspense fallback={null}>
+      <UserChat />
     </Suspense>
   );
 }
@@ -85,9 +124,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <AppFooter />
-      <Suspense fallback={null}>
-        <UserChat />
-      </Suspense>
+      <AppChat />
     </>
   );
 }

@@ -1,36 +1,34 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { isValidAdminToken } from '../utils/adminAuth';
 
-const navButtonStyle = { width: 'clamp(200px, 18vw, 280px)' };
-
-const navButtonClassName =
-  'h-auto cursor-pointer object-contain transition-all duration-300 hover:scale-105 hover:drop-shadow-lg';
-
-const desktopNavItems = [
+const navItems = [
   {
     to: '/?category=EGE-IST#catalog',
+    label: 'ЕГЭ История',
+    category: 'EGE-IST',
     src: '/btn-ege-istoriya.png',
-    alt: 'ЕГЭ История',
   },
   {
     to: '/?category=EGE-SOC#catalog',
+    label: 'ЕГЭ Обществознание',
+    category: 'EGE-SOC',
     src: '/btn-ege-obschestvo.png',
-    alt: 'ЕГЭ Обществознание',
   },
   {
     to: '/?category=OGE-IST#catalog',
+    label: 'ОГЭ Обществознание',
+    category: 'OGE-IST',
     src: '/btn-oge-obschestvo.png',
-    alt: 'ОГЭ Обществознание',
   },
 ];
 
-const mobileNavLinks = [
-  { to: '/?category=EGE-IST#catalog', label: 'ЕГЭ История' },
-  { to: '/?category=EGE-SOC#catalog', label: 'ЕГЭ Обществознание' },
-  { to: '/?category=OGE-IST#catalog', label: 'ОГЭ Обществознание' },
-];
+function setNavButtonVisual(img, transform, filter) {
+  if (!img) return;
+  img.style.transform = transform;
+  if (filter !== undefined) img.style.filter = filter;
+}
 
 function isAdminSession(user) {
   if (user?.role === 'admin') return true;
@@ -39,6 +37,11 @@ function isAdminSession(user) {
 
 function openSupportChat() {
   window.dispatchEvent(new CustomEvent('open-support-chat'));
+}
+
+function useActiveCategory() {
+  const { search } = useLocation();
+  return new URLSearchParams(search).get('category') ?? '';
 }
 
 function ProfileMenuItems({ isAdmin, onClose, onLogout }) {
@@ -138,7 +141,7 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
       src="/btn-profile.png"
       alt="Профиль"
       onClick={onClick}
-      className="h-auto cursor-pointer transition-all duration-200 hover:scale-110"
+      className="header-profile-btn h-auto cursor-pointer"
       role="button"
       tabIndex={0}
       aria-label={ariaLabel}
@@ -150,19 +153,76 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
           onClick?.();
         }
       }}
-      style={{
-        width: 'clamp(50px, 5vw, 80px)',
-        height: 'clamp(50px, 5vw, 80px)',
-        objectFit: 'contain',
-        filter: 'brightness(1.25) contrast(1.2) saturate(1.3)',
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.filter = 'brightness(1.4) contrast(1.3) saturate(1.4)';
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.filter = 'brightness(1.25) contrast(1.2) saturate(1.3)';
-      }}
     />
+  );
+}
+
+function DesktopNavButton({ item, isActive, onNavigate }) {
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    setNavButtonVisual(
+      imgRef.current,
+      isActive ? 'scale(1.04)' : 'scale(1)',
+      isActive
+        ? 'drop-shadow(0 0 14px rgba(212,175,55,0.45))'
+        : 'drop-shadow(0 4px 10px rgba(0,0,0,0.22))',
+    );
+  }, [isActive]);
+
+  const hoverIn = () => {
+    setNavButtonVisual(
+      imgRef.current,
+      'scale(1.08)',
+      'drop-shadow(0 10px 18px rgba(0,0,0,0.35))',
+    );
+  };
+
+  const hoverOut = () => {
+    setNavButtonVisual(
+      imgRef.current,
+      isActive ? 'scale(1.04)' : 'scale(1)',
+      isActive
+        ? 'drop-shadow(0 0 14px rgba(212,175,55,0.45))'
+        : 'drop-shadow(0 4px 10px rgba(0,0,0,0.22))',
+    );
+  };
+
+  return (
+    <span
+      className={`header-nav-btn relative inline-block shrink-0 leading-none${isActive ? ' header-nav-btn--active' : ''}`}
+    >
+      <img
+        ref={imgRef}
+        src={item.src}
+        alt=""
+        draggable={false}
+        aria-hidden
+        className="header-nav-btn-img pointer-events-none block max-w-none select-none object-contain"
+        style={{
+          transform: isActive ? 'scale(1.04)' : 'scale(1)',
+          filter: isActive
+            ? 'drop-shadow(0 0 14px rgba(212,175,55,0.45))'
+            : 'drop-shadow(0 4px 10px rgba(0,0,0,0.22))',
+        }}
+      />
+      <Link
+        to={item.to}
+        className="header-nav-btn-hit absolute left-1/2 top-1/2 block -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-sm"
+        onClick={onNavigate}
+        aria-label={item.label}
+        onMouseEnter={hoverIn}
+        onMouseLeave={hoverOut}
+        onMouseDown={() => setNavButtonVisual(imgRef.current, 'scale(0.95)', undefined)}
+        onMouseUp={() =>
+          setNavButtonVisual(
+            imgRef.current,
+            isActive ? 'scale(1.04)' : 'scale(1.05)',
+            undefined,
+          )
+        }
+      />
+    </span>
   );
 }
 
@@ -171,6 +231,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
+  const activeCategory = useActiveCategory();
 
   const openAuth = () => setIsAuthOpen(true);
   const isAdmin = isAdminSession(user);
@@ -193,6 +254,13 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
     return () => document.removeEventListener('mousedown', handlePointerDown);
   }, [profileMenuOpen]);
 
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -202,7 +270,6 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   };
 
   const closeMobileMenu = () => setIsMenuOpen(false);
-
   const closeProfileMenu = () => setProfileMenuOpen(false);
 
   const handleLogout = () => {
@@ -212,89 +279,106 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-white shadow-md">
-        <div className="relative min-h-[70px] w-full px-4 py-2 sm:min-h-[80px] md:px-6 md:py-3">
-          <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2 md:left-6">
-            <Link to="/" className="inline-flex items-center" onClick={closeMobileMenu}>
+      <header className="site-header">
+        <img
+          src="/header-bg.png"
+          alt=""
+          className="site-surface__pattern"
+          aria-hidden
+          draggable={false}
+        />
+        <div className="relative h-14 md:h-16">
+          <div className="relative mx-auto grid h-full max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 px-4 sm:px-6">
+            <Link to="/" className="shrink-0 justify-self-start" onClick={closeMobileMenu}>
               <img
                 src="/logo-full.png"
                 alt="Династия"
-                className="h-auto object-contain"
-                style={{ width: 'clamp(140px, 15vw, 220px)' }}
+                className="header-logo block h-auto object-contain"
               />
             </Link>
+
+            <div className="hidden min-w-0 md:block" aria-hidden />
+
+            <div className="relative flex shrink-0 items-center justify-self-end gap-2" ref={profileMenuRef}>
+            <div className="hidden md:block">
+              {showAccountMenu ? (
+                <>
+                  <ProfileButton
+                    onClick={() => setProfileMenuOpen((v) => !v)}
+                    ariaExpanded={profileMenuOpen}
+                  />
+                  {profileMenuOpen ? (
+                    <div className="absolute right-4 top-full z-50 mt-2 min-w-[12rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl animate-fade-in lg:right-6">
+                      <ProfileMenuItems
+                        isAdmin={isAdmin}
+                        onClose={closeProfileMenu}
+                        onLogout={logout}
+                      />
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <ProfileButton onClick={openAuth} ariaLabel="Профиль — войти" />
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((value) => !value)}
+              className="rounded-lg p-2 text-white/90 transition hover:bg-white/10 md:hidden"
+              aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+              aria-expanded={isMenuOpen}
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                {isMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
           </div>
 
-          <nav className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-5 md:flex lg:gap-7">
-            {desktopNavItems.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="inline-flex items-center"
-                onClick={closeMobileMenu}
-              >
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  className={navButtonClassName}
-                  style={navButtonStyle}
+          <nav className="pointer-events-none absolute inset-x-0 top-1/2 z-10 hidden -translate-y-1/2 md:flex md:justify-center">
+            <div
+              className="pointer-events-auto flex max-w-[min(100vw-7rem,1180px)] items-center justify-center gap-3 md:gap-5 lg:gap-10 xl:gap-16 2xl:gap-24"
+              aria-label="Основная навигация"
+            >
+              {navItems.map((item) => (
+                <DesktopNavButton
+                  key={item.to}
+                  item={item}
+                  isActive={activeCategory === item.category}
+                  onNavigate={closeMobileMenu}
                 />
-              </Link>
-            ))}
+              ))}
+            </div>
           </nav>
-
-          <div
-            className="absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 md:right-6 md:block"
-            ref={profileMenuRef}
-          >
-            {showAccountMenu ? (
-              <>
-                <ProfileButton
-                  onClick={() => setProfileMenuOpen((v) => !v)}
-                  ariaExpanded={profileMenuOpen}
-                />
-                {profileMenuOpen ? (
-                  <div className="absolute right-0 top-full z-50 mt-2 min-w-[12rem] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg animate-fade-in">
-                    <ProfileMenuItems
-                      isAdmin={isAdmin}
-                      onClose={closeProfileMenu}
-                      onLogout={logout}
-                    />
-                  </div>
-                ) : null}
-              </>
-            ) : (
-              <ProfileButton onClick={openAuth} ariaLabel="Профиль — войти" />
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen((value) => !value)}
-            className="absolute right-4 top-1/2 z-20 -translate-y-1/2 p-2 md:hidden"
-            aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
-            aria-expanded={isMenuOpen}
-          >
-            <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
         </div>
 
         {isMenuOpen ? (
-          <div className="animate-slide-down border-t border-primary/20 bg-[#163754]/95 px-4 py-4 backdrop-blur-sm md:hidden">
-            <nav className="flex flex-col gap-3">
-              {mobileNavLinks.map((item) => (
+          <div className="brand-surface animate-slide-down border-t border-white/10 px-4 py-5 md:hidden">
+            <nav className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-4" aria-label="Мобильная навигация">
+              {navItems.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
                   onClick={closeMobileMenu}
-                  className="text-sm font-medium text-white transition hover:text-accent-400 sm:text-base"
+                  className="transition-transform duration-200 hover:scale-105 active:scale-95"
+                  aria-label={item.label}
                 >
-                  {item.label}
+                  <img
+                    src={item.src}
+                    alt={item.label}
+                    className={`header-nav-btn-img-mobile h-auto w-auto max-w-[min(88vw,320px)] object-contain ${
+                      activeCategory === item.category ? 'header-nav-btn-img-mobile--active' : ''
+                    }`}
+                    draggable={false}
+                  />
                 </Link>
               ))}
-              <div className="mt-1 border-t border-white/15 pt-3">
+              <div className="mt-3 border-t border-white/15 pt-3">
                 {showAccountMenu ? (
                   <MobileProfileMenuItems
                     isAdmin={isAdmin}
@@ -308,18 +392,12 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
                       closeMobileMenu();
                       openAuth();
                     }}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-accent-400 transition hover:text-accent-500 sm:text-base"
+                    className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-accent-400 transition hover:bg-white/10 sm:text-base"
                   >
                     <img
                       src="/btn-profile.png"
                       alt=""
-                      className="cursor-pointer"
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        transition: 'transform 0.2s ease',
-                        filter: 'brightness(1.2) contrast(1.15) saturate(1.2)',
-                      }}
+                      className="h-10 w-10 object-contain"
                       aria-hidden
                     />
                     Войти

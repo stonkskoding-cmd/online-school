@@ -19,11 +19,16 @@ export default {
       },
       animation: {
         'slide-down': 'slideDown 0.25s ease-out',
+        'slide-up': 'slideUp 0.28s ease-out',
         'fade-in': 'fadeIn 0.25s ease-out',
       },
       keyframes: {
         slideDown: {
           from: { opacity: '0', transform: 'translateY(-0.5rem)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideUp: {
+          from: { opacity: '0', transform: 'translateY(1rem)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
         fadeIn: {

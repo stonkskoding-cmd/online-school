@@ -144,16 +144,25 @@ export default function AdminFooterSettings() {
           </form>
         )}
 
-        <section className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-blue-900 p-4 text-white sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-blue-200">Предпросмотр</h2>
-          <div className="flex flex-col gap-4 text-sm md:flex-row md:justify-between">
+        <section className="site-footer relative mt-8 overflow-hidden rounded-2xl border border-gray-200 p-4 text-white sm:p-6">
+          <img
+            src="/header-bg.png"
+            alt=""
+            className="site-surface__pattern"
+            aria-hidden
+            draggable={false}
+          />
+          <h2 className="relative z-10 mb-4 text-sm font-semibold uppercase tracking-wide text-white/70">
+            Предпросмотр
+          </h2>
+          <div className="relative z-10 flex flex-col gap-4 text-sm md:flex-row md:justify-between">
             <div>
               <img
                 src={form.footer_logo_url}
                 alt=""
                 className="mb-2 h-10 w-auto brightness-0 invert"
               />
-              <p className="text-blue-100">{form.footer_tagline}</p>
+              <p className="text-white/75">{form.footer_tagline}</p>
             </div>
             <div>
               <p className="font-semibold">Контакты</p>
@@ -167,7 +176,7 @@ export default function AdminFooterSettings() {
               <p className="text-blue-100">{form.footer_link_privacy_label}</p>
             </div>
           </div>
-          <p className="mt-4 border-t border-blue-800 pt-4 text-center text-xs text-blue-200">
+          <p className="relative z-10 mt-4 border-t border-white/15 pt-4 text-center text-xs text-white/60">
             {form.footer_copyright}
           </p>
         </section>

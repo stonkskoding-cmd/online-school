@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { packagesApi } from '../api';
 import Header from '../components/Header';
-import PackageCard from '../components/PackageCard';
 import { resolveCurrentUser } from '../utils/session';
+
+const PackageCard = lazy(() => import('../components/PackageCard'));
 
 const categories = [
   { label: 'Все', value: '' },
@@ -72,20 +73,33 @@ export default function HomePage() {
   }, [activeCategory]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
-      try {
+      setError('');
+      if (packages.length === 0) {
         setLoading(true);
-        setError('');
+      }
+      try {
         const response = await packagesApi.list(activeCategory);
-        setPackages(response.data.packages ?? []);
-      } catch (requestError) {
-        setError('Не удалось загрузить пакеты');
+        if (!cancelled) {
+          setPackages(response.data.packages ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setError('Не удалось загрузить пакеты');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [activeCategory]);
 
   const hasPackages = useMemo(() => packages.length > 0, [packages.length]);
@@ -104,7 +118,8 @@ export default function HomePage() {
           src="/hero-banner-royal.png"
           alt="Баннер Династия"
           className="h-auto w-full object-contain"
-          fetchPriority="high"
+          decoding="async"
+          fetchpriority="high"
         />
         {/* Кнопка "ВЫБРАТЬ КУРС" */}
         <div className="absolute left-1/2 z-20 -translate-x-1/2" style={{ bottom: 'clamp(24px, 5vw, 64px)' }}>
@@ -115,37 +130,16 @@ export default function HomePage() {
               const el = document.getElementById('catalog');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="cursor-pointer"
-            style={{
-              width: 'min(90vw, 550px)',
-              height: 'auto',
-              maxWidth: '90vw',
-              transition: 'all 0.3s ease',
-              transform: 'scale(1)',
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.08)';
-              e.target.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.3))';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.2))';
-            }}
-            onMouseDown={(e) => {
-              e.target.style.transform = 'scale(0.95)';
-            }}
-            onMouseUp={(e) => {
-              e.target.style.transform = 'scale(1.05)';
-            }}
+            className="btn-gold-interactive"
           />
         </div>
       </div>
 
-      <section className="bg-gradient-to-b from-primary-dark to-primary px-3 py-8 sm:px-4 sm:py-12 md:hidden">
-        <h2 className="text-center text-2xl font-bold uppercase leading-tight tracking-wide text-white sm:text-3xl">
+      <section className="brand-surface border-t border-white/10 px-3 py-8 sm:px-4 sm:py-12 md:hidden">
+        <h2 className="relative z-10 text-center text-2xl font-bold uppercase leading-tight tracking-wide text-white sm:text-3xl">
           Когда готовиться к экзаменам легко
         </h2>
-        <ul className="mx-auto mt-6 max-w-lg space-y-4">
+        <ul className="relative z-10 mx-auto mt-6 max-w-lg space-y-4">
           {mobileBenefits.map((item) => (
             <li key={item.text} className="flex items-start gap-3 rounded-xl bg-white/10 p-3 text-white">
               <span className="shrink-0 text-2xl" aria-hidden>
@@ -157,7 +151,7 @@ export default function HomePage() {
         </ul>
       </section>
 
-      <section className="relative hidden w-full md:block">
+      <section className="relative hidden w-full md:block" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 420px' }}>
         <img
           src="/features-banner.png"
           alt="Преимущества онлайн-школы Династия"
@@ -167,18 +161,25 @@ export default function HomePage() {
         />
       </section>
 
-      <main id="catalog" className="w-full px-3 py-8 sm:px-4 sm:py-12 md:px-8 md:py-16 lg:px-16">
-        <div className="-mx-1 mb-6 overflow-x-auto px-1 pb-1">
-          <div className="flex flex-nowrap gap-2 whitespace-nowrap sm:flex-wrap">
+      <main id="catalog" className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <div className="mb-8 text-center md:mb-10">
+          <h2 className="text-2xl font-bold tracking-tight text-primary-dark sm:text-3xl lg:text-4xl">
+            Каталог курсов
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-gray-600 sm:text-base">
+            Выберите направление подготовки к ЕГЭ или ОГЭ
+          </p>
+        </div>
+
+        <div className="catalog-chips-scroll -mx-1 mb-8 overflow-x-auto px-1 pb-2 sm:overflow-visible sm:pb-1">
+          <div className="catalog-chips-row flex w-max min-w-full flex-nowrap justify-start gap-2 sm:w-auto sm:min-w-0 sm:flex-wrap sm:justify-center sm:gap-3">
             {categories.map((category) => (
               <button
                 key={category.label}
                 type="button"
                 onClick={() => setActiveCategory(category.value)}
-                className={`shrink-0 rounded-full px-3 py-2 text-sm font-medium transition sm:px-4 sm:text-base ${
-                  activeCategory === category.value
-                    ? 'bg-primary text-white'
-                    : 'bg-white text-gray-700 hover:bg-primary/10'
+                className={`catalog-chip ${
+                  activeCategory === category.value ? 'catalog-chip--active' : 'catalog-chip--idle'
                 }`}
               >
                 {category.label}
@@ -187,22 +188,38 @@ export default function HomePage() {
           </div>
         </div>
 
-        {loading ? <p className="text-sm text-gray-600 sm:text-base">Загрузка...</p> : null}
+        {loading && !hasPackages ? (
+          <p className="text-sm text-gray-600 sm:text-base">Загрузка...</p>
+        ) : null}
         {error ? <p className="text-sm text-red-600 sm:text-base">{error}</p> : null}
         {!loading && !hasPackages ? (
           <p className="text-sm text-gray-600 sm:text-base">Пакеты пока не добавлены</p>
         ) : null}
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {packages.map((item) => (
-            <PackageCard
-              key={item.id}
-              item={item}
-              isAuthorized={Boolean(user)}
-              onNeedAuth={() => setAuthModalTrigger((value) => value + 1)}
-            />
-          ))}
-        </div>
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {[1, 2, 3].map((n) => (
+                <div
+                  key={n}
+                  className="h-64 animate-pulse rounded-xl border border-gray-200 bg-white shadow-sm"
+                  aria-hidden
+                />
+              ))}
+            </div>
+          }
+        >
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {packages.map((item) => (
+              <PackageCard
+                key={item.id}
+                item={item}
+                isAuthorized={Boolean(user)}
+                onNeedAuth={() => setAuthModalTrigger((value) => value + 1)}
+              />
+            ))}
+          </div>
+        </Suspense>
       </main>
     </div>
   );
