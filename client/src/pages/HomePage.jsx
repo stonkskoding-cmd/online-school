@@ -122,7 +122,7 @@ export default function HomePage() {
           fetchpriority="high"
         />
         {/* Кнопка "ВЫБРАТЬ КУРС" */}
-        <div className="absolute left-1/2 z-20 -translate-x-1/2" style={{ bottom: 'clamp(24px, 5vw, 64px)' }}>
+        <div className="hero-cta-btn absolute left-1/2 z-20 -translate-x-1/2">
           <img
             src="/gold-button.png"
             alt="Выбрать курс"

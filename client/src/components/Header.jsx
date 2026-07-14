@@ -118,9 +118,34 @@ function DesktopProfileMenu({ isAdmin, onClose, onLogout }) {
   );
 }
 
+function MobilePanelButton({
+  children,
+  onClick,
+  to,
+  isActive = false,
+  delayIndex = 0,
+  className = '',
+}) {
+  const style = { animationDelay: `${delayIndex * 55}ms` };
+  const classes = `header-mobile-panel__btn${isActive ? ' header-mobile-panel__btn--active' : ''} ${className}`.trim();
+
+  if (to) {
+    return (
+      <Link to={to} className={classes} style={style} onClick={onClick}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" className={classes} style={style} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
 function MobileProfilePanel({ isAdmin, activeCategory, onClose, onLogout }) {
-  const actionClass =
-    'w-full rounded-xl px-4 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/10 sm:text-base';
+  let delayIndex = 0;
 
   return (
     <>
@@ -141,7 +166,7 @@ function MobileProfilePanel({ isAdmin, activeCategory, onClose, onLogout }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-white/80 transition hover:bg-white/10"
+            className="header-mobile-panel__close"
             aria-label="Закрыть"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -152,56 +177,57 @@ function MobileProfilePanel({ isAdmin, activeCategory, onClose, onLogout }) {
 
         <div className="header-mobile-panel__body">
           {isAdmin ? (
-            <div className="flex flex-col gap-2">
-              <Link to="/admin/dashboard" className={actionClass} onClick={onClose}>
+            <div className="flex flex-col gap-2.5">
+              <MobilePanelButton to="/admin/dashboard" onClick={onClose} delayIndex={delayIndex++}>
                 Панель управления
-              </Link>
-              <button type="button" className={actionClass} onClick={onLogout}>
+              </MobilePanelButton>
+              <MobilePanelButton onClick={onLogout} delayIndex={delayIndex++}>
                 Выйти из аккаунта
-              </button>
+              </MobilePanelButton>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Link to="/purchases" className={actionClass} onClick={onClose}>
+              <div className="flex flex-col gap-2.5">
+                <MobilePanelButton to="/purchases" onClick={onClose} delayIndex={delayIndex++}>
                   Мои покупки
-                </Link>
-                <button
-                  type="button"
-                  className={actionClass}
+                </MobilePanelButton>
+                <MobilePanelButton
                   onClick={() => {
                     onClose();
                     openSupportChat();
                   }}
+                  delayIndex={delayIndex++}
                 >
                   Поддержка
-                </button>
+                </MobilePanelButton>
               </div>
 
-              <nav className="flex flex-col items-center gap-3 border-y border-white/15 py-4" aria-label="Навигация">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={onClose}
-                    className="transition-transform duration-200 active:scale-95"
-                    aria-label={item.label}
-                  >
-                    <img
-                      src={item.src}
-                      alt={item.label}
-                      className={`header-nav-btn-img-mobile h-auto w-auto object-contain ${
-                        activeCategory === item.category ? 'header-nav-btn-img-mobile--active' : ''
-                      }`}
-                      draggable={false}
-                    />
-                  </Link>
-                ))}
+              <nav className="flex flex-col gap-2.5 border-y border-white/15 py-4" aria-label="Навигация">
+                <p
+                  className="header-mobile-panel__section-title"
+                  style={{ animationDelay: `${delayIndex * 55}ms` }}
+                >
+                  Навигация
+                </p>
+                {navItems.map((item) => {
+                  const currentDelay = delayIndex++;
+                  return (
+                    <MobilePanelButton
+                      key={item.to}
+                      to={item.to}
+                      onClick={onClose}
+                      isActive={activeCategory === item.category}
+                      delayIndex={currentDelay}
+                    >
+                      {item.label}
+                    </MobilePanelButton>
+                  );
+                })}
               </nav>
 
-              <button type="button" className={actionClass} onClick={onLogout}>
+              <MobilePanelButton onClick={onLogout} delayIndex={delayIndex++}>
                 Выход
-              </button>
+              </MobilePanelButton>
             </div>
           )}
         </div>
