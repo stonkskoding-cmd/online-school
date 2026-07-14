@@ -124,10 +124,9 @@ function MobilePanelButton({
   to,
   isActive = false,
   delayIndex = 0,
-  className = '',
 }) {
-  const style = { animationDelay: `${delayIndex * 55}ms` };
-  const classes = `header-mobile-panel__btn${isActive ? ' header-mobile-panel__btn--active' : ''} ${className}`.trim();
+  const style = { animationDelay: `${delayIndex * 45}ms` };
+  const classes = `header-mobile-menu__btn${isActive ? ' header-mobile-menu__btn--active' : ''}`;
 
   if (to) {
     return (
@@ -144,95 +143,72 @@ function MobilePanelButton({
   );
 }
 
-function MobileProfilePanel({ isAdmin, activeCategory, onClose, onLogout }) {
+function MobileProfilePanel({
+  isAdmin,
+  isGuest,
+  activeCategory,
+  onClose,
+  onLogout,
+  onLogin,
+}) {
   let delayIndex = 0;
 
-  return (
-    <>
-      <button
-        type="button"
-        className="header-mobile-panel__backdrop md:hidden"
-        onClick={onClose}
-        aria-label="Закрыть меню"
-      />
-      <div
-        className="header-mobile-panel brand-surface md:hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Меню профиля"
-      >
-        <div className="header-mobile-panel__header">
-          <h2 className="text-base font-semibold text-white sm:text-lg">Меню</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="header-mobile-panel__close"
-            aria-label="Закрыть"
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="header-mobile-panel__body">
-          {isAdmin ? (
-            <div className="flex flex-col gap-2.5">
-              <MobilePanelButton to="/admin/dashboard" onClick={onClose} delayIndex={delayIndex++}>
-                Панель управления
-              </MobilePanelButton>
-              <MobilePanelButton onClick={onLogout} delayIndex={delayIndex++}>
-                Выйти из аккаунта
-              </MobilePanelButton>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2.5">
-                <MobilePanelButton to="/purchases" onClick={onClose} delayIndex={delayIndex++}>
-                  Мои покупки
-                </MobilePanelButton>
-                <MobilePanelButton
-                  onClick={() => {
-                    onClose();
-                    openSupportChat();
-                  }}
-                  delayIndex={delayIndex++}
-                >
-                  Поддержка
-                </MobilePanelButton>
-              </div>
-
-              <nav className="flex flex-col gap-2.5 border-y border-white/15 py-4" aria-label="Навигация">
-                <p
-                  className="header-mobile-panel__section-title"
-                  style={{ animationDelay: `${delayIndex * 55}ms` }}
-                >
-                  Навигация
-                </p>
-                {navItems.map((item) => {
-                  const currentDelay = delayIndex++;
-                  return (
-                    <MobilePanelButton
-                      key={item.to}
-                      to={item.to}
-                      onClick={onClose}
-                      isActive={activeCategory === item.category}
-                      delayIndex={currentDelay}
-                    >
-                      {item.label}
-                    </MobilePanelButton>
-                  );
-                })}
-              </nav>
-
-              <MobilePanelButton onClick={onLogout} delayIndex={delayIndex++}>
-                Выход
-              </MobilePanelButton>
-            </div>
-          )}
+  if (isAdmin) {
+    return (
+      <div className="header-mobile-menu brand-surface md:hidden" role="menu" aria-label="Меню профиля">
+        <div className="header-mobile-menu__body">
+          <MobilePanelButton to="/admin/dashboard" onClick={onClose} delayIndex={delayIndex++}>
+            Панель управления
+          </MobilePanelButton>
+          <MobilePanelButton onClick={onLogout} delayIndex={delayIndex++}>
+            Выйти из аккаунта
+          </MobilePanelButton>
         </div>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div className="header-mobile-menu brand-surface md:hidden" role="menu" aria-label="Меню профиля">
+      <div className="header-mobile-menu__body">
+        <MobilePanelButton
+          to={isGuest ? undefined : '/purchases'}
+          onClick={isGuest ? () => { onClose(); onLogin(); } : onClose}
+          delayIndex={delayIndex++}
+        >
+          Мои покупки
+        </MobilePanelButton>
+        <MobilePanelButton
+          onClick={() => {
+            onClose();
+            openSupportChat();
+          }}
+          delayIndex={delayIndex++}
+        >
+          Поддержка
+        </MobilePanelButton>
+        {navItems.map((item) => {
+          const currentDelay = delayIndex++;
+          return (
+            <MobilePanelButton
+              key={item.to}
+              to={item.to}
+              onClick={onClose}
+              isActive={activeCategory === item.category}
+              delayIndex={currentDelay}
+            >
+              {item.label}
+            </MobilePanelButton>
+          );
+        })}
+        <MobilePanelButton
+          onClick={isGuest ? () => { onClose(); onLogin(); } : onLogout}
+          delayIndex={delayIndex++}
+        >
+          {isGuest ? 'Войти' : 'Выход'}
+        </MobilePanelButton>
+      </div>
+    </div>
   );
 }
 
@@ -325,22 +301,11 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
     if (!profileMenuOpen) return undefined;
     const handlePointerDown = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-        const isMobilePanel = window.matchMedia('(max-width: 767px)').matches;
-        if (!isMobilePanel) {
-          setProfileMenuOpen(false);
-        }
+        setProfileMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handlePointerDown);
     return () => document.removeEventListener('mousedown', handlePointerDown);
-  }, [profileMenuOpen]);
-
-  useEffect(() => {
-    const isMobilePanel = profileMenuOpen && window.matchMedia('(max-width: 767px)').matches;
-    document.body.style.overflow = isMobilePanel ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [profileMenuOpen]);
 
   useEffect(() => {
@@ -363,6 +328,11 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   const closeProfileMenu = () => setProfileMenuOpen(false);
 
   const handleProfileClick = () => {
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    if (isMobile) {
+      setProfileMenuOpen((value) => !value);
+      return;
+    }
     if (!showAccountMenu) {
       openAuth();
       return;
@@ -409,24 +379,28 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
             <div className="relative z-20 shrink-0" ref={profileMenuRef}>
               <ProfileButton
                 onClick={handleProfileClick}
-                ariaExpanded={showAccountMenu ? profileMenuOpen : undefined}
-                ariaLabel={showAccountMenu ? 'Профиль' : 'Профиль — войти'}
+                ariaExpanded={profileMenuOpen}
+                ariaLabel={showAccountMenu ? 'Профиль' : 'Профиль — меню'}
               />
 
-              {profileMenuOpen && showAccountMenu ? (
+              {profileMenuOpen ? (
                 <>
-                  <div className="absolute right-0 top-full z-50 mt-2 hidden min-w-[12rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl animate-fade-in md:block">
-                    <DesktopProfileMenu
-                      isAdmin={isAdmin}
-                      onClose={closeProfileMenu}
-                      onLogout={logout}
-                    />
-                  </div>
+                  {showAccountMenu ? (
+                    <div className="absolute right-0 top-full z-50 mt-2 hidden min-w-[12rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl animate-fade-in md:block">
+                      <DesktopProfileMenu
+                        isAdmin={isAdmin}
+                        onClose={closeProfileMenu}
+                        onLogout={logout}
+                      />
+                    </div>
+                  ) : null}
                   <MobileProfilePanel
                     isAdmin={isAdmin}
+                    isGuest={!showAccountMenu}
                     activeCategory={activeCategory}
                     onClose={closeProfileMenu}
                     onLogout={logout}
+                    onLogin={openAuth}
                   />
                 </>
               ) : null}

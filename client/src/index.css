@@ -291,61 +291,44 @@ body {
     @apply h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white;
   }
 
-  .header-mobile-panel__backdrop {
-    @apply fixed inset-0 z-[60] bg-primary-dark/50 backdrop-blur-[2px];
-    animation: support-fade-in 0.2s ease-out;
+  .header-mobile-menu {
+    @apply absolute right-0 top-full z-[80] mt-2 w-[min(16.5rem,calc(100vw-1rem))] max-h-[min(72dvh,22rem)] overflow-y-auto rounded-2xl py-2 shadow-2xl shadow-black/45;
+    transform-origin: top right;
+    animation: header-mobile-menu-in 0.26s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .header-mobile-panel {
-    @apply fixed bottom-0 right-0 top-0 z-[70] w-[min(20rem,88vw)] max-h-[100dvh] overflow-y-auto shadow-2xl;
-    animation: header-panel-slide-in 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+  .header-mobile-menu__body {
+    @apply relative z-10 flex flex-col gap-1.5 px-2 pb-2;
   }
 
-  .header-mobile-panel__header {
-    @apply relative z-10 flex items-center justify-between border-b border-white/15 px-4 py-3.5;
+  .header-mobile-menu__btn {
+    @apply block w-full rounded-xl border border-white/10 px-3 py-2.5 text-left text-[0.8125rem] font-semibold leading-snug text-white transition-all duration-300 ease-out;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+    animation: header-menu-item-in 0.34s ease-out both;
   }
 
-  .header-mobile-panel__close {
-    @apply rounded-lg p-2 text-white/80 transition duration-200 hover:rotate-90 hover:bg-white/10 hover:text-white;
-  }
-
-  .header-mobile-panel__body {
-    @apply relative z-10 px-4 py-5 pb-8;
-  }
-
-  .header-mobile-panel__section-title {
-    @apply px-1 text-xs font-bold uppercase tracking-[0.14em] text-accent-300/90;
-    animation: header-menu-item-in 0.38s ease-out both;
-  }
-
-  .header-mobile-panel__btn {
-    @apply block w-full rounded-xl border border-white/12 px-4 py-3 text-left text-sm font-semibold text-white transition-all duration-300 ease-out sm:text-base;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.04) 100%);
-    animation: header-menu-item-in 0.42s ease-out both;
-  }
-
-  .header-mobile-panel__btn:hover {
-    transform: translateX(-4px);
-    border-color: rgba(212, 175, 55, 0.35);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%);
+  .header-mobile-menu__btn:hover {
+    transform: translateX(-3px) scale(1.01);
+    border-color: rgba(212, 175, 55, 0.4);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
     box-shadow:
-      0 6px 20px rgba(0, 0, 0, 0.22),
-      0 0 12px rgba(212, 175, 55, 0.12);
+      0 4px 14px rgba(0, 0, 0, 0.2),
+      0 0 10px rgba(212, 175, 55, 0.14);
   }
 
-  .header-mobile-panel__btn:active {
+  .header-mobile-menu__btn:active {
     transform: scale(0.97);
   }
 
-  .header-mobile-panel__btn--active {
-    border-color: rgba(212, 175, 55, 0.55);
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+  .header-mobile-menu__btn--active {
+    border-color: rgba(212, 175, 55, 0.58);
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.24) 0%, rgba(255, 255, 255, 0.09) 100%);
     box-shadow:
-      0 0 18px rgba(212, 175, 55, 0.28),
-      inset 0 0 0 1px rgba(212, 175, 55, 0.15);
+      0 0 14px rgba(212, 175, 55, 0.3),
+      inset 0 0 0 1px rgba(212, 175, 55, 0.18);
     animation:
-      header-menu-item-in 0.42s ease-out both,
-      header-panel-btn-glow 2.4s ease-in-out infinite;
+      header-menu-item-in 0.34s ease-out both,
+      header-panel-btn-glow 2.2s ease-in-out infinite;
   }
 }
 
@@ -360,6 +343,17 @@ body {
     box-shadow:
       0 0 20px rgba(212, 175, 55, 0.5),
       0 8px 20px rgba(0, 0, 0, 0.28);
+  }
+}
+
+@keyframes header-mobile-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -524,12 +518,19 @@ header nav .header-nav-btn-img {
 }
 
 @media (max-width: 767px) {
+  .header-logo,
+  img[alt='Династия'] {
+    width: clamp(156px, 42vw, 196px) !important;
+    max-height: clamp(56px, 14vw, 76px) !important;
+  }
+
   .hero-cta-btn {
-    bottom: clamp(6px, 1.5vw, 14px);
+    bottom: clamp(0px, 0.2vw, 6px);
   }
 
   .btn-gold-interactive {
-    max-width: 320px !important;
+    width: min(68vw, 210px) !important;
+    max-width: 210px !important;
   }
 }
 
