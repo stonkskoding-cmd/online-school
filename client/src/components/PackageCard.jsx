@@ -224,7 +224,7 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           {!expanded ? (
             <span className="text-lg font-extrabold text-accent-500 sm:text-xl md:text-2xl">
               {item.price.toLocaleString('ru-RU')} ₽
@@ -238,12 +238,12 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
               Свернуть
             </button>
           )}
-          <div className="flex w-full gap-2 sm:w-auto">
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={toggleExpand}
               disabled={isPurchasing || isPurchased}
-              className="min-h-[2.5rem] flex-1 rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-4 sm:py-2 sm:text-sm"
+              className="rounded-lg border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:py-2 sm:text-sm"
             >
               {expanded ? 'Скрыть' : 'Подробнее'}
             </button>
@@ -251,7 +251,7 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
               type="button"
               onClick={buy}
               disabled={isPurchasing || isPurchased}
-              className="btn-brand min-h-[2.5rem] flex-1 px-2 py-1.5 text-xs sm:flex-none sm:px-4 sm:py-2 sm:text-sm"
+              className="btn-brand px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm"
             >
               {isPurchasing ? 'Покупка…' : isPurchased ? 'Куплено' : 'Купить'}
             </button>

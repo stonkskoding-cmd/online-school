@@ -171,8 +171,8 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="catalog-chips-scroll -mx-1 mb-8 overflow-x-auto px-1 pb-2 sm:overflow-visible sm:pb-1">
-          <div className="catalog-chips-row flex w-max min-w-full flex-nowrap justify-start gap-2 sm:w-auto sm:min-w-0 sm:flex-wrap sm:justify-center sm:gap-3">
+        <div className="-mx-1 mb-8 overflow-x-auto px-1 pb-1">
+          <div className="flex flex-nowrap justify-center gap-2 whitespace-nowrap sm:flex-wrap">
             {categories.map((category) => (
               <button
                 key={category.label}

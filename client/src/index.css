@@ -89,7 +89,7 @@ body {
   }
 
   .header-nav-btn-img {
-    height: clamp(108px, 10vw, 132px);
+    height: clamp(88px, 8.5vw, 112px);
     width: auto;
     display: block;
     transition: transform 0.3s ease, filter 0.3s ease;
@@ -106,7 +106,9 @@ body {
   }
 
   .header-nav-btn-img-mobile {
-    height: clamp(44px, 12vw, 56px);
+    height: clamp(56px, 15vw, 72px);
+    width: auto;
+    max-width: min(92vw, 360px);
     filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
   }
 
@@ -119,12 +121,26 @@ body {
   }
 
   .header-profile-btn {
-    width: clamp(44px, 4.5vw, 54px) !important;
-    height: clamp(44px, 4.5vw, 54px) !important;
+    width: clamp(48px, 12vw, 56px) !important;
+    height: clamp(48px, 12vw, 56px) !important;
     max-width: none !important;
     object-fit: contain;
     filter: brightness(1.2) contrast(1.15) saturate(1.25);
     transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  @media (min-width: 640px) {
+    .header-profile-btn {
+      width: clamp(54px, 6vw, 64px) !important;
+      height: clamp(54px, 6vw, 64px) !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .header-profile-btn {
+      width: clamp(60px, 5.5vw, 72px) !important;
+      height: clamp(60px, 5.5vw, 72px) !important;
+    }
   }
 
   .header-profile-btn:hover {
@@ -285,6 +301,24 @@ body {
   .support-chat-panel__spinner {
     @apply h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white;
   }
+
+  .header-mobile-panel__backdrop {
+    @apply fixed inset-0 z-[60] bg-primary-dark/50 backdrop-blur-[2px];
+    animation: support-fade-in 0.2s ease-out;
+  }
+
+  .header-mobile-panel {
+    @apply fixed inset-x-0 top-0 z-[70] max-h-[100dvh] overflow-y-auto shadow-2xl;
+    animation: support-slide-up 0.28s ease-out;
+  }
+
+  .header-mobile-panel__header {
+    @apply relative z-10 flex items-center justify-between border-b border-white/15 px-4 py-3;
+  }
+
+  .header-mobile-panel__body {
+    @apply relative z-10 px-4 py-4 pb-8;
+  }
 }
 
 @keyframes catalog-chip-glow {
@@ -370,19 +404,38 @@ body {
 
 /* Перебиваем Tailwind preflight: img { max-width: 100% } */
 img[alt='Династия'] {
-  width: clamp(110px, 11vw, 160px) !important;
-  max-height: 48px !important;
+  width: clamp(128px, 14vw, 200px) !important;
+  max-height: clamp(44px, 5vw, 64px) !important;
   max-width: none !important;
   height: auto !important;
 }
 
 .header-logo {
-  width: clamp(110px, 11vw, 160px) !important;
-  max-height: 48px !important;
+  width: clamp(128px, 14vw, 200px) !important;
+  max-height: clamp(44px, 5vw, 64px) !important;
+}
+
+header img[alt='Профиль'] {
+  width: clamp(48px, 12vw, 56px) !important;
+  height: clamp(48px, 12vw, 56px) !important;
+}
+
+@media (min-width: 640px) {
+  header img[alt='Профиль'] {
+    width: clamp(54px, 6vw, 64px) !important;
+    height: clamp(54px, 6vw, 64px) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  header img[alt='Профиль'] {
+    width: clamp(60px, 5.5vw, 72px) !important;
+    height: clamp(60px, 5.5vw, 72px) !important;
+  }
 }
 
 header nav .header-nav-btn-img {
-  height: clamp(108px, 10vw, 132px) !important;
+  height: clamp(88px, 8.5vw, 112px) !important;
   width: auto !important;
   max-width: none !important;
   object-fit: contain !important;
@@ -390,86 +443,19 @@ header nav .header-nav-btn-img {
 
 @media (min-width: 768px) and (max-width: 1023px) {
   header nav .header-nav-btn-img {
-    height: clamp(72px, 7.5vw, 94px) !important;
+    height: clamp(76px, 7.5vw, 96px) !important;
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
   header nav .header-nav-btn-img {
-    height: clamp(88px, 8.5vw, 112px) !important;
+    height: clamp(96px, 9vw, 120px) !important;
   }
 }
 
 @media (min-width: 1280px) {
   header nav .header-nav-btn-img {
-    height: clamp(120px, 11vw, 148px) !important;
-  }
-}
-
-@media (max-width: 639px) {
-  .header-logo,
-  img[alt='Династия'] {
-    width: clamp(96px, 28vw, 130px) !important;
-    max-height: 42px !important;
-  }
-
-  .header-profile-btn {
-    width: 40px !important;
-    height: 40px !important;
-  }
-
-  .catalog-chip {
-    @apply px-3 py-1.5 text-xs;
-  }
-
-  .catalog-chips-scroll {
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .catalog-chips-row {
-    @apply gap-2 px-1;
-  }
-
-  .catalog-chip {
-    scroll-snap-align: center;
-  }
-
-  .support-chat-fab {
-    @apply bottom-4 right-4;
-  }
-
-  .support-chat-fab__btn {
-    @apply h-12 w-12;
-  }
-
-  .support-chat-panel {
-    @apply md:bottom-20 md:right-4 md:w-[min(100vw-2rem,24rem)];
-  }
-
-  .header-nav-btn-img-mobile {
-    height: clamp(52px, 14vw, 64px);
-    max-width: min(92vw, 340px);
-  }
-}
-
-@media (min-width: 640px) and (max-width: 767px) {
-  .header-nav-btn-img-mobile {
-    height: clamp(56px, 10vw, 68px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .header-nav-btn-img,
-  .catalog-chip,
-  .catalog-chip--active,
-  .btn-brand,
-  .btn-gold-interactive,
-  .support-chat-fab__btn,
-  .support-chat-fab__pulse,
-  .support-chat-fab__glow {
-    animation: none !important;
-    transition: none !important;
+    height: clamp(108px, 10vw, 136px) !important;
   }
 }
 

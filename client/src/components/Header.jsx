@@ -44,7 +44,29 @@ function useActiveCategory() {
   return new URLSearchParams(search).get('category') ?? '';
 }
 
-function ProfileMenuItems({ isAdmin, onClose, onLogout }) {
+function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) {
+  return (
+    <img
+      src="/btn-profile.png"
+      alt="Профиль"
+      onClick={onClick}
+      className="header-profile-btn h-auto cursor-pointer"
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel}
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaExpanded != null ? 'true' : undefined}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+    />
+  );
+}
+
+function DesktopProfileMenu({ isAdmin, onClose, onLogout }) {
   if (isAdmin) {
     return (
       <>
@@ -96,64 +118,95 @@ function ProfileMenuItems({ isAdmin, onClose, onLogout }) {
   );
 }
 
-function MobileProfileMenuItems({ isAdmin, onClose, onLogout }) {
-  const linkClass = 'text-sm font-medium text-accent-400';
-  const buttonClass = 'text-left text-sm font-medium text-white/90';
-
-  if (isAdmin) {
-    return (
-      <>
-        <Link to="/admin/dashboard" onClick={onClose} className={linkClass}>
-          Панель управления
-        </Link>
-        <button type="button" onClick={onLogout} className={buttonClass}>
-          Выход
-        </button>
-      </>
-    );
-  }
+function MobileProfilePanel({ isAdmin, activeCategory, onClose, onLogout }) {
+  const actionClass =
+    'w-full rounded-xl px-4 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/10 sm:text-base';
 
   return (
     <>
-      <Link to="/purchases" onClick={onClose} className={linkClass}>
-        Мои покупки
-      </Link>
       <button
         type="button"
-        onClick={() => {
-          onClose();
-          openSupportChat();
-        }}
-        className={buttonClass}
+        className="header-mobile-panel__backdrop md:hidden"
+        onClick={onClose}
+        aria-label="Закрыть меню"
+      />
+      <div
+        className="header-mobile-panel brand-surface md:hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Меню профиля"
       >
-        Поддержка
-      </button>
-      <button type="button" onClick={onLogout} className={buttonClass}>
-        Выход
-      </button>
-    </>
-  );
-}
+        <div className="header-mobile-panel__header">
+          <h2 className="text-base font-semibold text-white sm:text-lg">Меню</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-white/80 transition hover:bg-white/10"
+            aria-label="Закрыть"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) {
-  return (
-    <img
-      src="/btn-profile.png"
-      alt="Профиль"
-      onClick={onClick}
-      className="header-profile-btn h-auto cursor-pointer"
-      role="button"
-      tabIndex={0}
-      aria-label={ariaLabel}
-      aria-expanded={ariaExpanded}
-      aria-haspopup={ariaExpanded != null ? 'true' : undefined}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick?.();
-        }
-      }}
-    />
+        <div className="header-mobile-panel__body">
+          {isAdmin ? (
+            <div className="flex flex-col gap-2">
+              <Link to="/admin/dashboard" className={actionClass} onClick={onClose}>
+                Панель управления
+              </Link>
+              <button type="button" className={actionClass} onClick={onLogout}>
+                Выйти из аккаунта
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Link to="/purchases" className={actionClass} onClick={onClose}>
+                  Мои покупки
+                </Link>
+                <button
+                  type="button"
+                  className={actionClass}
+                  onClick={() => {
+                    onClose();
+                    openSupportChat();
+                  }}
+                >
+                  Поддержка
+                </button>
+              </div>
+
+              <nav className="flex flex-col items-center gap-3 border-y border-white/15 py-4" aria-label="Навигация">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={onClose}
+                    className="transition-transform duration-200 active:scale-95"
+                    aria-label={item.label}
+                  >
+                    <img
+                      src={item.src}
+                      alt={item.label}
+                      className={`header-nav-btn-img-mobile h-auto w-auto object-contain ${
+                        activeCategory === item.category ? 'header-nav-btn-img-mobile--active' : ''
+                      }`}
+                      draggable={false}
+                    />
+                  </Link>
+                ))}
+              </nav>
+
+              <button type="button" className={actionClass} onClick={onLogout}>
+                Выход
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -228,7 +281,6 @@ function DesktopNavButton({ item, isActive, onNavigate }) {
 
 function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'login' }) {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const activeCategory = useActiveCategory();
@@ -247,7 +299,10 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
     if (!profileMenuOpen) return undefined;
     const handlePointerDown = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-        setProfileMenuOpen(false);
+        const isMobilePanel = window.matchMedia('(max-width: 767px)').matches;
+        if (!isMobilePanel) {
+          setProfileMenuOpen(false);
+        }
       }
     };
     document.addEventListener('mousedown', handlePointerDown);
@@ -255,11 +310,21 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
   }, [profileMenuOpen]);
 
   useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    const isMobilePanel = profileMenuOpen && window.matchMedia('(max-width: 767px)').matches;
+    document.body.style.overflow = isMobilePanel ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isMenuOpen]);
+  }, [profileMenuOpen]);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setProfileMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [profileMenuOpen]);
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -269,12 +334,14 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
     window.location.reload();
   };
 
-  const closeMobileMenu = () => setIsMenuOpen(false);
   const closeProfileMenu = () => setProfileMenuOpen(false);
 
-  const handleLogout = () => {
-    closeMobileMenu();
-    logout();
+  const handleProfileClick = () => {
+    if (!showAccountMenu) {
+      openAuth();
+      return;
+    }
+    setProfileMenuOpen((value) => !value);
   };
 
   return (
@@ -287,9 +354,9 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
           aria-hidden
           draggable={false}
         />
-        <div className="relative h-14 md:h-16">
-          <div className="relative mx-auto grid h-full max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 px-4 sm:px-6">
-            <Link to="/" className="shrink-0 justify-self-start" onClick={closeMobileMenu}>
+        <div className="relative h-16 sm:h-[4.5rem] md:h-20 lg:h-[5.25rem]">
+          <div className="relative mx-auto flex h-full max-w-7xl items-center justify-between gap-3 px-3 sm:px-5 lg:px-8">
+            <Link to="/" className="header-logo-link relative z-20 shrink-0" onClick={closeProfileMenu}>
               <img
                 src="/logo-full.png"
                 alt="Династия"
@@ -297,116 +364,49 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
               />
             </Link>
 
-            <div className="hidden min-w-0 md:block" aria-hidden />
-
-            <div className="relative flex shrink-0 items-center justify-self-end gap-2" ref={profileMenuRef}>
-            <div className="hidden md:block">
-              {showAccountMenu ? (
-                <>
-                  <ProfileButton
-                    onClick={() => setProfileMenuOpen((v) => !v)}
-                    ariaExpanded={profileMenuOpen}
-                  />
-                  {profileMenuOpen ? (
-                    <div className="absolute right-4 top-full z-50 mt-2 min-w-[12rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl animate-fade-in lg:right-6">
-                      <ProfileMenuItems
-                        isAdmin={isAdmin}
-                        onClose={closeProfileMenu}
-                        onLogout={logout}
-                      />
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <ProfileButton onClick={openAuth} ariaLabel="Профиль — войти" />
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen((value) => !value)}
-              className="rounded-lg p-2 text-white/90 transition hover:bg-white/10 md:hidden"
-              aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
-              aria-expanded={isMenuOpen}
-            >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
-          </div>
-
-          <nav className="pointer-events-none absolute inset-x-0 top-1/2 z-10 hidden -translate-y-1/2 md:flex md:justify-center">
-            <div
-              className="pointer-events-auto flex max-w-[min(100vw-7rem,1180px)] items-center justify-center gap-3 md:gap-5 lg:gap-10 xl:gap-16 2xl:gap-24"
+            <nav
+              className="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 md:block"
               aria-label="Основная навигация"
             >
-              {navItems.map((item) => (
-                <DesktopNavButton
-                  key={item.to}
-                  item={item}
-                  isActive={activeCategory === item.category}
-                  onNavigate={closeMobileMenu}
-                />
-              ))}
-            </div>
-          </nav>
-        </div>
-
-        {isMenuOpen ? (
-          <div className="brand-surface animate-slide-down border-t border-white/10 px-4 py-5 md:hidden">
-            <nav className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-4" aria-label="Мобильная навигация">
-              {navItems.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={closeMobileMenu}
-                  className="transition-transform duration-200 hover:scale-105 active:scale-95"
-                  aria-label={item.label}
-                >
-                  <img
-                    src={item.src}
-                    alt={item.label}
-                    className={`header-nav-btn-img-mobile h-auto w-auto max-w-[min(88vw,320px)] object-contain ${
-                      activeCategory === item.category ? 'header-nav-btn-img-mobile--active' : ''
-                    }`}
-                    draggable={false}
+              <div className="pointer-events-auto flex max-w-[min(100vw-12rem,1100px)] items-center justify-center gap-3 lg:gap-8 xl:gap-14 2xl:gap-20">
+                {navItems.map((item) => (
+                  <DesktopNavButton
+                    key={item.to}
+                    item={item}
+                    isActive={activeCategory === item.category}
+                    onNavigate={closeProfileMenu}
                   />
-                </Link>
-              ))}
-              <div className="mt-3 border-t border-white/15 pt-3">
-                {showAccountMenu ? (
-                  <MobileProfileMenuItems
-                    isAdmin={isAdmin}
-                    onClose={closeMobileMenu}
-                    onLogout={handleLogout}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      closeMobileMenu();
-                      openAuth();
-                    }}
-                    className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-accent-400 transition hover:bg-white/10 sm:text-base"
-                  >
-                    <img
-                      src="/btn-profile.png"
-                      alt=""
-                      className="h-10 w-10 object-contain"
-                      aria-hidden
-                    />
-                    Войти
-                  </button>
-                )}
+                ))}
               </div>
             </nav>
+
+            <div className="relative z-20 shrink-0" ref={profileMenuRef}>
+              <ProfileButton
+                onClick={handleProfileClick}
+                ariaExpanded={showAccountMenu ? profileMenuOpen : undefined}
+                ariaLabel={showAccountMenu ? 'Профиль' : 'Профиль — войти'}
+              />
+
+              {profileMenuOpen && showAccountMenu ? (
+                <>
+                  <div className="absolute right-0 top-full z-50 mt-2 hidden min-w-[12rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl animate-fade-in md:block">
+                    <DesktopProfileMenu
+                      isAdmin={isAdmin}
+                      onClose={closeProfileMenu}
+                      onLogout={logout}
+                    />
+                  </div>
+                  <MobileProfilePanel
+                    isAdmin={isAdmin}
+                    activeCategory={activeCategory}
+                    onClose={closeProfileMenu}
+                    onLogout={logout}
+                  />
+                </>
+              ) : null}
+            </div>
           </div>
-        ) : null}
+        </div>
       </header>
 
       <AuthModal

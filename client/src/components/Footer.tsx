@@ -59,8 +59,8 @@ function Footer() {
         aria-hidden
         draggable={false}
       />
-      <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 gap-8 text-center sm:text-left sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex flex-col items-center gap-3 sm:items-start sm:col-span-2 lg:col-span-1">
+      <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-col items-start gap-3 sm:col-span-2 lg:col-span-1">
           <Link to="/" className="inline-block">
             <img
               src={logoUrl}
@@ -71,7 +71,7 @@ function Footer() {
           <p className="max-w-xs text-white/75">{settings.footer_tagline}</p>
         </div>
 
-        <div className="flex flex-col items-center gap-2 sm:items-start">
+        <div className="flex flex-col gap-2">
           <h3 className="text-base font-semibold text-accent-400 sm:text-lg">Контакты</h3>
           <a
             href={`mailto:${settings.footer_email}`}
@@ -87,7 +87,7 @@ function Footer() {
           </a>
         </div>
 
-        <nav className="flex flex-col items-center gap-2 sm:items-start sm:col-span-2 lg:col-span-1" aria-label="Навигация в подвале">
+        <nav className="flex flex-col gap-2 sm:col-span-2 lg:col-span-1" aria-label="Навигация в подвале">
           <h3 className="text-base font-semibold text-accent-400 sm:text-lg">Разделы</h3>
           <FooterLink href={settings.footer_link_about} label={settings.footer_link_about_label} />
           <FooterLink href={settings.footer_link_contacts} label={settings.footer_link_contacts_label} />
