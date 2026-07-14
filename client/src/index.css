@@ -37,7 +37,9 @@ body {
   .support-chat-fab__btn,
   .support-chat-fab__tooltip,
   .support-chat-panel__header,
-  .support-chat-bubble--user {
+  .support-chat-bubble--user,
+  .header-desktop-menu,
+  .header-mobile-menu {
     background: var(--site-surface-gradient);
   }
 
@@ -47,7 +49,9 @@ body {
   .support-chat-fab__btn,
   .support-chat-fab__tooltip,
   .support-chat-panel__header,
-  .support-chat-bubble--user {
+  .support-chat-bubble--user,
+  .header-desktop-menu,
+  .header-mobile-menu {
     @apply relative isolate overflow-hidden text-white;
     border: 1px solid rgba(255, 255, 255, 0.12);
   }
@@ -58,7 +62,9 @@ body {
   .support-chat-fab__btn::before,
   .support-chat-fab__tooltip::before,
   .support-chat-panel__header::before,
-  .support-chat-bubble--user::before {
+  .support-chat-bubble--user::before,
+  .header-desktop-menu::before,
+  .header-mobile-menu::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -93,6 +99,24 @@ body {
     width: auto;
     display: block;
     transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  @media (min-width: 768px) {
+    .header-nav-btn-img {
+      height: clamp(104px, 9.5vw, 128px);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .header-nav-btn-img {
+      height: clamp(120px, 10.5vw, 152px);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .header-nav-btn-img {
+      height: clamp(136px, 11.5vw, 172px);
+    }
   }
 
   .header-nav-btn-hit {
@@ -297,6 +321,12 @@ body {
     animation: header-mobile-menu-in 0.26s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  .header-desktop-menu {
+    @apply overflow-hidden rounded-2xl py-2 shadow-2xl shadow-black/45;
+    transform-origin: top right;
+    animation: header-mobile-menu-in 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   .header-mobile-menu__body {
     @apply relative z-10 flex flex-col gap-1.5 px-2 pb-2;
   }
@@ -492,6 +522,18 @@ header img[alt='Профиль'] {
   }
 }
 
+@media (min-width: 768px) {
+  .header-logo,
+  img[alt='Династия'] {
+    width: clamp(188px, 17vw, 280px) !important;
+    max-height: clamp(64px, 6.5vw, 96px) !important;
+  }
+
+  .hero-cta-btn {
+    bottom: clamp(24px, 5vw, 64px);
+  }
+}
+
 header nav .header-nav-btn-img {
   height: clamp(88px, 8.5vw, 112px) !important;
   width: auto !important;
@@ -501,19 +543,19 @@ header nav .header-nav-btn-img {
 
 @media (min-width: 768px) and (max-width: 1023px) {
   header nav .header-nav-btn-img {
-    height: clamp(76px, 7.5vw, 96px) !important;
+    height: clamp(104px, 9.5vw, 128px) !important;
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
   header nav .header-nav-btn-img {
-    height: clamp(96px, 9vw, 120px) !important;
+    height: clamp(120px, 10.5vw, 152px) !important;
   }
 }
 
 @media (min-width: 1280px) {
   header nav .header-nav-btn-img {
-    height: clamp(108px, 10vw, 136px) !important;
+    height: clamp(136px, 11.5vw, 172px) !important;
   }
 }
 
@@ -531,12 +573,6 @@ header nav .header-nav-btn-img {
   .btn-gold-interactive {
     width: min(68vw, 210px) !important;
     max-width: 210px !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .hero-cta-btn {
-    bottom: clamp(24px, 5vw, 64px);
   }
 }
 

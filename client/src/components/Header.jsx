@@ -66,55 +66,59 @@ function ProfileButton({ onClick, ariaExpanded, ariaLabel = 'Профиль' }) 
   );
 }
 
-function DesktopProfileMenu({ isAdmin, onClose, onLogout }) {
-  if (isAdmin) {
+function DesktopMenuButton({ children, onClick, to, onClose, delayIndex = 0 }) {
+  const style = { animationDelay: `${delayIndex * 45}ms` };
+  const className = 'header-mobile-menu__btn';
+
+  if (to) {
     return (
-      <>
-        <Link
-          to="/admin/dashboard"
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          onClick={onClose}
-        >
-          Панель управления
-        </Link>
-        <button
-          type="button"
-          onClick={onLogout}
-          className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-        >
-          Выход
-        </button>
-      </>
+      <Link to={to} className={className} style={style} onClick={onClose}>
+        {children}
+      </Link>
     );
   }
 
   return (
-    <>
-      <Link
-        to="/purchases"
-        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-        onClick={onClose}
-      >
+    <button type="button" className={className} style={style} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+function DesktopProfileMenu({ isAdmin, onClose, onLogout }) {
+  let delayIndex = 0;
+
+  if (isAdmin) {
+    return (
+      <div className="header-mobile-menu__body">
+        <DesktopMenuButton to="/admin/dashboard" onClose={onClose} delayIndex={delayIndex++}>
+          Панель управления
+        </DesktopMenuButton>
+        <DesktopMenuButton onClick={onLogout} delayIndex={delayIndex++}>
+          Выход
+        </DesktopMenuButton>
+      </div>
+    );
+  }
+
+  return (
+    <div className="header-mobile-menu__body">
+      <DesktopMenuButton to="/purchases" onClose={onClose} delayIndex={delayIndex++}>
         Мои покупки
-      </Link>
-      <button
-        type="button"
+      </DesktopMenuButton>
+      <DesktopMenuButton
         onClick={() => {
           onClose();
           openSupportChat();
         }}
-        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+        delayIndex={delayIndex++}
       >
         Поддержка
-      </button>
-      <button
-        type="button"
-        onClick={onLogout}
-        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-      >
+      </DesktopMenuButton>
+      <DesktopMenuButton onClick={onLogout} delayIndex={delayIndex++}>
         Выход
-      </button>
-    </>
+      </DesktopMenuButton>
+    </div>
   );
 }
 
@@ -350,9 +354,13 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
           aria-hidden
           draggable={false}
         />
-        <div className="relative h-16 sm:h-[4.5rem] md:h-20 lg:h-[5.25rem]">
+        <div className="relative h-16 sm:h-[4.5rem] md:h-24 lg:h-[5.75rem]">
           <div className="relative mx-auto flex h-full max-w-7xl items-center justify-between gap-3 px-3 sm:px-5 lg:px-8">
-            <Link to="/" className="header-logo-link relative z-20 shrink-0" onClick={closeProfileMenu}>
+            <Link
+              to="/"
+              className="header-logo-link relative z-20 shrink-0"
+              onClick={closeProfileMenu}
+            >
               <img
                 src="/logo-full.png"
                 alt="Династия"
@@ -364,7 +372,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
               className="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 md:block"
               aria-label="Основная навигация"
             >
-              <div className="pointer-events-auto flex max-w-[min(100vw-12rem,1100px)] items-center justify-center gap-3 lg:gap-8 xl:gap-14 2xl:gap-20">
+              <div className="pointer-events-auto flex max-w-[min(100vw-10rem,1180px)] items-center justify-center gap-4 lg:gap-10 xl:gap-16 2xl:gap-24">
                 {navItems.map((item) => (
                   <DesktopNavButton
                     key={item.to}
@@ -386,7 +394,14 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
               {profileMenuOpen ? (
                 <>
                   {showAccountMenu ? (
-                    <div className="absolute right-0 top-full z-50 mt-2 hidden min-w-[12rem] overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl animate-fade-in md:block">
+                    <div className="header-desktop-menu brand-surface absolute right-0 top-full z-50 mt-2 hidden min-w-[16.5rem] md:block">
+                      <img
+                        src="/header-bg.png"
+                        alt=""
+                        className="site-surface__pattern"
+                        aria-hidden
+                        draggable={false}
+                      />
                       <DesktopProfileMenu
                         isAdmin={isAdmin}
                         onClose={closeProfileMenu}
