@@ -161,7 +161,7 @@ export default function HomePage() {
         />
       </section>
 
-      <main id="catalog" className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <main id="catalog" className="catalog-section mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:max-w-[min(92vw,1600px)] lg:px-10 xl:px-14">
         <div className="mb-8 text-center md:mb-10">
           <h2 className="text-2xl font-bold tracking-tight text-primary-dark sm:text-3xl lg:text-4xl">
             Каталог курсов
@@ -198,18 +198,18 @@ export default function HomePage() {
 
         <Suspense
           fallback={
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="catalog-grid grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {[1, 2, 3].map((n) => (
                 <div
                   key={n}
-                  className="h-64 animate-pulse rounded-xl border border-gray-200 bg-white shadow-sm"
+                  className="h-64 animate-pulse rounded-xl border border-gray-200 bg-white shadow-sm lg:h-80"
                   aria-hidden
                 />
               ))}
             </div>
           }
         >
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="catalog-grid grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {packages.map((item) => (
               <PackageCard
                 key={item.id}

@@ -592,6 +592,26 @@ header nav .header-nav-btn-img {
   }
 }
 
+@media (min-width: 1024px) {
+  .catalog-grid {
+    gap: 2rem;
+  }
+
+  .package-card-cover {
+    height: 13.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .catalog-grid {
+    gap: 2.25rem;
+  }
+
+  .package-card-cover {
+    height: 15rem;
+  }
+}
+
 @media (min-width: 1024px) and (max-width: 1279px) {
   .btn-gold-interactive {
     max-width: 450px !important;

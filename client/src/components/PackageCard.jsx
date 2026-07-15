@@ -127,7 +127,7 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
           <img
             src={item.coverUrl}
             alt=""
-            className="h-40 w-full object-cover"
+            className="package-card-cover h-40 w-full object-cover"
             loading="lazy"
             decoding="async"
             onError={(e) => {
@@ -137,7 +137,7 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
         </button>
       ) : null}
 
-      <div className="p-3 sm:p-4 md:p-6">
+      <div className="p-3 sm:p-4 md:p-6 lg:p-7">
         <div className="flex items-start justify-between gap-2">
           <button type="button" onClick={toggleExpand} className="min-w-0 flex-1 text-left">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
