@@ -572,21 +572,19 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#F9FAFB] text-gray-900">
       <header className="admin-header header-entrance relative isolate overflow-hidden">
         <img src="/header-bg.png" alt="" className="admin-header__pattern" aria-hidden draggable={false} />
-        <div className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <Link to="/" className="flex items-center gap-3 no-underline" title="На сайт">
-              <img src="/logo-full.png" alt="Династия" className="admin-logo block" />
-              <span className="hidden text-sm font-medium text-white/70 transition hover:text-white sm:inline">
-                ← На сайт
-              </span>
-            </Link>
-            <h1 className="text-base font-bold text-white sm:text-lg md:text-xl">
+        <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+            <img src="/logo-full.png" alt="Династия" className="admin-logo block shrink-0" />
+            <h1 className="hidden text-base font-bold text-white sm:block sm:text-lg md:text-xl">
               Панель управления
             </h1>
+            <button type="button" onClick={handleLogout} className="admin-btn-ghost shrink-0">
+              Выход
+            </button>
           </div>
-          <button type="button" onClick={handleLogout} className="admin-btn-gold">
-            Выход
-          </button>
+          <Link to="/" className="admin-btn-gold shrink-0 no-underline">
+            На сайт
+          </Link>
         </div>
 
         <div className="relative mx-auto flex max-w-6xl flex-wrap gap-1 px-4 sm:px-6">

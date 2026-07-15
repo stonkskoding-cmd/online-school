@@ -760,6 +760,19 @@ header nav .header-nav-btn-img {
     transform: scale(0.97);
   }
 
+  /* Неприметная кнопка (напр. «Выход») — не притягивает внимание */
+  .admin-btn-ghost {
+    @apply inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium text-white/60 transition-all duration-200 ease-out sm:text-sm;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: transparent;
+  }
+
+  .admin-btn-ghost:hover {
+    @apply text-white/90;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
   /* Вкладки в тёмной шапке */
   .admin-tab {
     @apply relative rounded-t-lg px-3 py-2.5 text-xs font-semibold transition-all duration-300 ease-out sm:px-5 sm:py-3 sm:text-sm;
