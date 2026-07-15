@@ -66,6 +66,19 @@ export default function HomePage() {
     }
   }, [searchParams, setSearchParams]);
 
+  // При первом открытии лендинга — всегда сверху (гасим браузерное восстановление
+  // позиции, которое из-за асинхронной догрузки каталога роняло страницу в середину)
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    const hasCategory = Boolean(new URLSearchParams(window.location.search).get('category'));
+    if (!hasCategory) {
+      window.scrollTo(0, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!activeCategory) return;
     requestAnimationFrame(() => {
