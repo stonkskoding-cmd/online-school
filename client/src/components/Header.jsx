@@ -355,7 +355,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
           draggable={false}
         />
         <div className="relative h-16 sm:h-[4.5rem] md:h-24 lg:h-[5.75rem]">
-          <div className="relative mx-auto flex h-full max-w-7xl items-center justify-between gap-3 px-3 sm:px-5 lg:px-8">
+          <div className="header-bar relative mx-auto flex h-full max-w-7xl items-center justify-between gap-3 px-3 sm:px-5">
             <Link
               to="/"
               className="header-logo-link relative z-20 shrink-0"

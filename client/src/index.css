@@ -86,6 +86,16 @@ body {
     @apply sticky top-0 z-50 w-full overflow-visible border-b border-white/10 shadow-lg shadow-black/25;
   }
 
+  /* ПК: логотип и профиль до самых краёв шапки */
+  @media (min-width: 768px) {
+    .header-bar {
+      max-width: none;
+      width: 100%;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+    }
+  }
+
   .site-footer {
     @apply border-t border-white/10;
   }
