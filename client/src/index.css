@@ -721,3 +721,113 @@ header nav .header-nav-btn-img {
     width: 2.1rem;
   }
 }
+
+/* ============================================================
+   ПАНЕЛЬ УПРАВЛЕНИЯ ОПЕРАТОРА — брендовый стиль главной
+   ============================================================ */
+@layer components {
+  /* Шапка админки: тот же градиент + узор, что и на сайте */
+  .admin-header {
+    @apply sticky top-0 z-40 border-b border-white/10 shadow-lg shadow-black/25;
+    background: var(--site-surface-gradient);
+  }
+
+  .admin-header__pattern {
+    @apply pointer-events-none absolute inset-0 h-full w-full object-cover;
+    opacity: var(--site-pattern-opacity);
+  }
+
+  .admin-logo {
+    height: clamp(38px, 5vw, 52px);
+    width: auto;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  }
+
+  /* Золотая кнопка «Выход» / основные действия */
+  .admin-btn-gold {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-bold text-[#163754] shadow-md transition-all duration-300 ease-out;
+    background: linear-gradient(135deg, #d4af37 0%, #e8c85c 100%);
+  }
+
+  .admin-btn-gold:hover {
+    transform: translateY(-1px) scale(1.03);
+    box-shadow:
+      0 0 14px rgba(212, 175, 55, 0.45),
+      0 8px 18px rgba(0, 0, 0, 0.25);
+  }
+
+  .admin-btn-gold:active {
+    transform: scale(0.97);
+  }
+
+  /* Вкладки в тёмной шапке */
+  .admin-tab {
+    @apply relative rounded-t-lg px-3 py-2.5 text-xs font-semibold transition-all duration-300 ease-out sm:px-5 sm:py-3 sm:text-sm;
+  }
+
+  .admin-tab--idle {
+    @apply text-white/70 hover:text-white;
+  }
+
+  .admin-tab--idle:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .admin-tab--active {
+    @apply text-[#163754];
+    background: linear-gradient(135deg, #d4af37 0%, #e8c85c 100%);
+    box-shadow: 0 -2px 14px rgba(212, 175, 55, 0.35);
+  }
+
+  /* Карточка статистики с золотой линией сверху */
+  .admin-stat-card {
+    @apply relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 ease-out;
+  }
+
+  .admin-stat-card::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-1;
+    background: linear-gradient(90deg, #244e77 0%, #d4af37 100%);
+  }
+
+  .admin-stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(212, 175, 55, 0.45);
+    box-shadow:
+      0 10px 24px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(212, 175, 55, 0.15);
+  }
+
+  /* Ряд чата, всплывает при появлении */
+  .admin-chat-row {
+    animation: admin-fade-in 0.34s ease-out both;
+  }
+}
+
+/* Появление содержимого вкладки */
+.admin-fade-in {
+  animation: admin-fade-in 0.42s ease-out both;
+}
+
+@keyframes admin-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-fade-in,
+  .admin-chat-row {
+    animation: none;
+    opacity: 1;
+  }
+
+  .admin-stat-card:hover {
+    transform: none;
+  }
+}

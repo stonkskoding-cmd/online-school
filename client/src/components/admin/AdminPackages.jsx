@@ -32,9 +32,9 @@ const EMPTY_PACKAGE_STATS = {
   topPackage: null,
 };
 
-function StatCard({ icon, label, value, sub }) {
+function StatCard({ icon, label, value, sub, index = 0 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="admin-stat-card card-enter" style={{ animationDelay: `${index * 80}ms` }}>
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
         {icon} {label}
       </p>
@@ -58,18 +58,20 @@ export default function AdminPackages({ packages, stats = EMPTY_PACKAGE_STATS, l
     return (
       <>
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard icon="📊" label="Всего продаж" value={stats.totalSales ?? 0} />
+          <StatCard icon="📊" label="Всего продаж" value={stats.totalSales ?? 0} index={0} />
           <StatCard
             icon="💰"
             label="Общая выручка"
             value={`${Number(stats.totalRevenue ?? 0).toLocaleString('ru-RU')} ₽`}
+            index={1}
           />
-          <StatCard icon="📦" label="Всего пакетов" value={stats.totalPackages ?? 0} />
+          <StatCard icon="📦" label="Всего пакетов" value={stats.totalPackages ?? 0} index={2} />
           <StatCard
             icon="🏆"
             label="Самый популярный"
             value={stats.topPackage?.title ?? '—'}
             sub={stats.topPackage ? `${stats.topPackage.salesCount} продаж` : 'Пока нет продаж'}
+            index={3}
           />
         </div>
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center shadow-sm">
@@ -89,13 +91,14 @@ export default function AdminPackages({ packages, stats = EMPTY_PACKAGE_STATS, l
   return (
     <>
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon="📊" label="Всего продаж" value={stats.totalSales ?? 0} />
+        <StatCard icon="📊" label="Всего продаж" value={stats.totalSales ?? 0} index={0} />
         <StatCard
           icon="💰"
           label="Общая выручка"
           value={`${Number(stats.totalRevenue ?? 0).toLocaleString('ru-RU')} ₽`}
+          index={1}
         />
-        <StatCard icon="📦" label="Всего пакетов" value={stats.totalPackages ?? packages.length} />
+        <StatCard icon="📦" label="Всего пакетов" value={stats.totalPackages ?? packages.length} index={2} />
         <StatCard
           icon="🏆"
           label="Самый популярный"
@@ -105,6 +108,7 @@ export default function AdminPackages({ packages, stats = EMPTY_PACKAGE_STATS, l
               ? `${stats.topPackage.salesCount} продаж`
               : 'Пока нет продаж'
           }
+          index={3}
         />
       </div>
 

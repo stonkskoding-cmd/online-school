@@ -83,18 +83,22 @@ export default function AdminFooterSettings() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] text-gray-900">
-      <header className="border-b border-gray-200 bg-white shadow-sm">
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <header className="admin-header header-entrance relative isolate overflow-hidden">
+        <img src="/header-bg.png" alt="" className="admin-header__pattern" aria-hidden draggable={false} />
+        <div className="relative mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="flex flex-wrap items-center gap-3">
-            <Link to="/admin/dashboard" className="text-sm font-medium text-[#244E77] hover:underline">
+            <Link
+              to="/admin/dashboard"
+              className="text-sm font-medium text-white/70 no-underline transition hover:text-white"
+            >
               ← Админка
             </Link>
-            <h1 className="text-lg font-bold text-[#244E77] sm:text-xl">Настройки футера</h1>
+            <h1 className="text-lg font-bold text-white sm:text-xl">Настройки футера</h1>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      <main className="admin-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
         {loading ? (
           <p className="text-gray-600">Загрузка…</p>
         ) : (
@@ -128,7 +132,7 @@ export default function AdminFooterSettings() {
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-xl bg-gradient-to-r from-[#244E77] to-[#163754] px-5 py-2.5 text-sm font-bold text-[#D4AF37] shadow disabled:opacity-60"
+                className="admin-btn-gold disabled:opacity-60"
               >
                 {saving ? 'Сохранение…' : 'Сохранить'}
               </button>

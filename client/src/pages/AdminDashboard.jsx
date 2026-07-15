@@ -566,41 +566,40 @@ export default function AdminDashboard() {
     navigate('/', { replace: true });
   };
 
-  const tabBase =
-    'rounded-t-lg px-3 py-2 text-xs font-semibold transition border border-b-0 border-gray-200 sm:px-5 sm:py-3 sm:text-sm';
-  const tabActive = 'bg-[#244E77] text-white border-[#244E77]';
-  const tabInactive = 'bg-white text-[#244E77] hover:bg-gray-100';
+  const tabClass = (active) => `admin-tab ${active ? 'admin-tab--active' : 'admin-tab--idle'}`;
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] text-gray-900">
-      <header className="border-b border-gray-200 bg-white shadow-sm">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <header className="admin-header header-entrance relative isolate overflow-hidden">
+        <img src="/header-bg.png" alt="" className="admin-header__pattern" aria-hidden draggable={false} />
+        <div className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="flex flex-wrap items-center gap-4">
-            <Link to="/" className="text-sm font-medium text-[#244E77] hover:underline">
-              ← На сайт
+            <Link to="/" className="flex items-center gap-3 no-underline" title="На сайт">
+              <img src="/logo-full.png" alt="Династия" className="admin-logo block" />
+              <span className="hidden text-sm font-medium text-white/70 transition hover:text-white sm:inline">
+                ← На сайт
+              </span>
             </Link>
-            <h1 className="text-lg font-bold text-[#244E77] sm:text-xl md:text-2xl">Панель управления Династия</h1>
+            <h1 className="text-base font-bold text-white sm:text-lg md:text-xl">
+              Панель управления
+            </h1>
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#e8c85c] px-3 py-1.5 text-xs font-semibold text-[#244E77] shadow transition hover:from-[#c9a431] hover:to-[#D4AF37] sm:px-4 sm:py-2 sm:text-sm"
-          >
+          <button type="button" onClick={handleLogout} className="admin-btn-gold">
             Выход
           </button>
         </div>
 
-        <div className="mx-auto flex max-w-6xl flex-wrap gap-0 px-4 sm:px-6">
+        <div className="relative mx-auto flex max-w-6xl flex-wrap gap-1 px-4 sm:px-6">
           <button
             type="button"
-            className={`${tabBase} ${activeTab === 'packages' ? tabActive : tabInactive}`}
+            className={tabClass(activeTab === 'packages')}
             onClick={() => setActiveTab('packages')}
           >
-            Пакеты
+            📦 Пакеты
           </button>
           <button
             type="button"
-            className={`${tabBase} ${activeTab === 'chat' ? tabActive : tabInactive}`}
+            className={tabClass(activeTab === 'chat')}
             onClick={() => setActiveTab('chat')}
           >
             💬 Чат поддержки
@@ -610,10 +609,7 @@ export default function AdminDashboard() {
               </span>
             ) : null}
           </button>
-          <Link
-            to="/admin/footer-settings"
-            className={`${tabBase} ${tabInactive} no-underline`}
-          >
+          <Link to="/admin/footer-settings" className={`${tabClass(false)} no-underline`}>
             ⚙️ Футер
           </Link>
         </div>
@@ -630,17 +626,13 @@ export default function AdminDashboard() {
         ) : null}
 
         {activeTab === 'packages' ? (
-          <>
+          <div key="tab-packages" className="admin-fade-in">
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-bold text-[#244E77] sm:text-xl">Каталог пакетов</h2>
                 <p className="text-sm text-gray-500">Создание, редактирование и удаление учебных пакетов</p>
               </div>
-              <button
-                type="button"
-                onClick={openCreate}
-                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#244E77] to-[#163754] px-5 py-3 text-sm font-bold text-[#D4AF37] shadow-md transition hover:shadow-lg"
-              >
+              <button type="button" onClick={openCreate} className="admin-btn-gold">
                 + Создать пакет
               </button>
             </div>
@@ -653,9 +645,9 @@ export default function AdminDashboard() {
               onEdit={openEdit}
               onDelete={handleDelete}
             />
-          </>
+          </div>
         ) : (
-          <div className="flex h-[calc(100vh-200px)] min-h-[380px] w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg md:flex-row">
+          <div className="admin-fade-in flex h-[calc(100vh-200px)] min-h-[380px] w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg md:flex-row">
             {/* Левая колонка — список чатов (~350–400px на десктопе) */}
             <div
               className={`flex w-full flex-col border-gray-200 md:h-full md:w-96 md:min-w-[320px] md:max-w-[400px] md:shrink-0 md:border-r ${
@@ -692,7 +684,7 @@ export default function AdminDashboard() {
                     {chats.length === 0 ? 'Пока нет диалогов.' : 'Ничего не найдено.'}
                   </p>
                 ) : (
-                  filteredChats.map((c) => (
+                  filteredChats.map((c, idx) => (
                     <div
                       key={c.userId}
                       role="button"
@@ -704,7 +696,8 @@ export default function AdminDashboard() {
                           handleSelectChat(c);
                         }
                       }}
-                      className={`group flex cursor-pointer items-center gap-3 border-b border-gray-100 p-3 text-left transition hover:bg-gray-100 ${
+                      style={{ animationDelay: `${Math.min(idx, 12) * 40}ms` }}
+                      className={`admin-chat-row group flex cursor-pointer items-center gap-3 border-b border-gray-100 p-3 text-left transition hover:bg-gray-100 ${
                         selectedChatId === c.userId ? 'bg-blue-50' : ''
                       } ${c.unreadCount > 0 ? 'font-medium' : ''}`}
                     >
