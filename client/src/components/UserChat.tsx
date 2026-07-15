@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { chatApi, type ApiChatMessage } from '../api';
 import { canUseSupportChat } from '../utils/authToken';
 
-const POLL_INTERVAL_MS = 8000;
+const POLL_INTERVAL_MS = 5000;
 
 function ChatIcon() {
   return (
@@ -131,9 +131,15 @@ export const UserChat: React.FC = () => {
 
     setLoading(true);
     try {
-      await chatApi.sendMessage(content);
+      const { data } = await chatApi.sendMessage(content);
       setContent('');
-      await fetchMessages();
+      // Оптимистично показываем своё сообщение сразу, без лишнего GET —
+      // следующий poll сверит состояние с сервером.
+      if (data && data.id != null) {
+        setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data]));
+      } else {
+        await fetchMessages();
+      }
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error('Failed to send message:', error);

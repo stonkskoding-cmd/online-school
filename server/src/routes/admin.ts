@@ -399,53 +399,73 @@ router.delete('/packages/:id', validate(adminDeletePackageSchema), async (req, r
 router.get('/chats', async (_req, res) => {
   try {
     console.log('[admin] GET /chats');
-    const grouped = await prisma.message.groupBy({
-      by: ['senderId'],
-      _count: { _all: true },
-    });
 
-    const chats = await Promise.all(
-      grouped.map(async (row) => {
-        const [user, lastMessage, unreadCount] = await Promise.all([
-          prisma.user.findUnique({
-            where: { id: row.senderId },
-            select: { id: true, email: true },
-          }),
-          prisma.message.findFirst({
-            where: { senderId: row.senderId },
-            orderBy: { createdAt: 'desc' },
-          }),
-          prisma.message.count({
-            where: { senderId: row.senderId, isAdmin: false, isRead: false },
-          }),
-        ]);
+    // Один агрегирующий запрос вместо N+1: счётчики и непрочитанные по всем чатам.
+    // ::int — чтобы COUNT вернулся числом (BigInt не сериализуется в JSON).
+    const agg = await prisma.$queryRaw<
+      Array<{ userId: string; messageCount: number; unreadCount: number; lastCreatedAt: Date }>
+    >`
+      SELECT "senderId" AS "userId",
+             COUNT(*)::int AS "messageCount",
+             COUNT(*) FILTER (WHERE "isAdmin" = false AND "isRead" = false)::int AS "unreadCount",
+             MAX("createdAt") AS "lastCreatedAt"
+      FROM "messages"
+      GROUP BY "senderId"
+    `;
 
-        const email = user?.email ?? '';
+    if (agg.length === 0) {
+      console.log('[admin] GET /chats ok, count: 0');
+      res.json({ chats: [], totalUnread: 0 });
+      return;
+    }
+
+    const senderIds = agg.map((r) => r.userId);
+
+    // Последнее сообщение каждого чата (DISTINCT ON) и e-mail'ы пользователей — параллельно.
+    const [lastRows, users] = await Promise.all([
+      prisma.$queryRaw<
+        Array<{ id: number; senderId: string; content: string; createdAt: Date; isAdmin: boolean }>
+      >`
+        SELECT DISTINCT ON ("senderId") id, "senderId", content, "createdAt", "isAdmin"
+        FROM "messages"
+        ORDER BY "senderId", "createdAt" DESC
+      `,
+      prisma.user.findMany({
+        where: { id: { in: senderIds } },
+        select: { id: true, email: true },
+      }),
+    ]);
+
+    const lastBySender = new Map(lastRows.map((r) => [r.senderId, r]));
+    const emailById = new Map(users.map((u) => [u.id, u.email]));
+
+    const chats = agg
+      .map((row) => {
+        const email = emailById.get(row.userId) ?? '';
         const name = email.includes('@') ? email.split('@')[0] : email;
+        const last = lastBySender.get(row.userId);
 
         return {
-          userId: row.senderId,
+          userId: row.userId,
           email,
           name,
-          lastMessage: lastMessage
+          lastMessage: last
             ? {
-                id: lastMessage.id,
-                content: lastMessage.content,
-                createdAt: lastMessage.createdAt,
-                isAdmin: lastMessage.isAdmin,
+                id: last.id,
+                content: last.content,
+                createdAt: last.createdAt,
+                isAdmin: last.isAdmin,
               }
             : null,
-          unreadCount,
-          messageCount: row._count._all,
+          unreadCount: row.unreadCount,
+          messageCount: row.messageCount,
         };
-      }),
-    );
-
-    chats.sort(
-      (a, b) =>
-        new Date(b.lastMessage?.createdAt ?? 0).getTime() -
-        new Date(a.lastMessage?.createdAt ?? 0).getTime(),
-    );
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.lastMessage?.createdAt ?? 0).getTime() -
+          new Date(a.lastMessage?.createdAt ?? 0).getTime(),
+      );
 
     const totalUnread = chats.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0);
     console.log('[admin] GET /chats ok, count:', chats.length);

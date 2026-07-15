@@ -83,6 +83,8 @@ export function useAdminChat(selectedUserId: string | null) {
     void loadThreads().finally(() => setLoadingThreads(false));
 
     const interval = setInterval(() => {
+      // Не опрашиваем сервер, пока вкладка скрыта — экономим запросы и нагрузку.
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
       void loadThreads();
       if (selectedRef.current) {
         void loadHistory(selectedRef.current, true);
@@ -109,9 +111,18 @@ export function useAdminChat(selectedUserId: string | null) {
       setSending(true);
       setError(null);
       try {
-        await adminApiClient.postAdminChatMessage({ userId: selectedUserId, content: trimmed });
-        await loadHistory(selectedUserId, true);
-        await loadThreads();
+        const { data } = await adminApiClient.postAdminChatMessage({
+          userId: selectedUserId,
+          content: trimmed,
+        });
+        // Оптимистично показываем ответ админа сразу.
+        const created = data?.message as unknown as Record<string, unknown> | undefined;
+        if (created && selectedRef.current === selectedUserId) {
+          const item = normalizeMessage(created);
+          setMessages((prev) => (prev.some((m) => m.id === item.id) ? prev : [...prev, item]));
+        }
+        // Фоновая сверка параллельно — не блокирует UI.
+        void Promise.all([loadHistory(selectedUserId, true), loadThreads()]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Не удалось отправить');
       } finally {
