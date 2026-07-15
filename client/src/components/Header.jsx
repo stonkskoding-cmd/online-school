@@ -355,10 +355,10 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
           draggable={false}
         />
         <div className="relative h-16 sm:h-[4.5rem] md:h-24 lg:h-[5.75rem]">
-          <div className="header-bar relative mx-auto flex h-full max-w-7xl items-center justify-between gap-3 px-3 sm:px-5">
+          <div className="header-bar relative mx-auto flex h-full w-full max-w-7xl items-center justify-between gap-3 px-3 sm:px-5 md:max-w-none md:px-1">
             <Link
               to="/"
-              className="header-logo-link relative z-20 shrink-0"
+              className="header-logo-link relative z-20 shrink-0 md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2"
               onClick={closeProfileMenu}
             >
               <img
@@ -372,7 +372,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
               className="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 md:block"
               aria-label="Основная навигация"
             >
-              <div className="pointer-events-auto flex max-w-[min(100vw-10rem,1180px)] items-center justify-center gap-4 lg:gap-10 xl:gap-16 2xl:gap-24">
+              <div className="pointer-events-auto flex max-w-[min(100vw-14rem,1180px)] items-center justify-center gap-4 lg:gap-10 xl:gap-16 2xl:gap-24">
                 {navItems.map((item) => (
                   <DesktopNavButton
                     key={item.to}
@@ -384,7 +384,10 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
               </div>
             </nav>
 
-            <div className="relative z-20 shrink-0" ref={profileMenuRef}>
+            <div
+              className="header-profile-wrap relative z-20 shrink-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2"
+              ref={profileMenuRef}
+            >
               <ProfileButton
                 onClick={handleProfileClick}
                 ariaExpanded={profileMenuOpen}
