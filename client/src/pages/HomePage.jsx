@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { packagesApi } from '../api';
 import Header from '../components/Header';
+import Reveal from '../components/Reveal';
 import { resolveCurrentUser } from '../utils/session';
 
 const PackageCard = lazy(() => import('../components/PackageCard'));
@@ -113,7 +114,7 @@ export default function HomePage() {
         authInitialMode={authModalMode}
       />
 
-      <div className="relative w-full overflow-hidden">
+      <div className="rise-in relative w-full overflow-hidden">
         <img
           src="/hero-banner-royal.png"
           alt="Баннер Династия"
@@ -123,19 +124,24 @@ export default function HomePage() {
         />
         {/* Кнопка "ВЫБРАТЬ КУРС" */}
         <div className="hero-cta-btn absolute left-1/2 z-20 -translate-x-1/2">
-          <img
-            src="/gold-button.png"
-            alt="Выбрать курс"
-            onClick={() => {
-              const el = document.getElementById('catalog');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="btn-gold-interactive"
-          />
+          <div className="rise-in rise-in--d2">
+            <img
+              src="/gold-button.png"
+              alt="Выбрать курс"
+              onClick={() => {
+                const el = document.getElementById('catalog');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="btn-gold-interactive"
+            />
+          </div>
         </div>
       </div>
 
-      <section className="brand-surface border-t border-white/10 px-3 py-8 sm:px-4 sm:py-12 md:hidden">
+      <Reveal
+        as="section"
+        className="brand-surface border-t border-white/10 px-3 py-8 sm:px-4 sm:py-12 md:hidden"
+      >
         <h2 className="relative z-10 text-center text-2xl font-bold uppercase leading-tight tracking-wide text-white sm:text-3xl">
           Когда готовиться к экзаменам легко
         </h2>
@@ -149,9 +155,13 @@ export default function HomePage() {
             </li>
           ))}
         </ul>
-      </section>
+      </Reveal>
 
-      <section className="relative hidden w-full md:block" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 420px' }}>
+      <Reveal
+        as="section"
+        className="relative hidden w-full md:block"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '0 420px' }}
+      >
         <img
           src="/features-banner.png"
           alt="Преимущества онлайн-школы Династия"
@@ -159,20 +169,22 @@ export default function HomePage() {
           loading="lazy"
           decoding="async"
         />
-      </section>
+      </Reveal>
 
       <main id="catalog" className="catalog-section mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:max-w-[min(92vw,1600px)] lg:px-10 xl:px-14">
-        <div className="mb-8 text-center md:mb-10">
+        <Reveal className="mb-8 text-center md:mb-10">
           <h2 className="text-2xl font-bold tracking-tight text-primary-dark sm:text-3xl lg:text-4xl">
             Каталог курсов
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-sm text-gray-600 sm:text-base">
             Выберите направление подготовки к ЕГЭ или ОГЭ
           </p>
-        </div>
+        </Reveal>
 
-        <div className="-mx-1 mb-8 overflow-x-auto px-1 pb-1">
-          <div className="flex flex-nowrap justify-center gap-2 whitespace-nowrap sm:flex-wrap">
+        <Reveal className="-mx-1 mb-8 overflow-x-auto px-1 pb-1" delay={90}>
+          {/* w-max + min-w-full: если чипсы помещаются — центр, если нет — скролл с начала
+              (justify-center в overflow-контейнере обрезал левый чип без возможности доскроллить) */}
+          <div className="flex w-max min-w-full flex-nowrap justify-center gap-2 whitespace-nowrap">
             {categories.map((category) => (
               <button
                 key={category.label}
@@ -186,7 +198,7 @@ export default function HomePage() {
               </button>
             ))}
           </div>
-        </div>
+        </Reveal>
 
         {loading && !hasPackages ? (
           <p className="text-sm text-gray-600 sm:text-base">Загрузка...</p>
@@ -210,13 +222,18 @@ export default function HomePage() {
           }
         >
           <div className="catalog-grid grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {packages.map((item) => (
-              <PackageCard
+            {packages.map((item, index) => (
+              <div
                 key={item.id}
-                item={item}
-                isAuthorized={Boolean(user)}
-                onNeedAuth={() => setAuthModalTrigger((value) => value + 1)}
-              />
+                className="card-enter"
+                style={{ animationDelay: `${Math.min(index, 8) * 70}ms` }}
+              >
+                <PackageCard
+                  item={item}
+                  isAuthorized={Boolean(user)}
+                  onNeedAuth={() => setAuthModalTrigger((value) => value + 1)}
+                />
+              </div>
             ))}
           </div>
         </Suspense>

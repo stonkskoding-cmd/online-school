@@ -346,7 +346,7 @@ function Header({ user, onAuthSuccess, forceOpenAuth = 0, authInitialMode = 'log
 
   return (
     <>
-      <header className="site-header">
+      <header className="site-header header-entrance">
         <img
           src="/header-bg.png"
           alt=""
