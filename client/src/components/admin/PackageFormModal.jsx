@@ -60,7 +60,11 @@ export default function PackageFormModal({
   const fileUploading = coverUploading || materialUploading;
 
   useEffect(() => {
-    if (open) setTab('edit');
+    if (open) {
+      setTab('edit');
+      setCoverUploading(false);
+      setMaterialUploading(false);
+    }
   }, [open, editingId]);
 
   if (!open) return null;

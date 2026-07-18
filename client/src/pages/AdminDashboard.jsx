@@ -248,10 +248,6 @@ export default function AdminDashboard() {
     setDescription('');
     setMaterials([emptyMaterial(0)]);
     setCoverUrl('');
-    setCoverUploading(false);
-    setCoverUploadProgress(0);
-    setMaterialUploadIndex(null);
-    setMaterialUploadProgress(0);
     setFieldErrors({});
     setDraftHint(null);
     setPackageFormError('');
