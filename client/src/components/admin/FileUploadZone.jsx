@@ -1,4 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
+import { MAX_UPLOAD_BYTES } from '../../lib/supabase';
+
+const MAX_UPLOAD_MB = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024));
 
 /**
  * Зона drag-and-drop + выбор файла; прогресс при загрузке (внешний флаг uploading + progress 0–100).
@@ -76,7 +79,9 @@ export default function FileUploadZone({
         <p className="text-sm font-medium text-[#244E77]">
           {uploading ? 'Загрузка…' : 'Перетащите файл сюда или нажмите для выбора'}
         </p>
-        <p className="mt-1 text-xs text-gray-500">PDF, изображения, видео, документы</p>
+        <p className="mt-1 text-xs text-gray-500">
+          PDF, изображения, видео, документы — до {MAX_UPLOAD_MB} МБ
+        </p>
         {uploading ? (
           <div className="mx-auto mt-3 h-2 max-w-xs overflow-hidden rounded-full bg-gray-200">
             <div
