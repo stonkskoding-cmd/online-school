@@ -19,7 +19,7 @@ export const LEGAL_INFO = {
   /** Контактный телефон */
   phone: '+7 (999) 123-45-67',
   /** Публичный адрес сайта */
-  siteUrl: 'https://online-school-frontend-ryc0.onrender.com',
+  siteUrl: 'https://dinastiy.com',
   /** Название проекта / бренд */
   brand: 'Онлайн-школа «Династия»',
   /** Дата редакции документов (обновляйте при изменениях) */

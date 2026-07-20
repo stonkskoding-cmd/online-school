@@ -2,6 +2,8 @@ import { IncomingMessage, ServerResponse } from 'http';
 
 /** Явный whitelist — все известные адреса фронта, бэка и локальной разработки */
 export const CORS_ORIGINS = [
+  'https://dinastiy.com',
+  'https://www.dinastiy.com',
   'https://online-school-frontend-ryc0.onrender.com',
   'https://online-school-1-zj77.onrender.com',
   'https://online-school-backend-mqn9.onrender.com',

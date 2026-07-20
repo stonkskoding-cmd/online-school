@@ -25,7 +25,7 @@ services:
       - key: BACKEND_URL
         value: https://online-school-backend-mqn9.onrender.com
       - key: FRONTEND_URL
-        value: https://online-school-frontend-ryc0.onrender.com
+        value: https://dinastiy.com
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
