@@ -23,6 +23,22 @@ function normalizeMaterials(raw) {
   return [...raw].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
+/** «🎥 2 видео · 📝 3 текста · 🖼️ 1 фото» — состав пакета для превью */
+function buildCompositionText(materials, summary) {
+  const counts = summary ?? {
+    video: materials.filter((m) => m.type === 'video').length,
+    text: materials.filter((m) => m.type === 'text').length,
+    image: materials.filter((m) => m.type === 'image').length,
+    file: materials.filter((m) => m.type !== 'video' && m.type !== 'text' && m.type !== 'image').length,
+  };
+  const parts = [];
+  if (counts.video) parts.push(`🎥 ${counts.video} видео`);
+  if (counts.text) parts.push(`📝 ${counts.text} текст.`);
+  if (counts.image) parts.push(`🖼️ ${counts.image} фото`);
+  if (counts.file) parts.push(`📎 ${counts.file} файл.`);
+  return parts.join(' · ');
+}
+
 function delay(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -37,6 +53,7 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
   const [isPurchased, setIsPurchased] = useState(false);
   const [successVisible, setSuccessVisible] = useState(false);
   const materials = normalizeMaterials(item.materials);
+  const compositionText = buildCompositionText(materials, item.materialsSummary);
 
   useEffect(() => {
     if (!isPurchased) {
@@ -182,38 +199,35 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
 
               <div>
                 <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
-                  Материалы ({materials.length})
+                  Что внутри ({materials.length})
                 </h4>
                 {materials.length === 0 ? (
                   <p className="text-sm text-gray-500">Материалы скоро появятся</p>
                 ) : (
-                  <ul className="space-y-2">
-                    {materials.map((m, i) => (
-                      <li
-                        key={`${m.order ?? i}-${m.title ?? i}`}
-                        className="flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm"
-                      >
-                        <span className="shrink-0">{materialIcon(m.type)}</span>
-                        <span className="min-w-0 flex-1">
-                          <span className="font-medium text-gray-900">{m.title || `Материал ${i + 1}`}</span>
-                          {m.type === 'text' && m.content ? (
-                            <p className="mt-0.5 line-clamp-3 text-xs text-gray-600">{m.content}</p>
-                          ) : null}
-                          {m.url ? (
-                            <a
-                              href={m.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="mt-0.5 block truncate text-xs text-primary underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              Открыть
-                            </a>
-                          ) : null}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    {compositionText ? (
+                      <p className="mb-2 text-xs font-medium text-gray-600">{compositionText}</p>
+                    ) : null}
+                    <ul className="space-y-2">
+                      {materials.map((m, i) => (
+                        <li
+                          key={`${m.order ?? i}-${m.title ?? i}`}
+                          className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm"
+                        >
+                          <span className="shrink-0">{materialIcon(m.type)}</span>
+                          <span className="min-w-0 flex-1 truncate font-medium text-gray-900">
+                            {m.title || `Материал ${i + 1}`}
+                          </span>
+                          <span className="shrink-0 text-gray-300" title="Откроется после покупки" aria-hidden>
+                            🔒
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-xs text-gray-500">
+                      🔒 Полный доступ к материалам — после покупки
+                    </p>
+                  </>
                 )}
               </div>
 

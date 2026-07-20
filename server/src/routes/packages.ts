@@ -7,6 +7,51 @@ import { apiCache, invalidatePackagesCache, PACKAGES_LIST_TTL_MS } from '../lib/
 import { PackageCategory, PackageMaterial } from '../models/types';
 const router = Router();
 
+type RawMaterial = {
+  type?: string;
+  title?: string;
+  order?: number;
+  url?: string;
+  content?: string;
+};
+
+/**
+ * Состав пакета без секретного содержимого: только тип и заголовок,
+ * БЕЗ url/content — чтобы непокупатель видел «что внутри», но не мог открыть.
+ */
+function toPublicMaterials(materials: unknown): Array<{ type: string; title: string; order: number }> {
+  if (!Array.isArray(materials)) return [];
+  return materials.map((m, i) => {
+    const mat = (m ?? {}) as RawMaterial;
+    return {
+      type: typeof mat.type === 'string' ? mat.type : 'file',
+      title: typeof mat.title === 'string' ? mat.title : '',
+      order: Number.isFinite(Number(mat.order)) ? Number(mat.order) : i,
+    };
+  });
+}
+
+/** Сводка по составу: сколько видео / текстов / изображений / файлов. */
+function summarizeMaterials(materials: unknown) {
+  const list = Array.isArray(materials) ? materials : [];
+  const counts = { video: 0, text: 0, image: 0, file: 0 };
+  for (const m of list) {
+    const t = (m as RawMaterial)?.type;
+    if (t === 'video' || t === 'text' || t === 'image') counts[t] += 1;
+    else counts.file += 1;
+  }
+  return { total: list.length, ...counts };
+}
+
+/** Публичное представление пакета: состав без ссылок/текста материалов. */
+function toPublicPackage<T extends { materials?: unknown }>(pkg: T) {
+  return {
+    ...pkg,
+    materials: toPublicMaterials(pkg.materials),
+    materialsSummary: summarizeMaterials(pkg.materials),
+  };
+}
+
 const packageSchema = z.object({
   body: z.object({
     title: z.string().min(3),
@@ -57,11 +102,11 @@ router.get('/', async (req, res, next) => {
 
     const where = cat ? { category: cat } : {};
 
-    const packages = await prisma.package.findMany({
+    const rawPackages = await prisma.package.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
-    const payload = { packages };
+    const payload = { packages: rawPackages.map(toPublicPackage) };
     apiCache.set(cacheKey, payload, PACKAGES_LIST_TTL_MS);
     res.setHeader('X-Cache', 'MISS');
     res.json(payload);
@@ -79,7 +124,7 @@ router.get('/id/:id', async (req, res) => {
       res.status(404).json({ message: 'Package not found' });
       return;
     }
-    res.json({ package: pkg });
+    res.json({ package: toPublicPackage(pkg) });
   } catch (error) {
     console.error('[packages] GET /id/:id failed', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
@@ -91,13 +136,13 @@ router.get('/:slug', async (req, res, next) => {
   try {
     const { slug } = req.params;
     const pkg = await prisma.package.findUnique({ where: { slug } });
-    
+
     if (!pkg) {
       res.status(404).json({ message: 'Package not found' });
       return;
     }
 
-    res.json({ package: pkg });
+    res.json({ package: toPublicPackage(pkg) });
   } catch (error) {
     next(error);
   }
