@@ -87,11 +87,18 @@ function Footer() {
           </a>
         </div>
 
-        <nav className="flex flex-col gap-2 sm:col-span-2 lg:col-span-1" aria-label="Навигация в подвале">
+        <nav className="flex flex-col gap-2" aria-label="Навигация в подвале">
           <h3 className="text-base font-semibold text-accent-400 sm:text-lg">Разделы</h3>
           <FooterLink href={settings.footer_link_about} label={settings.footer_link_about_label} />
           <FooterLink href={settings.footer_link_contacts} label={settings.footer_link_contacts_label} />
-          <FooterLink href={settings.footer_link_privacy} label={settings.footer_link_privacy_label} />
+        </nav>
+
+        <nav className="flex flex-col gap-2" aria-label="Документы">
+          <h3 className="text-base font-semibold text-accent-400 sm:text-lg">Документы</h3>
+          <FooterLink href="/offer" label="Публичная оферта" />
+          <FooterLink href="/payment" label="Оплата и возврат" />
+          <FooterLink href="/privacy" label="Политика конфиденциальности" />
+          <FooterLink href="/requisites" label="Реквизиты" />
         </nav>
       </div>
 

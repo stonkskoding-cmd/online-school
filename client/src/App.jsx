@@ -10,6 +10,10 @@ const AdminChatPage = lazy(() => import('./pages/AdminChatPage'));
 const AdminFooterSettings = lazy(() => import('./pages/AdminFooterSettings'));
 const UserChat = lazy(() => import('./components/UserChat'));
 const Footer = lazy(() => import('./components/Footer'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const PublicOffer = lazy(() => import('./pages/PublicOffer'));
+const PaymentTerms = lazy(() => import('./pages/PaymentTerms'));
+const Requisites = lazy(() => import('./pages/Requisites'));
 
 function PageLoader() {
   return (
@@ -79,6 +83,10 @@ export default function App() {
           <Route path="/login" element={<Navigate to="/?auth=login" replace />} />
           <Route path="/register" element={<Navigate to="/?auth=register" replace />} />
           <Route path="/package/:id" element={<PackageDetail />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/offer" element={<PublicOffer />} />
+          <Route path="/payment" element={<PaymentTerms />} />
+          <Route path="/requisites" element={<Requisites />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/purchases" element={<Dashboard />} />
           <Route path="/my-purchases" element={<Dashboard />} />
