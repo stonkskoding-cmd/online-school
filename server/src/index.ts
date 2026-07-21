@@ -5,6 +5,7 @@ import app from './app';
 import { connectDBWithRetry } from './config/dbRetry';
 import { CORS_BUILD_ID } from './lib/cors';
 import { initSocket, shutdownSocket } from './socket';
+import { startSelfPing, stopSelfPing } from './keepalive';
 import { uploadsDir } from './middleware/upload';
 
 const PORT = Number(process.env.PORT) || 10000;
@@ -42,11 +43,13 @@ server.listen(PORT, '0.0.0.0', () => {
       console.error('[server] uploads setup failed:', err);
     }
     void connectDBWithRetry();
+    startSelfPing();
   });
 });
 
 function gracefulShutdown(signal: string) {
   console.log(`[server] ${signal} received, shutting down…`);
+  stopSelfPing();
   void shutdownSocket().finally(() => {
     server.close(() => process.exit(0));
   });
