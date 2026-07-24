@@ -14,6 +14,7 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const PublicOffer = lazy(() => import('./pages/PublicOffer'));
 const PaymentTerms = lazy(() => import('./pages/PaymentTerms'));
 const Requisites = lazy(() => import('./pages/Requisites'));
+const Disclaimer = lazy(() => import('./pages/Disclaimer'));
 
 function PageLoader() {
   return (
@@ -87,6 +88,7 @@ export default function App() {
           <Route path="/offer" element={<PublicOffer />} />
           <Route path="/payment" element={<PaymentTerms />} />
           <Route path="/requisites" element={<Requisites />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/purchases" element={<Dashboard />} />
           <Route path="/my-purchases" element={<Dashboard />} />

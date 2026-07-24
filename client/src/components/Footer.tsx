@@ -104,6 +104,10 @@ function Footer() {
 
       <div className="relative z-10 mx-auto mt-8 max-w-6xl border-t border-white/15 pt-6 text-center text-sm text-white/60 sm:text-base">
         {settings.footer_copyright}
+        <span className="mx-1 text-white/25">·</span>
+        <Link to="/disclaimer" className="text-white/35 transition hover:text-white/70">
+          Дисклеймер
+        </Link>
       </div>
     </footer>
   );
