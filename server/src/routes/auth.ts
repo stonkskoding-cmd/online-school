@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { validate } from '../middleware/validation';
 import { auth, AuthRequest } from '../middleware/auth';
+import { authLimiter } from '../middleware/rateLimit';
 import { env } from '../config/env';
 import { prisma } from '../lib/prisma';
 
@@ -53,7 +54,7 @@ const adminLoginSchema = z.object({
   }),
 });
 
-router.post('/register', validate(registerSchema), async (req, res, next) => {
+router.post('/register', authLimiter, validate(registerSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -89,7 +90,7 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
   }
 });
 
-router.post('/login', validate(loginSchema), async (req, res, next) => {
+router.post('/login', authLimiter, validate(loginSchema), async (req, res, next) => {
   try {
     const body = req.body as { email?: string; username?: string; password: string };
     const password = body.password;
@@ -159,7 +160,7 @@ router.post('/logout', (_req, res) => {
   res.json({ message: 'Logout successful' });
 });
 
-router.post('/admin-login', validate(adminLoginSchema), (req, res) => {
+router.post('/admin-login', authLimiter, validate(adminLoginSchema), (req, res) => {
   const raw = req.body as { username: string; password: string };
   const username = typeof raw.username === 'string' ? raw.username.trim() : '';
   const { password } = raw;
