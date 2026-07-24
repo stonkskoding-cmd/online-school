@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isSupabaseConfigured, uploadFileToStorage } from '../../lib/supabase';
+import { prepareImageForUpload } from '../../lib/imagePrep';
 import SupabaseEnvNotice from './SupabaseEnvNotice';
 
 function isImageFile(fileOrUrl) {
@@ -83,7 +84,9 @@ export default function CoverUploadField({
       }
 
       try {
-        const publicUrl = await uploadFileToStorage('packages', file);
+        // Фото с телефона/ПК ужимаем до разумного размера — грузится быстрее
+        const prepared = await prepareImageForUpload(file, { maxDim: 1600, quality: 0.85 });
+        const publicUrl = await uploadFileToStorage('packages', prepared);
         setCoverUrl?.(publicUrl);
         if (isImageFile(publicUrl)) {
           revokeBlob();
@@ -183,7 +186,10 @@ export default function CoverUploadField({
     <div className="space-y-2">
       <SupabaseEnvNotice />
       <span className="block text-xs font-semibold text-gray-700">Обложка</span>
-      <p className="text-xs text-gray-500">По желанию. Изображение для карточки в каталоге.</p>
+      <p className="text-xs text-gray-500">
+        По желанию. Горизонтальное изображение для карточки в каталоге — лучше ~16:9
+        (например, 1200×675). Фото с телефона тоже подойдёт — уменьшим автоматически.
+      </p>
       {uploadError ? <p className="text-xs text-red-600">{uploadError}</p> : null}
       <div
         role="button"
@@ -211,7 +217,7 @@ export default function CoverUploadField({
           ref={inputRef}
           id={id}
           type="file"
-          accept="image/*,.pdf,.doc,.docx,.zip"
+          accept="image/*"
           className="hidden"
           disabled={uploadDisabled}
           onChange={(e) => {
@@ -221,8 +227,10 @@ export default function CoverUploadField({
         />
         <label htmlFor={id} className="pointer-events-none cursor-pointer">
           <div className="mb-2 text-4xl text-gray-400">📷</div>
-          <p className="text-sm font-medium text-gray-600">Перетащите файл или нажмите для выбора</p>
-          <p className="mt-1 text-xs text-gray-400">JPG, PNG, WebP · до 10 МБ</p>
+          <p className="text-sm font-medium text-gray-600">
+            Нажмите, чтобы выбрать фото — с телефона или ПК
+          </p>
+          <p className="mt-1 text-xs text-gray-400">JPG, PNG, WebP · или перетащите файл сюда</p>
         </label>
         {uploading ? (
           <p className="mt-4 text-xs font-medium text-[#244E77]">Загрузка в Supabase…</p>
