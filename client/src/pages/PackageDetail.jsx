@@ -137,7 +137,12 @@ export default function PackageDetail() {
     setBuying(true);
     setAccessError('');
     try {
-      await purchasesApi.create(pkg.id);
+      const { data } = await purchasesApi.create(pkg.id);
+      // Если ЮKassa настроена — уходим на страницу оплаты
+      if (data?.confirmationUrl) {
+        window.location.href = data.confirmationUrl;
+        return;
+      }
       setPurchased(true);
       if (pkg.slug) {
         const { data: cData } = await packagesApi.getContent(pkg.slug);

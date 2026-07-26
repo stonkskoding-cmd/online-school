@@ -87,7 +87,15 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
     setIsPurchasing(true);
 
     try {
-      await Promise.all([purchasesApi.create(item.id), delay(PURCHASE_ANIMATION_MS)]);
+      const [{ data }] = await Promise.all([
+        purchasesApi.create(item.id),
+        delay(PURCHASE_ANIMATION_MS),
+      ]);
+      // Если ЮKassa настроена — уходим на страницу оплаты
+      if (data?.confirmationUrl) {
+        window.location.href = data.confirmationUrl;
+        return;
+      }
       setIsPurchasing(false);
       setIsPurchased(true);
     } catch (error) {

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { auth, AuthRequest } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 import { prisma } from '../lib/prisma';
+import { createPayment, isYooKassaConfigured } from '../services/yookassa';
 
 const router = Router();
 
@@ -17,42 +18,47 @@ router.post('/', auth, validate(createPurchaseSchema), async (req: AuthRequest, 
     const { packageId } = req.body;
     const userId = req.user!.id;
 
-    const pkg = await prisma.package.findUnique({
-      where: { id: packageId },
-    });
-
+    const pkg = await prisma.package.findUnique({ where: { id: packageId } });
     if (!pkg) {
       res.status(404).json({ message: 'Package not found' });
       return;
     }
 
-    const existingPurchase = await prisma.purchase.findFirst({
-      where: {
-        userId,
-        packageId,
-        status: { in: ['pending', 'paid'] },
-      },
+    // Уже оплачен — доступ есть
+    const paid = await prisma.purchase.findFirst({
+      where: { userId, packageId, status: 'paid' },
     });
-
-    if (existingPurchase) {
-      res.json({ 
-        message: 'Already created',
-        purchase: existingPurchase,
-      });
+    if (paid) {
+      res.json({ message: 'Already purchased', purchase: paid, alreadyPaid: true });
       return;
     }
 
-    const purchase = await prisma.purchase.create({
-      data: {
-        userId,
-        packageId,
-        status: 'paid',
-      },
+    // Ключи ЮKassa не заданы → мгновенная выдача (как раньше; для разработки/до подключения)
+    if (!isYooKassaConfigured()) {
+      const existing = await prisma.purchase.findFirst({
+        where: { userId, packageId, status: 'pending' },
+      });
+      const purchase = existing
+        ? await prisma.purchase.update({ where: { id: existing.id }, data: { status: 'paid' } })
+        : await prisma.purchase.create({ data: { userId, packageId, status: 'paid' } });
+      res.json({ message: 'Purchase created', purchase });
+      return;
+    }
+
+    // ЮKassa настроена → создаём (или переиспользуем) заказ в статусе pending и ссылку на оплату
+    let purchase = await prisma.purchase.findFirst({
+      where: { userId, packageId, status: 'pending' },
     });
+    if (!purchase) {
+      purchase = await prisma.purchase.create({ data: { userId, packageId, status: 'pending' } });
+    }
+
+    const { confirmationUrl } = await createPayment(pkg.price, purchase.id);
 
     res.json({
-      message: 'Purchase created',
-      purchase,
+      message: 'Payment created',
+      purchaseId: purchase.id,
+      confirmationUrl,
     });
   } catch (error) {
     next(error);

@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { env } from '../config/env';
 
 interface YooKassaPayment {
@@ -5,19 +6,33 @@ interface YooKassaPayment {
   status: string;
   amount: { value: string; currency: 'RUB' };
   confirmation: { type: string; confirmation_url: string };
+  metadata?: { order_id?: string };
 }
 
-export const createPayment = async (amount: number, orderId: string): Promise<{ paymentId: string; confirmationUrl: string }> => {
+/** Настроена ли ЮKassa (заданы ли ключи в окружении). */
+export function isYooKassaConfigured(): boolean {
+  return Boolean(env.YOOKASSA_SHOP_ID && env.YOOKASSA_SECRET_KEY);
+}
+
+function authHeader(): string {
+  return `Basic ${Buffer.from(`${env.YOOKASSA_SHOP_ID}:${env.YOOKASSA_SECRET_KEY}`).toString('base64')}`;
+}
+
+export const createPayment = async (
+  amount: number,
+  orderId: string,
+): Promise<{ paymentId: string; confirmationUrl: string }> => {
   const response = await fetch('https://api.yookassa.ru/v3/payments', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Basic ${Buffer.from(`${env.YOOKASSA_SHOP_ID}:${env.YOOKASSA_SECRET_KEY}`).toString('base64')}`,
-      'Idempotence-Key': orderId,
+      Authorization: authHeader(),
+      // Уникальный ключ на каждую попытку — защищает от двойного списания при ретраях
+      'Idempotence-Key': randomUUID(),
     },
     body: JSON.stringify({
       amount: {
-        value: amount.toString(),
+        value: amount.toFixed(2), // ЮKassa ждёт строку вида "1999.00"
         currency: 'RUB',
       },
       capture: true,
@@ -33,7 +48,7 @@ export const createPayment = async (amount: number, orderId: string): Promise<{ 
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { description?: string };
+    const error = (await response.json().catch(() => ({}))) as { description?: string };
     throw new Error(error.description || 'Failed to create payment');
   }
 
@@ -44,17 +59,23 @@ export const createPayment = async (amount: number, orderId: string): Promise<{ 
   };
 };
 
-export const getPaymentStatus = async (paymentId: string): Promise<string> => {
+/** Полные данные платежа (статус + order_id из metadata) — для проверки в webhook. */
+export const getPayment = async (
+  paymentId: string,
+): Promise<{ status: string; orderId?: string }> => {
   const response = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
-    headers: {
-      'Authorization': `Basic ${Buffer.from(`${env.YOOKASSA_SHOP_ID}:${env.YOOKASSA_SECRET_KEY}`).toString('base64')}`,
-    },
+    headers: { Authorization: authHeader() },
   });
 
   if (!response.ok) {
-    throw new Error('Failed to get payment status');
+    throw new Error('Failed to get payment');
   }
 
   const data = (await response.json()) as YooKassaPayment;
-  return data.status;
+  return { status: data.status, orderId: data.metadata?.order_id };
+};
+
+export const getPaymentStatus = async (paymentId: string): Promise<string> => {
+  const { status } = await getPayment(paymentId);
+  return status;
 };
