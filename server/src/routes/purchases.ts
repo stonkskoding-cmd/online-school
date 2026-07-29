@@ -18,6 +18,14 @@ router.post('/', auth, validate(createPurchaseSchema), async (req: AuthRequest, 
     const { packageId } = req.body;
     const userId = req.user!.id;
 
+    // Админ — не ученик: у него id "admin" (не UUID), покупка ему недоступна
+    if (req.user!.role === 'admin') {
+      res.status(403).json({
+        message: 'Покупка доступна только ученику. Войдите в обычный аккаунт (по email), а не как администратор.',
+      });
+      return;
+    }
+
     const pkg = await prisma.package.findUnique({ where: { id: packageId } });
     if (!pkg) {
       res.status(404).json({ message: 'Package not found' });
@@ -68,6 +76,11 @@ router.post('/', auth, validate(createPurchaseSchema), async (req: AuthRequest, 
 router.get('/', auth, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.user!.id;
+    // У админа нет покупок (id не UUID) — отдаём пустой список без обращения к БД
+    if (req.user!.role === 'admin') {
+      res.json({ purchases: [] });
+      return;
+    }
     const purchases = await prisma.purchase.findMany({
       where: { userId },
       include: { package: true },

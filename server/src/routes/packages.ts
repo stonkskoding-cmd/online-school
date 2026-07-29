@@ -155,6 +155,12 @@ router.get('/:slug/content', auth, async (req: AuthRequest, res) => {
     const userId = req.user!.id;
     console.log('[packages] GET /:slug/content', { slug, userId });
 
+    // Админ (id "admin", не UUID) не является покупателем — не трогаем БД покупок
+    if (req.user!.role === 'admin') {
+      res.status(403).json({ message: 'No access to this package. Please purchase it first.' });
+      return;
+    }
+
     const pkg = await prisma.package.findUnique({ where: { slug } });
     if (!pkg) {
       res.status(404).json({ message: 'Package not found' });
