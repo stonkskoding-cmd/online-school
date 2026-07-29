@@ -15,7 +15,10 @@ export function isYooKassaConfigured(): boolean {
 }
 
 function authHeader(): string {
-  return `Basic ${Buffer.from(`${env.YOOKASSA_SHOP_ID}:${env.YOOKASSA_SECRET_KEY}`).toString('base64')}`;
+  // .trim() — на случай лишнего пробела/переноса при вставке ключа в Render
+  const shopId = (env.YOOKASSA_SHOP_ID || '').trim();
+  const secret = (env.YOOKASSA_SECRET_KEY || '').trim();
+  return `Basic ${Buffer.from(`${shopId}:${secret}`).toString('base64')}`;
 }
 
 export const createPayment = async (
