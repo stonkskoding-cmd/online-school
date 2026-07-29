@@ -113,6 +113,7 @@ const adminCreatePackageSchema = z.object({
     title: z.string().min(1),
     description: z.string().min(1),
     price: z.coerce.number().int().positive(),
+    oldPrice: z.coerce.number().int().positive().optional().nullable(),
     category: z.enum(['OGE-IST', 'EGE-IST', 'EGE-SOC']),
     coverUrl: z.string().optional().nullable(),
     materials: z.array(materialSchema).optional(),
@@ -128,6 +129,7 @@ const adminUpdatePackageSchema = z.object({
     slug: z.string().min(3),
     description: z.string().min(3),
     price: z.coerce.number().int().positive(),
+    oldPrice: z.coerce.number().int().positive().optional().nullable(),
     category: z.enum(['OGE-IST', 'EGE-IST', 'EGE-SOC']),
     coverUrl: z.string().optional().nullable(),
     materials: z.array(materialSchema).optional(),
@@ -275,10 +277,11 @@ router.post(
   try {
     console.log('[admin] Creating package:', req.body);
     console.log('[admin] Cover file:', req.file?.filename ?? 'none');
-    const { title, description, price, category, coverUrl } = req.body as {
+    const { title, description, price, oldPrice, category, coverUrl } = req.body as {
       title: string;
       description: string;
       price: number;
+      oldPrice?: number | null;
       category: string;
       coverUrl?: string | null;
     };
@@ -287,6 +290,8 @@ router.post(
     const materialsJson = materialsToJson(materialsRaw);
     const slug = await uniqueSlugFromTitle(title);
     const cover = typeof coverUrl === 'string' && coverUrl.trim() ? coverUrl.trim() : null;
+    const oldNum = Number(oldPrice);
+    const old = Number.isFinite(oldNum) && oldNum > Number(price) ? Math.round(oldNum) : null;
     console.log('[admin] POST /packages payload', {
       title,
       price,
@@ -301,6 +306,7 @@ router.post(
         slug,
         description,
         price,
+        oldPrice: old,
         category,
         coverUrl: cover,
         materials: materialsJson.length > 0 ? materialsJson : [],
@@ -320,11 +326,12 @@ router.post(
 router.put('/packages/:id', validate(adminUpdatePackageSchema), async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, slug, description, price, category, coverUrl } = req.body as {
+    const { title, slug, description, price, oldPrice, category, coverUrl } = req.body as {
       title: string;
       slug: string;
       description: string;
       price: number;
+      oldPrice?: number | null;
       category: string;
       coverUrl?: string | null;
     };
@@ -332,6 +339,8 @@ router.put('/packages/:id', validate(adminUpdatePackageSchema), async (req, res)
     const materialsRaw = Array.isArray(raw.materials) ? raw.materials : [];
     const materialsJson = materialsToJson(materialsRaw);
     const cover = typeof coverUrl === 'string' && coverUrl.trim() ? coverUrl.trim() : null;
+    const oldNum = Number(oldPrice);
+    const old = Number.isFinite(oldNum) && oldNum > Number(price) ? Math.round(oldNum) : null;
     console.log('[admin] PUT /packages/:id payload', {
       id,
       title,
@@ -363,6 +372,7 @@ router.put('/packages/:id', validate(adminUpdatePackageSchema), async (req, res)
         slug,
         description,
         price,
+        oldPrice: old,
         category,
         coverUrl: cover,
         materials: materialsJson.length > 0 ? materialsJson : [],
