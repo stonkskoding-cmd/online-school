@@ -45,6 +45,21 @@ function delay(ms) {
   });
 }
 
+/** Цена + (опционально) зачёркнутая красным старая цена */
+function PriceTag({ price, oldPrice, className = '' }) {
+  const hasDiscount = Number(oldPrice) > Number(price);
+  return (
+    <span className={`inline-flex items-baseline gap-2 ${className}`}>
+      {hasDiscount ? (
+        <span className="text-sm font-semibold text-gray-400 line-through decoration-red-500 decoration-2">
+          {Number(oldPrice).toLocaleString('ru-RU')} ₽
+        </span>
+      ) : null}
+      <span className="font-extrabold text-accent-500">{Number(price).toLocaleString('ru-RU')} ₽</span>
+    </span>
+  );
+}
+
 function PackageCard({ item, isAuthorized, onNeedAuth }) {
   const navigate = useNavigate();
   const redirectTimerRef = useRef(null);
@@ -239,18 +254,22 @@ function PackageCard({ item, isAuthorized, onNeedAuth }) {
                 )}
               </div>
 
-              <p className="text-lg font-extrabold text-accent-500 sm:text-xl md:text-2xl">
-                {item.price.toLocaleString('ru-RU')} ₽
-              </p>
+              <PriceTag
+                price={item.price}
+                oldPrice={item.oldPrice}
+                className="text-lg sm:text-xl md:text-2xl"
+              />
             </div>
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           {!expanded ? (
-            <span className="text-lg font-extrabold text-accent-500 sm:text-xl md:text-2xl">
-              {item.price.toLocaleString('ru-RU')} ₽
-            </span>
+            <PriceTag
+              price={item.price}
+              oldPrice={item.oldPrice}
+              className="text-lg sm:text-xl md:text-2xl"
+            />
           ) : (
             <button
               type="button"

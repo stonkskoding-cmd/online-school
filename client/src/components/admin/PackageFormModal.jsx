@@ -42,6 +42,8 @@ export default function PackageFormModal({
   setCategory,
   price,
   setPrice,
+  oldPrice,
+  setOldPrice,
   description,
   setDescription,
   coverUrl,
@@ -245,6 +247,25 @@ export default function PackageFormModal({
                       />
                       {fieldErrors.price ? <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.price}</p> : null}
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-700">
+                      Старая цена (зачёркнутая), ₽
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={oldPrice}
+                      onChange={(e) => setOldPrice(e.target.value)}
+                      disabled={saving}
+                      placeholder="Напр. 5000 — покажется зачёркнутой над ценой"
+                      className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm outline-none focus:border-[#244E77] focus:ring-2 focus:ring-[#244E77]/25 disabled:bg-gray-100"
+                    />
+                    <p className="mt-1 text-xs text-gray-400">
+                      Необязательно. Должна быть больше настоящей цены — иначе не показывается.
+                    </p>
                   </div>
 
                   <div>

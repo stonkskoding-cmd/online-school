@@ -224,8 +224,15 @@ export default function PackageDetail() {
               )}
             </section>
 
-            <p className="mt-6 text-3xl font-extrabold text-accent-500">
-              {Number(pkg.price).toLocaleString('ru-RU')} ₽
+            <p className="mt-6 flex items-baseline gap-3 text-3xl">
+              {Number(pkg.oldPrice) > Number(pkg.price) ? (
+                <span className="text-xl font-semibold text-gray-400 line-through decoration-red-500 decoration-2">
+                  {Number(pkg.oldPrice).toLocaleString('ru-RU')} ₽
+                </span>
+              ) : null}
+              <span className="font-extrabold text-accent-500">
+                {Number(pkg.price).toLocaleString('ru-RU')} ₽
+              </span>
             </p>
 
             {accessError ? (

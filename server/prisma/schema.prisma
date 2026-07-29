@@ -26,6 +26,7 @@ model Package {
   slug        String     @unique
   description String
   price       Int
+  oldPrice    Int?       @map("old_price")
   category    String
   coverUrl    String?    @map("cover_url")
   materials   Json?

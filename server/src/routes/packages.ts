@@ -58,6 +58,7 @@ const packageSchema = z.object({
     slug: z.string().min(3),
     description: z.string().min(3),
     price: z.number().positive(),
+    oldPrice: z.number().int().positive().optional().nullable(),
     category: z.custom<PackageCategory>((value) =>
       ['OGE-IST', 'EGE-IST', 'EGE-SOC'].includes(String(value))
     ),
@@ -185,17 +186,19 @@ router.get('/:slug/content', auth, async (req: AuthRequest, res) => {
 
 router.post('/', auth, admin, validate(packageSchema), async (req, res, next) => {
   try {
-    const { title, slug, description, price, category, materials, coverUrl } = req.body as {
+    const { title, slug, description, price, oldPrice, category, materials, coverUrl } = req.body as {
       title: string;
       slug: string;
       description: string;
       price: number;
+      oldPrice?: number | null;
       category: string;
       materials?: unknown[];
       coverUrl?: string | null;
     };
     const mats = Array.isArray(materials) ? materials : [];
     const cover = typeof coverUrl === 'string' && coverUrl.trim() ? coverUrl.trim() : null;
+    const old = typeof oldPrice === 'number' && oldPrice > price ? oldPrice : null;
 
     const existingPackage = await prisma.package.findUnique({ where: { slug } });
     if (existingPackage) {
@@ -209,6 +212,7 @@ router.post('/', auth, admin, validate(packageSchema), async (req, res, next) =>
         slug,
         description,
         price,
+        oldPrice: old,
         category,
         coverUrl: cover,
         materials: (mats.length ? mats : []) as unknown as object,
@@ -229,17 +233,19 @@ router.post('/', auth, admin, validate(packageSchema), async (req, res, next) =>
 router.put('/:id', auth, admin, validate(packageSchema), async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, slug, description, price, category, materials, coverUrl } = req.body as {
+    const { title, slug, description, price, oldPrice, category, materials, coverUrl } = req.body as {
       title: string;
       slug: string;
       description: string;
       price: number;
+      oldPrice?: number | null;
       category: string;
       materials?: unknown[];
       coverUrl?: string | null;
     };
     const mats = Array.isArray(materials) ? materials : [];
     const cover = typeof coverUrl === 'string' && coverUrl.trim() ? coverUrl.trim() : null;
+    const old = typeof oldPrice === 'number' && oldPrice > price ? oldPrice : null;
 
     const exists = await prisma.package.findUnique({ where: { id } });
     if (!exists) {
@@ -254,6 +260,7 @@ router.put('/:id', auth, admin, validate(packageSchema), async (req, res, next) 
         slug,
         description,
         price,
+        oldPrice: old,
         category,
         coverUrl: cover,
         materials: (mats.length ? mats : []) as unknown as object,

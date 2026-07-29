@@ -82,6 +82,7 @@ export default function AdminDashboard() {
   const [slug, setSlug] = useState('');
   const [category, setCategory] = useState('OGE-IST');
   const [price, setPrice] = useState('');
+  const [oldPrice, setOldPrice] = useState('');
   const [description, setDescription] = useState('');
   const [materials, setMaterials] = useState([emptyMaterial(0)]);
   const [coverUrl, setCoverUrl] = useState('');
@@ -150,13 +151,14 @@ export default function AdminDashboard() {
         slug,
         category,
         price,
+        oldPrice,
         description,
         coverUrl,
         materials,
       });
     }, 700);
     return () => clearTimeout(t);
-  }, [modalOpen, editingId, title, slug, category, price, description, coverUrl, materials]);
+  }, [modalOpen, editingId, title, slug, category, price, oldPrice, description, coverUrl, materials]);
 
   useEffect(() => {
     let cancelled = false;
@@ -245,6 +247,7 @@ export default function AdminDashboard() {
     setSlug('');
     setCategory('OGE-IST');
     setPrice('');
+    setOldPrice('');
     setDescription('');
     setMaterials([emptyMaterial(0)]);
     setCoverUrl('');
@@ -262,6 +265,7 @@ export default function AdminDashboard() {
       setSlug(draft.slug ?? '');
       setCategory(draft.category && ['OGE-IST', 'EGE-IST', 'EGE-SOC'].includes(draft.category) ? draft.category : 'OGE-IST');
       setPrice(draft.price != null ? String(draft.price) : '');
+      setOldPrice(draft.oldPrice != null && draft.oldPrice !== '' ? String(draft.oldPrice) : '');
       setDescription(draft.description ?? '');
       setCoverUrl(draft.coverUrl ?? '');
       if (Array.isArray(draft.materials) && draft.materials.length > 0) {
@@ -294,6 +298,7 @@ export default function AdminDashboard() {
     setSlug(pkg.slug);
     setCategory(pkg.category);
     setPrice(String(pkg.price));
+    setOldPrice(pkg.oldPrice != null ? String(pkg.oldPrice) : '');
     setDescription(pkg.description);
     const raw = Array.isArray(pkg.materials) ? pkg.materials : [];
     if (raw.length === 0) {
@@ -376,10 +381,15 @@ export default function AdminDashboard() {
     setError('');
     try {
       const mats = normalizedMaterials();
+      const oldPriceNum = oldPrice ? Number(oldPrice) : null;
       const payloadBase = {
         title: title.trim(),
         description: description.trim(),
         price: priceNum,
+        oldPrice:
+          oldPriceNum && Number.isFinite(oldPriceNum) && oldPriceNum > priceNum
+            ? Math.round(oldPriceNum)
+            : null,
         category,
         coverUrl: coverUrl.trim() || null,
         materials: mats,
@@ -889,6 +899,8 @@ export default function AdminDashboard() {
         setCategory={setCategory}
         price={price}
         setPrice={setPrice}
+        oldPrice={oldPrice}
+        setOldPrice={setOldPrice}
         description={description}
         setDescription={setDescription}
         coverUrl={coverUrl}
