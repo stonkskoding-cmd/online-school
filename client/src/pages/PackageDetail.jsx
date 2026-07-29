@@ -103,9 +103,7 @@ export default function PackageDetail() {
           try {
             const { data: pData } = await purchasesApi.list();
             const owned = (pData.purchases ?? []).some(
-              (p) =>
-                (p.package?.id ?? p.packageId) === loaded.id &&
-                ['paid', 'pending'].includes(p.status),
+              (p) => (p.package?.id ?? p.packageId) === loaded.id && p.status === 'paid',
             );
             if (!cancelled && owned) {
               setPurchased(true);

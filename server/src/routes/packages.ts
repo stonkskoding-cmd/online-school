@@ -167,16 +167,17 @@ router.get('/:slug/content', auth, async (req: AuthRequest, res) => {
       return;
     }
 
+    // Доступ ТОЛЬКО по оплаченной покупке. pending = начатая, но не оплаченная — доступа нет.
     const purchase = await prisma.purchase.findFirst({
       where: {
         userId,
         packageId: pkg.id,
-        status: { in: ['paid', 'pending'] },
+        status: 'paid',
       },
     });
 
     if (!purchase) {
-      console.warn('[packages] content denied — no purchase', { slug, userId });
+      console.warn('[packages] content denied — no paid purchase', { slug, userId });
       res.status(403).json({ message: 'No access to this package. Please purchase it first.' });
       return;
     }

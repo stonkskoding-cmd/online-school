@@ -10,7 +10,7 @@ import { invalidatePackagesCache } from '../lib/memoryCache';
 
 const router = Router();
 
-const COUNTABLE_PURCHASE_STATUSES = ['paid', 'pending'] as const;
+const COUNTABLE_PURCHASE_STATUSES = ['paid'] as const;
 
 type PackageWithSales = {
   id: string;

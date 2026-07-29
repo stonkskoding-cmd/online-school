@@ -81,8 +81,9 @@ router.get('/', auth, async (req: AuthRequest, res, next) => {
       res.json({ purchases: [] });
       return;
     }
+    // Показываем только оплаченные — pending (незавершённая оплата) не считается покупкой
     const purchases = await prisma.purchase.findMany({
-      where: { userId },
+      where: { userId, status: 'paid' },
       include: { package: true },
       orderBy: { createdAt: 'desc' },
     });
