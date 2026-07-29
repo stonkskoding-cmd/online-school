@@ -4,8 +4,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Прямое подключение (порт 5432) для миграций — через пулер PgBouncer
+  // (6543) `prisma migrate` виснет на advisory-lock.
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
