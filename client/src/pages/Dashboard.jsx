@@ -14,6 +14,16 @@ function isDirectVideoFile(url) {
   return /\.(mp4|webm|ogg|mov|m4v|avi|mkv)(\?|$)/i.test(url || '');
 }
 
+/** Гарантируем абсолютную ссылку: без https:// браузер считает её внутренней
+ * (напр. «vk.com/…» → переход внутри сайта). Добавляем протокол. */
+function normalizeUrl(url) {
+  const u = (url || '').trim();
+  if (!u) return u;
+  if (/^https?:\/\//i.test(u)) return u;
+  if (u.startsWith('//')) return `https:${u}`;
+  return `https://${u}`;
+}
+
 function MaterialBlock({ material, index }) {
   const title = material.title || `Материал ${index + 1}`;
 
@@ -37,7 +47,7 @@ function MaterialBlock({ material, index }) {
           <video src={url} controls className="max-h-80 w-full rounded-lg bg-black" />
         ) : (
           <a
-            href={url}
+            href={normalizeUrl(url)}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-light"
@@ -48,7 +58,7 @@ function MaterialBlock({ material, index }) {
       ) : material.type === 'image' && url ? (
         <img src={url} alt={title} className="max-h-80 rounded-lg border border-gray-200 object-contain" />
       ) : url ? (
-        <a href={url} target="_blank" rel="noreferrer" className="break-all text-sm text-primary underline">
+        <a href={normalizeUrl(url)} target="_blank" rel="noreferrer" className="break-all text-sm text-primary underline">
           Открыть файл
         </a>
       ) : (
