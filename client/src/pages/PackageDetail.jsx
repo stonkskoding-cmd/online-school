@@ -15,6 +15,11 @@ function sortMaterials(raw) {
   return [...raw].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
 }
 
+/** Прямой видеофайл — можно встроить; ссылки на страницы (Яндекс Диск, VK…) — открываем ссылкой. */
+function isDirectVideoFile(url) {
+  return /\.(mp4|webm|ogg|mov|m4v|avi|mkv)(\?|$)/i.test(url || '');
+}
+
 function compositionText(summary, materials) {
   const counts = summary ?? {
     video: materials.filter((m) => m.type === 'video').length,
@@ -50,12 +55,17 @@ function MaterialBlock({ material, index }) {
     <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
       <h3 className="mb-2 font-semibold text-gray-900">{title}</h3>
       {material.type === 'video' && url ? (
-        url.includes('youtube.com') || url.includes('youtu.be') ? (
-          <a href={url} target="_blank" rel="noreferrer" className="text-sm text-primary underline">
-            Смотреть видео
-          </a>
-        ) : (
+        isDirectVideoFile(url) ? (
           <video src={url} controls className="max-h-80 w-full rounded-lg bg-black" />
+        ) : (
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-light"
+          >
+            ▶ Смотреть видео
+          </a>
         )
       ) : material.type === 'image' && url ? (
         <img src={url} alt={title} className="max-h-80 rounded-lg border border-gray-200 object-contain" />
