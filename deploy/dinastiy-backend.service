@@ -1,0 +1,26 @@
+# systemd-юнит для бэкенда. Положить в /etc/systemd/system/dinastiy-backend.service
+# Автозапуск при загрузке сервера и авто-перезапуск при падении.
+#
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now dinastiy-backend
+#   sudo systemctl status dinastiy-backend
+#   journalctl -u dinastiy-backend -f    # логи
+
+[Unit]
+Description=Dinastiy backend (Node/Express)
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/var/www/dinastiy/server
+EnvironmentFile=/var/www/dinastiy/server/.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+# Прод-логи пишем в journald
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
